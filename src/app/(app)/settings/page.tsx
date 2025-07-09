@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -17,6 +18,7 @@ import {
   ChevronRight,
   FileCode,
   Globe,
+  Smile,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -54,6 +56,13 @@ const settingsItems = [
     title: 'SLA Management',
     description: 'Define and manage Service Level Agreements.',
     href: '/settings/sla',
+    target: '_self',
+  },
+  {
+    icon: Smile,
+    title: 'CSAT Management',
+    description: 'Configure and monitor customer satisfaction surveys.',
+    href: '/settings/csat',
     target: '_self',
   },
   {

@@ -1,4 +1,5 @@
 
+
 export type Client = {
   id: string;
   name: string;
@@ -126,4 +127,14 @@ export type Script = {
   createdBy: string;
   lastModified: string;
   code: string;
+};
+
+export type CsatResponse = {
+  id: string;
+  ticketId: string;
+  client: string;
+  technician: string;
+  score: 'Great' | 'Okay' | 'Not Good';
+  comment: string;
+  respondedAt: string;
 };

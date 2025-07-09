@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -572,4 +572,55 @@ if __name__ == "__main__":
         print(app)
 `,
   },
+];
+
+export const csatPageStats: DashboardStat[] = [
+  {
+    title: "Overall CSAT Score",
+    value: "92%",
+    change: "+1.5%",
+    changeType: "increase",
+    description: "over the last 30 days"
+  },
+  {
+    title: "Surveys Sent",
+    value: "1,250",
+    change: "+120",
+    changeType: "increase",
+    description: "in the last 30 days"
+  },
+  {
+    title: "Responses Received",
+    value: "480",
+    change: "+55",
+    changeType: "increase",
+    description: "in the last 30 days"
+  },
+  {
+    title: "Response Rate",
+    value: "38.4%",
+    change: "+2.1%",
+    changeType: "increase",
+    description: "over the last 30 days"
+  }
+];
+
+export const csatScoreDistribution = [
+  { name: 'Great', value: 410, fill: 'hsl(var(--success))' },
+  { name: 'Okay', value: 55, fill: 'hsl(var(--accent))' },
+  { name: 'Not Good', value: 15, fill: 'hsl(var(--destructive))' },
+];
+
+export const csatByTechnician = [
+  { technician: 'Alice', score: '95%', surveys: 80, responses: 35 },
+  { technician: 'Bob', score: '91%', surveys: 75, responses: 30 },
+  { technician: 'Charlie', score: '88%', surveys: 65, responses: 25 },
+  { technician: 'David', score: '93%', surveys: 70, responses: 28 },
+];
+
+export const recentCsatResponses: CsatResponse[] = [
+  { id: 'CSAT-001', ticketId: 'TKT-005', client: 'TechCorp', technician: 'Alice', score: 'Great', comment: 'Alice was super helpful and resolved my issue in minutes!', respondedAt: '2 hours ago' },
+  { id: 'CSAT-002', ticketId: 'TKT-006', client: 'GlobalInnovate', technician: 'Bob', score: 'Great', comment: 'Excellent service.', respondedAt: '1 day ago' },
+  { id: 'CSAT-003', ticketId: 'TKT-008', client: 'HealthWell', technician: 'Charlie', score: 'Okay', comment: 'It took a bit longer than I expected, but the issue was fixed.', respondedAt: '2 days ago' },
+  { id: 'CSAT-004', ticketId: 'TKT-009', client: 'RetailRight', technician: 'Alice', score: 'Not Good', comment: 'The first solution provided did not work and I had to follow up multiple times.', respondedAt: '2 days ago' },
 ];

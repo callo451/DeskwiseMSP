@@ -215,7 +215,7 @@ export default function TicketsPage() {
   });
 
   return (
-    <div className="w-full space-y-6">
+    <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {ticketPageStats.map(stat => (
           <StatCard key={stat.title} stat={stat} />

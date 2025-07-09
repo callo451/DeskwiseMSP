@@ -172,3 +172,19 @@ export type SlaPolicy = {
   description: string;
   targets: SlaPolicyTarget[];
 };
+
+export type User = {
+    id: string;
+    name: string;
+    email: string;
+    role: 'Administrator' | 'Technician' | 'Read-Only';
+    status: 'Active' | 'Invited' | 'Inactive';
+    avatarUrl: string;
+};
+  
+export type Role = {
+    id: string;
+    name: 'Administrator' | 'Technician' | 'Read-Only';
+    description: string;
+    userCount: number;
+}

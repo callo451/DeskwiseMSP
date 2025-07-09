@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -247,7 +247,7 @@ export const tickets: Ticket[] = [
     description: 'Requesting renewal for our Adobe Creative Cloud licenses. The current licenses expire at the end of the month.',
     client: 'TechCorp', 
     assignee: 'Alice', 
-    priority: 'Resolved', 
+    priority: 'Medium', 
     status: 'Resolved', 
     createdDate: '2024-05-15', 
     lastUpdate: '3d ago',
@@ -670,4 +670,18 @@ export const slaPolicies: SlaPolicy[] = [
       { priority: 'Low', response_time_minutes: 480, resolution_time_minutes: 7200 },
     ],
   },
+];
+
+export const users: User[] = [
+    { id: 'USR-001', name: 'John Doe', email: 'john.doe@email.com', role: 'Administrator', status: 'Active', avatarUrl: 'https://placehold.co/40x40.png' },
+    { id: 'USR-002', name: 'Alice', email: 'alice@email.com', role: 'Technician', status: 'Active', avatarUrl: 'https://placehold.co/40x40/f87171/FFFFFF.png' },
+    { id: 'USR-003', name: 'Bob', email: 'bob@email.com', role: 'Technician', status: 'Active', avatarUrl: 'https://placehold.co/40x40/60a5fa/FFFFFF.png' },
+    { id: 'USR-004', name: 'Charlie', email: 'charlie@email.com', role: 'Technician', status: 'Inactive', avatarUrl: 'https://placehold.co/40x40/34d399/FFFFFF.png' },
+    { id: 'USR-005', name: 'new.user@email.com', email: 'new.user@email.com', role: 'Read-Only', status: 'Invited', avatarUrl: '' },
+];
+  
+export const roles: Role[] = [
+    { id: 'ROLE-001', name: 'Administrator', description: 'Full access to all features and settings.', userCount: 1 },
+    { id: 'ROLE-002', name: 'Technician', description: 'Can manage tickets, clients, and assets. Limited settings access.', userCount: 3 },
+    { id: 'ROLE-003', name: 'Read-Only', description: 'Can view data but cannot make changes.', userCount: 1 },
 ];

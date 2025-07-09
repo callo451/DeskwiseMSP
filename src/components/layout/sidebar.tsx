@@ -51,7 +51,6 @@ const menuItems = [
     }))
   },
   { href: '/assets', label: 'Assets', icon: HardDrive },
-  { href: '/billing', label: 'Billing', icon: CreditCard },
   { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

@@ -1,5 +1,7 @@
+
 'use client';
 
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,7 +22,6 @@ import {
 import { knowledgeBaseArticles } from '@/lib/placeholder-data';
 import type { KnowledgeBaseArticle } from '@/lib/types';
 import {
-  BookOpen,
   Folder,
   MoreHorizontal,
   PlusCircle,
@@ -34,6 +35,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { NewArticleDialog } from '@/components/knowledge-base/new-article-dialog';
+
 
 const ArticleRow = ({ article }: { article: KnowledgeBaseArticle }) => (
   <TableRow>
@@ -107,12 +110,7 @@ export default function KnowledgeBasePage() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input type="search" placeholder="Search articles..." className="pl-8" />
               </div>
-              <Link href="/knowledge-base/new">
-                <Button className="gap-1">
-                  <BookOpen className="h-3.5 w-3.5" />
-                  New Article
-                </Button>
-              </Link>
+              <NewArticleDialog />
             </div>
           </div>
         </CardHeader>

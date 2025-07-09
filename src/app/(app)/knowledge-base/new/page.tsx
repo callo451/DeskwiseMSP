@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -129,7 +128,7 @@ export default function NewKnowledgeBaseArticlePage() {
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Select a category" />
-                                    </SelectTrigger>
+                                    </Trigger>
                                 </FormControl>
                                 <SelectContent>
                                     {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}

@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dashboardStats, personalDashboardStats, myRecentActivity, myWeeklyTimeLogs, tickets } from '@/lib/placeholder-data';
 import type { DashboardStat, Ticket } from '@/lib/types';
-import { ArrowUpRight, ArrowDownRight, Activity, MessageSquare, Clock, UserPlus, MailReply, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Activity, MessageSquare, Clock, UserPlus, Reply, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import {
   Bar,
@@ -166,7 +166,7 @@ const ActivityIcon = ({ type }: { type: string }) => {
         status: CheckCircle2,
         timelog: Clock,
         assign: UserPlus,
-        reply: MailReply,
+        reply: Reply,
     };
     const Icon = iconMap[type] || MessageSquare;
     return <Icon className="h-4 w-4 text-muted-foreground" />;

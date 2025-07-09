@@ -101,3 +101,34 @@ export const ticketPageStats: DashboardStat[] = [
     description: "from yesterday"
   }
 ];
+
+export const assetPageStats: DashboardStat[] = [
+  {
+    title: "Total Assets",
+    value: "342",
+    change: "+15",
+    changeType: "increase",
+    description: "since last month"
+  },
+  {
+    title: "Assets Online",
+    value: "310",
+    change: "+2%",
+    changeType: "increase",
+    description: "uptime 98.5%"
+  },
+  {
+    title: "Assets Offline",
+    value: "12",
+    change: "-3",
+    changeType: "decrease",
+    description: "since yesterday"
+  },
+  {
+    title: "Assets with Warnings",
+    value: "20",
+    change: "+5",
+    changeType: "increase",
+    description: "since yesterday"
+  }
+];

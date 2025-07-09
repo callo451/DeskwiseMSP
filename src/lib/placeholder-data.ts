@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -645,4 +645,29 @@ export const ticketQueuesSettings: TicketQueueSetting[] = [
   { id: 'queue-2', name: 'Network Ops', ticketCount: 12 },
   { id: 'queue-3', name: 'Billing', ticketCount: 8 },
   { id: 'queue-4', name: 'Unassigned', ticketCount: 5 },
+];
+
+export const slaPolicies: SlaPolicy[] = [
+  {
+    id: 'SLA-001',
+    name: 'Gold Support',
+    description: 'For clients with premium support contracts.',
+    targets: [
+      { priority: 'Critical', response_time_minutes: 15, resolution_time_minutes: 240 },
+      { priority: 'High', response_time_minutes: 30, resolution_time_minutes: 480 },
+      { priority: 'Medium', response_time_minutes: 60, resolution_time_minutes: 1440 },
+      { priority: 'Low', response_time_minutes: 240, resolution_time_minutes: 4320 },
+    ],
+  },
+  {
+    id: 'SLA-002',
+    name: 'Standard Support',
+    description: 'Default SLA for all clients.',
+    targets: [
+      { priority: 'Critical', response_time_minutes: 60, resolution_time_minutes: 480 },
+      { priority: 'High', response_time_minutes: 120, resolution_time_minutes: 1440 },
+      { priority: 'Medium', response_time_minutes: 240, resolution_time_minutes: 2880 },
+      { priority: 'Low', response_time_minutes: 480, resolution_time_minutes: 7200 },
+    ],
+  },
 ];

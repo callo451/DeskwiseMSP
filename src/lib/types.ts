@@ -159,3 +159,16 @@ export type TicketQueueSetting = {
   name: string;
   ticketCount: number;
 };
+
+export type SlaPolicyTarget = {
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  response_time_minutes: number;
+  resolution_time_minutes: number;
+};
+
+export type SlaPolicy = {
+  id: string;
+  name: string;
+  description: string;
+  targets: SlaPolicyTarget[];
+};

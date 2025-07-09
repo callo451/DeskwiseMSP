@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { assets, tickets as allTickets } from '@/lib/placeholder-data';
+import { assets, tickets as allTickets, clients } from '@/lib/placeholder-data';
 import type { Asset, Ticket, AssetHealthAnalysis } from '@/lib/types';
 import {
   AlertDialog,
@@ -179,6 +179,7 @@ export default function AssetDetailsPage() {
   const params = useParams<{ id: string }>();
   const asset = assets.find(a => a.id === params.id);
   const associatedTickets = allTickets.filter(t => asset?.associatedTickets.includes(t.id));
+  const client = asset ? clients.find(c => c.name === asset.client) : undefined;
 
   const [analysisResult, setAnalysisResult] = useState<AssetHealthCheckOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -555,8 +556,20 @@ export default function AssetDetailsPage() {
                     </div>
                      <div>
                         <h3 className="font-semibold mb-2">Recommendations</h3>
-                        <ul className="list-disc list-inside space-y-1.5 text-muted-foreground">
-                            {analysisResult.recommendations.map((item, index) => <li key={`rec-${index}`}>{item}</li>)}
+                        <ul className="space-y-3">
+                            {analysisResult.recommendations.map((item, index) => (
+                                <li key={`rec-${index}`} className="flex items-center justify-between gap-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                                        <span className="text-muted-foreground">{item}</span>
+                                    </div>
+                                    <Button asChild variant="secondary" size="sm" className="shrink-0">
+                                        <Link href={`/tickets/new?subject=${encodeURIComponent(`Issue with ${asset.name}`)}&description=${encodeURIComponent(item)}&clientId=${client?.id || ''}`}>
+                                            Create Ticket
+                                        </Link>
+                                    </Button>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </div>

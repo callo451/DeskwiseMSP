@@ -61,6 +61,7 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const DetailRow = ({ label, value, icon: Icon }: { label: string; value?: React.ReactNode, icon?: React.ElementType }) => {
   if (!value) return null;
@@ -272,131 +273,141 @@ export default function TicketDetailsPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Details</CardTitle>
-              </CardHeader>
-              <CardContent className="divide-y divide-border -mt-2">
-                <DetailRow label="Status" value={<Badge variant={getStatusVariant(ticket.status)} style={ticket.status === 'Resolved' ? { backgroundColor: 'hsl(var(--success))', color: 'hsl(var(--success-foreground))'} : {}}>{ticket.status}</Badge>} />
-                <DetailRow label="Priority" value={<Badge variant={getPriorityVariant(ticket.priority)}>{ticket.priority}</Badge>} />
-                <DetailRow label="Client" value={<Link href="#" className="font-medium text-primary hover:underline">{client?.name}</Link>} />
-                <DetailRow label="Assignee" value={ticket.assignee} icon={User} />
-                <DetailRow label="Created" value={ticket.createdDate} icon={Clock} />
-              </CardContent>
-            </Card>
+        <Tabs defaultValue="activity" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsTrigger value="activity">Activity & Notes</TabsTrigger>
+                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="assets">Associated Assets</TabsTrigger>
+                <TabsTrigger value="kb">Knowledge Base</TabsTrigger>
+            </TabsList>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Associated Assets</CardTitle>
-                <CardDescription>Hardware linked to this ticket.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                 {associatedAssets.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead className="hidden sm:table-cell">Type</TableHead>
-                          <TableHead>Security</TableHead>
-                          <TableHead><span className="sr-only">View</span></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {associatedAssets.map(asset => <AssetRow key={asset.id} asset={asset} />)}
-                      </TableBody>
-                    </Table>
-                  ) : (
-                    <div className="text-center text-sm text-muted-foreground py-8">
-                       <HardDrive className="mx-auto h-8 w-8 mb-2" />
-                       No associated assets.
-                    </div>
-                  )}
-              </CardContent>
-            </Card>
-            
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <BookText className="h-5 w-5" />
-                        Knowledge Base
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                        Link this ticket to an existing article or generate a new one from the resolution.
-                    </p>
-                    <div className="space-y-4">
-                        <Button 
-                            onClick={handleCreateArticle} 
-                            disabled={isGeneratingArticle}
-                            className="w-full"
-                        >
-                            {isGeneratingArticle ? 'Generating...' : (
-                                <>
-                                    <Sparkles className="mr-2 h-4 w-4" />
-                                    Create Article from Ticket
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-          </div>
-
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Full Description</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ticket.description}</p>
-                </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Activity Feed</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {ticket.activity.map((item, index) => (
-                  <div key={index} className="flex gap-4">
-                     <Avatar>
-                        <AvatarImage src={getAvatarForUser(item.user)} alt={item.user} data-ai-hint="user avatar" />
-                        <AvatarFallback>{item.user.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-sm">{item.user}</span>
-                        <span className="text-xs text-muted-foreground">{item.timestamp}</span>
-                      </div>
-                      <div className="p-3 mt-1 rounded-md bg-secondary/50 text-sm text-foreground">
-                        <p className="whitespace-pre-wrap">{item.activity}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-              <CardFooter>
-                 <div className="w-full flex gap-4">
-                    <Avatar>
-                        <AvatarImage src="https://placehold.co/40x40.png" alt="Current User" data-ai-hint="user avatar"/>
-                        <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                    <div className="w-full space-y-2">
-                        <Textarea placeholder="Add a comment or internal note..." rows={3} />
-                        <div className="flex justify-end gap-2">
-                           <Button variant="outline">Add Internal Note</Button>
-                           <Button>Reply to Client</Button>
+            <TabsContent value="activity" className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Full Description</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ticket.description}</p>
+                    </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Activity Feed</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {ticket.activity.map((item, index) => (
+                      <div key={index} className="flex gap-4">
+                         <Avatar>
+                            <AvatarImage src={getAvatarForUser(item.user)} alt={item.user} data-ai-hint="user avatar" />
+                            <AvatarFallback>{item.user.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-sm">{item.user}</span>
+                            <span className="text-xs text-muted-foreground">{item.timestamp}</span>
+                          </div>
+                          <div className="p-3 mt-1 rounded-md bg-secondary/50 text-sm text-foreground">
+                            <p className="whitespace-pre-wrap">{item.activity}</p>
+                          </div>
                         </div>
-                    </div>
-                 </div>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                  <CardFooter>
+                     <div className="w-full flex gap-4">
+                        <Avatar>
+                            <AvatarImage src="https://placehold.co/40x40.png" alt="Current User" data-ai-hint="user avatar"/>
+                            <AvatarFallback>U</AvatarFallback>
+                        </Avatar>
+                        <div className="w-full space-y-2">
+                            <Textarea placeholder="Add a comment or internal note..." rows={3} />
+                            <div className="flex justify-end gap-2">
+                               <Button variant="outline">Add Internal Note</Button>
+                               <Button>Reply to Client</Button>
+                            </div>
+                        </div>
+                     </div>
+                  </CardFooter>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="details">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="divide-y divide-border -mt-2">
+                        <DetailRow label="Status" value={<Badge variant={getStatusVariant(ticket.status)} style={ticket.status === 'Resolved' ? { backgroundColor: 'hsl(var(--success))', color: 'hsl(var(--success-foreground))'} : {}}>{ticket.status}</Badge>} />
+                        <DetailRow label="Priority" value={<Badge variant={getPriorityVariant(ticket.priority)}>{ticket.priority}</Badge>} />
+                        <DetailRow label="Client" value={<Link href="#" className="font-medium text-primary hover:underline">{client?.name}</Link>} />
+                        <DetailRow label="Assignee" value={ticket.assignee} icon={User} />
+                        <DetailRow label="Created" value={ticket.createdDate} icon={Clock} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="assets">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Associated Assets</CardTitle>
+                    <CardDescription>Hardware linked to this ticket.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                     {associatedAssets.length > 0 ? (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Name</TableHead>
+                              <TableHead className="hidden sm:table-cell">Type</TableHead>
+                              <TableHead>Security</TableHead>
+                              <TableHead><span className="sr-only">View</span></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {associatedAssets.map(asset => <AssetRow key={asset.id} asset={asset} />)}
+                          </TableBody>
+                        </Table>
+                      ) : (
+                        <div className="text-center text-sm text-muted-foreground py-8">
+                           <HardDrive className="mx-auto h-8 w-8 mb-2" />
+                           No associated assets.
+                        </div>
+                      )}
+                  </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="kb">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <BookText className="h-5 w-5" />
+                            Knowledge Base
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            Link this ticket to an existing article or generate a new one from the resolution.
+                        </p>
+                        <div className="space-y-4">
+                            <Button 
+                                onClick={handleCreateArticle} 
+                                disabled={isGeneratingArticle}
+                                className="w-full"
+                            >
+                                {isGeneratingArticle ? 'Generating...' : (
+                                    <>
+                                        <Sparkles className="mr-2 h-4 w-4" />
+                                        Create Article from Ticket
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
       </div>
       
        <AlertDialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
@@ -439,4 +450,3 @@ export default function TicketDetailsPage() {
     </>
   );
 }
-

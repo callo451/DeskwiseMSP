@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -14,6 +16,7 @@ import {
   Plug,
   ChevronRight,
   FileCode,
+  Globe,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -23,42 +26,56 @@ const settingsItems = [
     title: 'Users & Permissions',
     description: 'Manage user accounts and roles.',
     href: '/settings/users',
+    target: '_self',
   },
   {
     icon: CreditCard,
     title: 'Billing & Subscriptions',
     description: 'Manage your payment methods and plan.',
     href: '/settings/billing',
+    target: '_self',
   },
   {
     icon: Lock,
     title: 'SAML SSO',
     description: 'Configure Single Sign-On for your organization.',
     href: '/settings/sso',
+    target: '_self',
   },
   {
     icon: Cog,
     title: 'Custom Fields',
     description: 'Create and manage custom fields for modules.',
     href: '/settings/fields',
+    target: '_self',
   },
   {
     icon: Shield,
     title: 'SLA Management',
     description: 'Define and manage Service Level Agreements.',
     href: '/settings/sla',
+    target: '_self',
   },
   {
     icon: FileCode,
     title: 'Script Repository',
     description: 'Manage and generate scripts for automation.',
     href: '/settings/script-repository',
+    target: '_self',
   },
   {
     icon: Plug,
     title: 'Integrations',
     description: 'Connect with RMM and other third-party apps.',
     href: '/settings/integrations',
+    target: '_self',
+  },
+  {
+    icon: Globe,
+    title: 'Client Portal',
+    description: 'Preview the client-facing portal.',
+    href: '/portal/login',
+    target: '_blank',
   },
 ];
 
@@ -81,39 +98,48 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             {/* General Settings Form can go here */}
-            <p className="text-sm text-muted-foreground">Profile and company settings form will be here.</p>
+            <p className="text-sm text-muted-foreground">
+              Profile and company settings form will be here.
+            </p>
           </CardContent>
         </Card>
-        
-        <Card>
-            <CardHeader>
-                <CardTitle>System Configuration</CardTitle>
-                <CardDescription>
-                Configure core application modules and integrations.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="divide-y divide-border">
-                {settingsItems.map(item => (
-                    <Link href={item.href} key={item.title} className="block hover:bg-secondary/50 -mx-6 px-6 py-4">
-                        <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <item.icon className="h-6 w-6 text-primary" />
-                            <div>
-                            <h3 className="font-semibold">{item.title}</h3>
-                            <p className="text-sm text-muted-foreground">
-                                {item.description}
-                            </p>
-                            </div>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                    </Link>
-                ))}
-                </div>
-            </CardContent>
-        </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>System Configuration</CardTitle>
+            <CardDescription>
+              Configure core application modules and integrations.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="divide-y divide-border">
+              {settingsItems.map(item => (
+                <Link
+                  href={item.href}
+                  key={item.title}
+                  className="block hover:bg-secondary/50 -mx-6 px-6 py-4"
+                  target={item.target}
+                  rel={
+                    item.target === '_blank' ? 'noopener noreferrer' : undefined
+                  }
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <item.icon className="h-6 w-6 text-primary" />
+                      <div>
+                        <h3 className="font-semibold">{item.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

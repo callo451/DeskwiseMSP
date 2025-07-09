@@ -1,5 +1,8 @@
 
 import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script } from './types';
+import { subHours, addHours, addDays, formatISO } from 'date-fns';
+
+const now = new Date();
 
 export const dashboardStats: DashboardStat[] = [
   {
@@ -64,6 +67,11 @@ export const tickets: Ticket[] = [
       { timestamp: '8 mins ago', user: 'System', activity: 'Ticket automatically assigned to Alice based on routing rules.' },
     ],
     associatedAssets: ['AST-001', 'AST-005'],
+    sla: {
+      responseDue: formatISO(addHours(now, 1)),
+      resolutionDue: formatISO(addHours(now, 4)),
+    },
+    timeLogs: [],
   },
   { 
     id: 'TKT-002', 
@@ -80,6 +88,14 @@ export const tickets: Ticket[] = [
        { timestamp: '2 hours ago', user: 'Bob', activity: 'I have checked the file permissions and they seem correct. I will check the user group policies now.' },
     ],
     associatedAssets: ['AST-002'],
+    sla: {
+      responseDue: formatISO(subHours(now, 2)), // Breached
+      respondedAt: formatISO(subHours(now, 1)),
+      resolutionDue: formatISO(addHours(now, 22)),
+    },
+    timeLogs: [
+      { id: 'TL-001', technician: 'Bob', hours: 1, description: 'Investigated file permissions and group policies.', date: '2024-05-20', isBillable: true },
+    ],
   },
   { 
     id: 'TKT-003', 
@@ -94,7 +110,12 @@ export const tickets: Ticket[] = [
     activity: [
         { timestamp: '1 day ago', user: 'Dr. Emily White', activity: 'Ticket created.' },
         { timestamp: '22 hours ago', user: 'Charlie', activity: 'Status changed to On Hold. Waiting for HR to confirm the new user\'s start date.' },
-    ]
+    ],
+    sla: {
+      responseDue: formatISO(addDays(now, 1)),
+      resolutionDue: formatISO(addDays(now, 3)),
+    },
+    timeLogs: [],
   },
   { 
     id: 'TKT-004', 
@@ -110,6 +131,10 @@ export const tickets: Ticket[] = [
         { timestamp: '1 hour ago', user: 'Sarah Green', activity: 'Ticket created.' },
     ],
     associatedAssets: ['AST-004'],
+     sla: {
+      responseDue: formatISO(subHours(now, 1)), // Breached
+      resolutionDue: formatISO(addDays(now, 2)),
+    }
   },
   { 
     id: 'TKT-005', 
@@ -126,6 +151,12 @@ export const tickets: Ticket[] = [
         { timestamp: '3 days ago', user: 'Alice', activity: 'Licenses renewed and applied to all users. Marked as resolved.' },
     ],
     associatedAssets: ['AST-001'],
+    sla: {
+      responseDue: formatISO(subHours(now, 122)),
+      respondedAt: formatISO(subHours(now, 120)),
+      resolutionDue: formatISO(subHours(now, 70)),
+      resolvedAt: formatISO(subHours(now, 72)), // Met
+    },
   },
   { 
     id: 'TKT-006', 
@@ -142,6 +173,16 @@ export const tickets: Ticket[] = [
         { timestamp: '2 days ago', user: 'Bob', activity: 'Identified a configuration issue on the firewall. The issue has been resolved and monitoring shows stable connections. Closing ticket.' },
     ],
     associatedAssets: ['AST-002'],
+    sla: {
+      responseDue: formatISO(subHours(now, 70)),
+      respondedAt: formatISO(subHours(now, 68)),
+      resolutionDue: formatISO(subHours(now, 40)),
+      resolvedAt: formatISO(subHours(now, 48)),
+    },
+    timeLogs: [
+      { id: 'TL-002', technician: 'Bob', hours: 2, description: 'Troubleshooting firewall and VPN configuration.', date: '2024-05-18', isBillable: true },
+      { id: 'TL-003', technician: 'Bob', hours: 0.5, description: 'Monitoring connection stability post-fix.', date: '2024-05-18', isBillable: false },
+    ],
   }
 ];
 

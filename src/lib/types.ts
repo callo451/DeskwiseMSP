@@ -17,6 +17,15 @@ export type Contact = {
   lastActivity: string;
 };
 
+export type TimeLog = {
+  id: string;
+  technician: string;
+  hours: number;
+  description: string;
+  date: string;
+  isBillable: boolean;
+};
+
 export type Ticket = {
   id: string;
   subject: string;
@@ -33,6 +42,13 @@ export type Ticket = {
     activity: string;
   }[];
   associatedAssets?: string[];
+  sla?: {
+    responseDue: string;
+    resolutionDue: string;
+    respondedAt?: string;
+    resolvedAt?: string;
+  };
+  timeLogs?: TimeLog[];
 };
 
 export type Asset = {

@@ -192,7 +192,7 @@ export const tickets: Ticket[] = [
     description: 'Requesting renewal for our Adobe Creative Cloud licenses. The current licenses expire at the end of the month.',
     client: 'TechCorp', 
     assignee: 'Alice', 
-    priority: 'Medium', 
+    priority: 'Resolved', 
     status: 'Resolved', 
     createdDate: '2024-05-15', 
     lastUpdate: '3d ago',
@@ -364,10 +364,10 @@ export const assets: Asset[] = [
 
 
 export const knowledgeBaseArticles: KnowledgeBaseArticle[] = [
-  { id: 'KB-001', title: 'How to set up a new VPN connection', category: 'Networking', author: 'Alice', lastUpdated: '2024-04-10', type: 'Internal' },
-  { id: 'KB-002', title: 'Resetting your password', category: 'User Guides', author: 'System', lastUpdated: '2024-03-01', type: 'Public' },
-  { id: 'KB-003', title: 'Troubleshooting common printer issues', category: 'Hardware', author: 'Bob', lastUpdated: '2024-05-05', type: 'Public' },
-  { id: 'KB-004', title: 'Onboarding process for new clients', category: 'SOPs', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal' },
+  { id: 'KB-001', title: 'How to set up a new VPN connection', content: '...', category: 'Networking', author: 'Alice', lastUpdated: '2024-04-10', type: 'Internal' },
+  { id: 'KB-002', title: 'Resetting your password', content: '...', category: 'User Guides', author: 'System', lastUpdated: '2024-03-01', type: 'Public' },
+  { id: 'KB-003', title: 'Troubleshooting common printer issues', content: '...', category: 'Hardware', author: 'Bob', lastUpdated: '2024-05-05', type: 'Public' },
+  { id: 'KB-004', title: 'Onboarding process for new clients', content: '...', category: 'SOPs', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal' },
 ];
 
 export const ticketPageStats: DashboardStat[] = [

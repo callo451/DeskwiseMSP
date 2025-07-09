@@ -94,6 +94,7 @@ export type Asset = {
 export type KnowledgeBaseArticle = {
   id: string;
   title: string;
+  content: string;
   category: string;
   author: string;
   lastUpdated: string;

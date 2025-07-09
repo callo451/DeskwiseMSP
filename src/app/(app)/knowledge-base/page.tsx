@@ -110,12 +110,12 @@ export default function KnowledgeBasePage() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input type="search" placeholder="Search articles..." className="pl-8" />
               </div>
-              <Link href="/knowledge-base/new">
-                <Button className="gap-1">
+              <Button asChild className="gap-1">
+                <Link href="/knowledge-base/new">
                   <BookOpen className="h-3.5 w-3.5" />
                   New Article
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </CardHeader>

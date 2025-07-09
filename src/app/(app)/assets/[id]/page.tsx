@@ -33,6 +33,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -42,6 +50,7 @@ import { checkAssetHealth, type AssetHealthCheckOutput } from '@/ai/flows/asset-
 import {
   AlertTriangle,
   ArrowUpRight,
+  ChevronDown,
   ChevronRight,
   Copy,
   Cpu,
@@ -50,6 +59,7 @@ import {
   Info,
   MemoryStick,
   Power,
+  RefreshCw,
   Terminal,
   ShieldCheck,
   ShieldAlert,
@@ -294,18 +304,39 @@ export default function AssetDetailsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline">
-              <Terminal className="mr-2 h-4 w-4" />
-              Run Script
-            </Button>
-             <Button variant="outline" onClick={handleHealthCheck} disabled={isAnalyzing}>
-              <Sparkles className="mr-2 h-4 w-4" />
-              AI Health Check
-            </Button>
             <Button>
               <ArrowUpRight className="mr-2 h-4 w-4" />
               Remote Session
             </Button>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    Actions
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>RMM Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleHealthCheck} disabled={isAnalyzing}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    <span>AI Health Check</span>
+                  </DropdownMenuItem>
+                   <DropdownMenuItem>
+                    <Terminal className="mr-2 h-4 w-4" />
+                    <span>Run Script</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    <span>Reboot Device</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive">
+                    <Power className="mr-2 h-4 w-4" />
+                    <span>Shutdown Device</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
           </div>
         </div>
         

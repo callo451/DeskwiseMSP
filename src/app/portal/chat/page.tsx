@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Mic, MicOff, Send, Sparkles, User, Volume2, Bot } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Mic, Phone, PhoneOff, Send, Sparkles, User, Bot, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { portalChat } from '@/ai/flows/portal-chat';
@@ -25,75 +26,148 @@ const SpeechRecognition =
   (typeof window !== 'undefined' && window.SpeechRecognition) ||
   (typeof window !== 'undefined' && (window as any).webkitSpeechRecognition);
 
+type CallStatus = 'idle' | 'listening' | 'processing' | 'speaking';
+
+function VoiceCallDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+  const { toast } = useToast();
+  const [status, setStatus] = useState<CallStatus>('idle');
+  const [lastTranscript, setLastTranscript] = useState('');
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    
+    if (!SpeechRecognition) {
+      toast({ variant: 'destructive', title: "Voice input not supported in this browser." });
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setStatus('listening');
+      setLastTranscript('');
+    };
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      setLastTranscript(transcript);
+      setStatus('processing');
+      try {
+        const chatResponse = await portalChat({ query: transcript, clientId: 'CLI-001' });
+        setStatus('speaking');
+        const ttsResponse = await textToSpeech({ text: chatResponse.response });
+        if (audioRef.current && ttsResponse.audioDataUri) {
+          audioRef.current.src = ttsResponse.audioDataUri;
+          await audioRef.current.play();
+        } else {
+          // If there's no audio, just end the turn
+           setStatus('idle');
+        }
+      } catch (error) {
+        console.error('Voice call error:', error);
+        toast({ variant: 'destructive', title: 'AI Error', description: 'Could not get a response.' });
+        setStatus('idle');
+      }
+    };
+    
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      if(event.error !== 'no-speech') {
+        toast({ variant: 'destructive', title: 'Voice Error', description: `An error occurred: ${event.error}` });
+      }
+      setStatus('idle');
+    };
+
+    recognition.onend = () => {
+      if (status === 'listening') {
+        setStatus('idle');
+      }
+    };
+      
+    recognitionRef.current = recognition;
+
+    if (audioRef.current) {
+        audioRef.current.onended = () => {
+            setStatus('idle');
+        };
+    }
+  }, [open, toast, status]);
+
+  const handleMicClick = () => {
+    if (status === 'idle' && recognitionRef.current) {
+      recognitionRef.current.start();
+    } else if (status === 'listening' && recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  const getStatusText = () => {
+    switch (status) {
+      case 'listening': return 'Listening...';
+      case 'processing': return 'Gemini is thinking...';
+      case 'speaking': return 'Gemini is speaking...';
+      case 'idle':
+      default:
+        return 'Press the microphone to speak.';
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 font-headline"><Phone className="h-5 w-5 text-primary" /> Live Voice Call</DialogTitle>
+          <DialogDescription>Speak with the Gemini assistant in real-time.</DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <Button
+            size="icon"
+            className={cn('h-20 w-20 rounded-full',
+              status === 'listening' && 'bg-destructive hover:bg-destructive/90 animate-pulse',
+              status === 'processing' && 'bg-muted',
+              status === 'speaking' && 'bg-blue-500',
+            )}
+            onClick={handleMicClick}
+            disabled={status !== 'idle' && status !== 'listening'}
+          >
+            {status === 'processing' || status === 'speaking' ?
+              <CircleDot className="h-8 w-8" /> :
+              <Mic className="h-8 w-8" />
+            }
+          </Button>
+          <p className="text-sm text-muted-foreground">{getStatusText()}</p>
+          {lastTranscript && <p className="text-sm italic text-center">You said: &quot;{lastTranscript}&quot;</p>}
+        </div>
+        <DialogFooter>
+          <Button variant="destructive" onClick={() => onOpenChange(false)}>
+            <PhoneOff className="mr-2 h-4 w-4" /> End Call
+          </Button>
+        </DialogFooter>
+        <audio ref={audioRef} className="hidden" />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 export default function ClientChatPage() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Voice state
-  const [isRecording, setIsRecording] = useState(false);
-  const [canUseVoice, setCanUseVoice] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isVoiceCallOpen, setIsVoiceCallOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (SpeechRecognition) {
-      setCanUseVoice(true);
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map((result) => result[0])
-          .map((result) => result.transcript)
-          .join('');
-        setInput(transcript);
-      };
-      
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        toast({ variant: 'destructive', title: 'Voice Error', description: `Speech recognition error: ${event.error}` });
-        setIsRecording(false);
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
-      
-      recognitionRef.current = recognition;
-    } else {
-        toast({ title: "Voice input not supported in this browser."})
-    }
-  }, [toast]);
-  
   useEffect(() => {
     if (scrollAreaRef.current) {
         scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [messages])
-
-  const toggleRecording = () => {
-    if (!recognitionRef.current) return;
-    
-    if (isRecording) {
-      recognitionRef.current.stop();
-    } else {
-      setInput('');
-      recognitionRef.current.start();
-    }
-    setIsRecording(!isRecording);
-  };
-  
-  const playAudio = (audioDataUri: string) => {
-    if (audioRef.current && audioDataUri) {
-        audioRef.current.src = audioDataUri;
-        audioRef.current.play().catch(e => console.error("Audio playback failed", e));
-    }
-  }
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -101,10 +175,6 @@ export default function ClientChatPage() {
 
     const userInput = input;
     setInput('');
-    if(isRecording) {
-        recognitionRef.current?.stop();
-        setIsRecording(false);
-    }
     
     const userMessage: Message = { id: Date.now().toString(), role: 'user', content: userInput };
     setMessages((prev) => [...prev, userMessage]);
@@ -121,9 +191,6 @@ export default function ClientChatPage() {
       };
       setMessages((prev) => [...prev, assistantMessage]);
       
-      const ttsResponse = await textToSpeech({ text: chatResponse.response });
-      playAudio(ttsResponse.audioDataUri);
-
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: Message = {
@@ -143,13 +210,16 @@ export default function ClientChatPage() {
   };
 
   return (
+    <>
     <Card className="h-[calc(100vh-10rem)] flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
             <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary h-5 w-5" /> AI Assistant</CardTitle>
             <CardDescription>Chat with Gemini about your tickets, assets, and more.</CardDescription>
         </div>
-        { canUseVoice && <Volume2 className="h-5 w-5 text-muted-foreground" />}
+        <Button variant="outline" onClick={() => setIsVoiceCallOpen(true)}>
+            <Phone className="mr-2 h-4 w-4" /> Voice Call
+        </Button>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-0">
           <ScrollArea className="h-full" ref={scrollAreaRef as any}>
@@ -203,24 +273,19 @@ export default function ClientChatPage() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isRecording ? "Listening..." : "Type your message or use the microphone..."}
+            placeholder="Type your message..."
             disabled={isLoading}
             autoComplete="off"
             className="flex-1"
           />
-          { canUseVoice && (
-            <Button type="button" size="icon" variant={isRecording ? "destructive" : "secondary"} onClick={toggleRecording} disabled={isLoading}>
-                {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                <span className="sr-only">{isRecording ? "Stop recording" : "Start recording"}</span>
-            </Button>
-          )}
           <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
             <Send className="h-5 w-5" />
             <span className="sr-only">Send</span>
           </Button>
         </form>
       </div>
-       <audio ref={audioRef} className="hidden" />
     </Card>
+    <VoiceCallDialog open={isVoiceCallOpen} onOpenChange={setIsVoiceCallOpen} />
+    </>
   );
 }

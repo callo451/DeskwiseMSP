@@ -33,6 +33,7 @@ export type Asset = {
   client: string;
   type: 'Server' | 'Workstation' | 'Network' | 'Printer';
   status: 'Online' | 'Offline' | 'Warning';
+  isSecure: boolean;
   lastSeen: string;
   ipAddress: string;
   macAddress: string;

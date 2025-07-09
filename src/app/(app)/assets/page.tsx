@@ -37,6 +37,8 @@ import {
   Activity,
   ArrowUpRight,
   ArrowDownRight,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -115,6 +117,12 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
           {asset.status}
         </Badge>
       </TableCell>
+      <TableCell className="hidden lg:table-cell">
+        <div className={`flex items-center gap-1.5 ${asset.isSecure ? 'text-green-600' : 'text-amber-600'}`}>
+            {asset.isSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+            <span className="hidden xl:inline">{asset.isSecure ? 'Secured' : 'At Risk'}</span>
+        </div>
+      </TableCell>
       <TableCell className="hidden md:table-cell">{asset.lastSeen}</TableCell>
       <TableCell>
         <DropdownMenu>
@@ -144,9 +152,11 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
 export default function AssetsPage() {
   const assetTypes: Array<Asset['type']> = ['Server', 'Workstation', 'Network', 'Printer'];
   const assetStatuses: Array<Asset['status']> = ['Online', 'Offline', 'Warning'];
+  const assetSecurityStatuses: string[] = ['Secured', 'At Risk'];
 
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [securityFilters, setSecurityFilters] = useState<string[]>([]);
 
   const handleTypeFilterChange = (type: string, checked: boolean) => {
     setTypeFilters(prev =>
@@ -160,15 +170,27 @@ export default function AssetsPage() {
     );
   };
 
+  const handleSecurityFilterChange = (securityStatus: string, checked: boolean) => {
+    setSecurityFilters(prev =>
+      checked ? [...prev, securityStatus] : prev.filter(s => s !== securityStatus)
+    );
+  };
+
   const clearFilters = () => {
     setTypeFilters([]);
     setStatusFilters([]);
+    setSecurityFilters([]);
   };
 
   const filteredAssets = assets.filter(asset => {
     const typeMatch = typeFilters.length === 0 || typeFilters.includes(asset.type);
     const statusMatch = statusFilters.length === 0 || statusFilters.includes(asset.status);
-    return typeMatch && statusMatch;
+    const securityMatch =
+      securityFilters.length === 0 ||
+      (securityFilters.includes('Secured') && asset.isSecure) ||
+      (securityFilters.includes('At Risk') && !asset.isSecure);
+
+    return typeMatch && statusMatch && securityMatch;
   });
 
   return (
@@ -226,6 +248,20 @@ export default function AssetsPage() {
                     </DropdownMenuCheckboxItem>
                   ))}
                   <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Filter by Security</DropdownMenuLabel>
+                   <DropdownMenuSeparator />
+                  {assetSecurityStatuses.map(secStatus => (
+                    <DropdownMenuCheckboxItem
+                      key={secStatus}
+                      checked={securityFilters.includes(secStatus)}
+                      onCheckedChange={checked =>
+                        handleSecurityFilterChange(secStatus, !!checked)
+                      }
+                    >
+                      {secStatus}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={clearFilters}>Clear Filters</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -255,6 +291,7 @@ export default function AssetsPage() {
                 <TableHead className="hidden sm:table-cell">Client</TableHead>
                 <TableHead className="hidden sm:table-cell">Type</TableHead>
                 <TableHead className="hidden md:table-cell">Status</TableHead>
+                <TableHead className="hidden lg:table-cell">Security</TableHead>
                 <TableHead className="hidden md:table-cell">Last Seen</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>

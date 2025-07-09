@@ -35,6 +35,8 @@ import {
   MemoryStick,
   Power,
   Terminal,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   LineChart,
@@ -145,12 +147,12 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => {
     );
 };
 
-const DetailRow = ({ label, value }: { label: string; value?: string | number | null }) => {
+const DetailRow = ({ label, value }: { label: string; value?: React.ReactNode }) => {
   if (!value) return null;
   return (
-    <div className="flex justify-between items-start py-3 first:pt-0 last:pb-0">
+    <div className="flex justify-between items-center py-3 first:pt-0 last:pb-0">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="font-medium text-sm text-right">{value}</span>
+      <div className="font-medium text-sm text-right">{value}</div>
     </div>
   );
 };
@@ -203,12 +205,17 @@ export default function AssetDetailsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold font-headline">{asset.name}</h1>
-          <p className="text-muted-foreground flex items-center gap-2">
+          <p className="text-muted-foreground flex items-center gap-2 flex-wrap">
             <span className={`flex items-center gap-1 ${getStatusColor(asset.status)}`}>
               {getStatusIcon(asset.status)}
               {asset.status}
             </span>
-            &bull;
+            <span className='text-muted-foreground/50'>&bull;</span>
+            <span className={`flex items-center gap-1 ${asset.isSecure ? 'text-green-600' : 'text-amber-600'}`}>
+              {asset.isSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+              {asset.isSecure ? 'Secured' : 'At Risk'}
+            </span>
+            <span className='text-muted-foreground/50'>&bull;</span>
             <span>Last seen: {asset.lastSeen}</span>
           </p>
         </div>
@@ -394,6 +401,15 @@ export default function AssetDetailsPage() {
                   <CardDescription>Detailed technical specifications for this asset.</CardDescription>
                 </CardHeader>
                 <CardContent className="divide-y divide-border pt-4">
+                   <DetailRow 
+                    label="Antivirus Status" 
+                    value={
+                        <span className={`flex items-center justify-end gap-1.5 ${asset.isSecure ? 'text-green-600' : 'text-amber-600'}`}>
+                            {asset.isSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+                            {asset.isSecure ? 'Secured' : 'At Risk'}
+                        </span>
+                    } 
+                  />
                   <DetailRow label="CPU Model" value={asset.cpu.model} />
                   <DetailRow label="Total Memory (RAM)" value={`${asset.ram.total} GB`} />
                   <DetailRow label="Total Disk Space" value={`${asset.disk.total} GB`} />

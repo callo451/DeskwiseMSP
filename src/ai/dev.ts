@@ -13,3 +13,5 @@ import '@/ai/flows/knowledge-base-article-generation.ts';
 import '@/ai/flows/portal-chat.ts';
 import '@/ai/flows/text-to-speech.ts';
 import '@/ai/flows/voice-call.ts';
+import '@/ai/flows/report-generation.ts';
+import '@/ai/flows/report-insights.ts';

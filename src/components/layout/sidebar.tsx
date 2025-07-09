@@ -24,6 +24,7 @@ import {
   Gem,
   LogOut,
   ChevronRight,
+  BarChart3,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -37,6 +38,7 @@ import React from 'react';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
+  { href: '/reports', label: 'Reports', icon: BarChart3 },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/contacts', label: 'Contacts', icon: Contact },
   { 
@@ -69,7 +71,8 @@ export function AppSidebar() {
     if (href === '/dashboard') {
       return pathname === href;
     }
-    return pathname.startsWith(href);
+    // Updated to handle /reports and other top-level items correctly
+    return pathname.startsWith(href) && (href !== '/dashboard' && href !== '/tickets');
   };
 
   return (

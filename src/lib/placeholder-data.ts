@@ -77,6 +77,12 @@ export const assets: Asset[] = [
       { timestamp: '5 hours ago', activity: 'User "admin" logged in' },
     ],
     associatedTickets: ['TKT-001', 'TKT-005'],
+    specifications: {
+      motherboard: 'Supermicro X12SPi-TF',
+      gpu: 'ASPEED AST2600 BMC',
+      biosVersion: '2.1b',
+      serialNumber: 'VM-12345-67890',
+    },
   },
   {
     id: 'AST-002',
@@ -94,6 +100,12 @@ export const assets: Asset[] = [
     notes: 'Finance department lead workstation.',
     activityLogs: [{ timestamp: '3 hours ago', activity: 'Asset went offline' }],
     associatedTickets: ['TKT-002', 'TKT-006'],
+    specifications: {
+      motherboard: 'Dell OptiPlex 7000',
+      gpu: 'Intel UHD Graphics 770',
+      biosVersion: '1.8.2',
+      serialNumber: 'DK-98765-43210',
+    },
   },
   {
     id: 'AST-003',
@@ -113,6 +125,10 @@ export const assets: Asset[] = [
       { timestamp: '1 day ago', activity: 'Firmware updated' },
     ],
     associatedTickets: ['TKT-003'],
+    specifications: {
+      motherboard: 'Cisco 4000 Series ISR',
+      serialNumber: 'CIS-ABCDE-FGHIJ',
+    },
   },
   {
     id: 'AST-004',
@@ -129,6 +145,9 @@ export const assets: Asset[] = [
     disk: { total: 0, used: 0 },
     activityLogs: [{ timestamp: '1 hour ago', activity: 'Low toner warning' }],
     associatedTickets: ['TKT-004'],
+    specifications: {
+      serialNumber: 'PRN-ZYXWV-UTSRQ',
+    },
   },
   {
     id: 'AST-005',
@@ -149,6 +168,12 @@ export const assets: Asset[] = [
       { timestamp: '2 hours ago', activity: 'Database backup completed successfully' },
     ],
     associatedTickets: [],
+    specifications: {
+      motherboard: 'Supermicro H12SSL-NT',
+      gpu: 'ASPEED AST2600 BMC',
+      biosVersion: '1.5c',
+      serialNumber: 'VM-09876-54321',
+    },
   },
 ];
 

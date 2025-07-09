@@ -48,6 +48,7 @@ import {
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import Link from 'next/link';
 import React from 'react';
+import { useParams } from 'next/navigation';
 
 const monitoringData = {
   cpu: [
@@ -144,8 +145,19 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => {
     );
 };
 
+const DetailRow = ({ label, value }: { label: string; value?: string | number | null }) => {
+  if (!value) return null;
+  return (
+    <div className="flex justify-between items-start py-3 first:pt-0 last:pb-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="font-medium text-sm text-right">{value}</span>
+    </div>
+  );
+};
 
-export default function AssetDetailsPage({ params }: { params: { id: string } }) {
+
+export default function AssetDetailsPage() {
+  const params = useParams<{ id: string }>();
   const asset = assets.find(a => a.id === params.id);
   const associatedTickets = allTickets.filter(t => asset?.associatedTickets.includes(t.id));
 
@@ -257,11 +269,12 @@ export default function AssetDetailsPage({ params }: { params: { id: string } })
         
         <div className="lg:col-span-2">
           <Tabs defaultValue="overview">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
               <TabsTrigger value="tickets">Tickets</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
+              <TabsTrigger value="specifications">Specifications</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-6">
@@ -373,6 +386,28 @@ export default function AssetDetailsPage({ params }: { params: { id: string } })
                 </CardContent>
               </Card>
             </TabsContent>
+            
+            <TabsContent value="specifications" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Hardware & OS Specifications</CardTitle>
+                  <CardDescription>Detailed technical specifications for this asset.</CardDescription>
+                </CardHeader>
+                <CardContent className="divide-y divide-border pt-4">
+                  <DetailRow label="CPU Model" value={asset.cpu.model} />
+                  <DetailRow label="Total Memory (RAM)" value={`${asset.ram.total} GB`} />
+                  <DetailRow label="Total Disk Space" value={`${asset.disk.total} GB`} />
+                  <DetailRow label="Operating System" value={asset.os} />
+                  <DetailRow label="Motherboard" value={asset.specifications?.motherboard} />
+                  <DetailRow label="Graphics Card (GPU)" value={asset.specifications?.gpu} />
+                  <DetailRow label="BIOS Version" value={asset.specifications?.biosVersion} />
+                  <DetailRow label="Serial Number" value={asset.specifications?.serialNumber} />
+                  <DetailRow label="IP Address" value={asset.ipAddress} />
+                  <DetailRow label="MAC Address" value={asset.macAddress} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
           </Tabs>
         </div>
       </div>

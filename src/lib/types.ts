@@ -52,6 +52,12 @@ export type Asset = {
   notes?: string;
   activityLogs: { timestamp: string; activity: string }[];
   associatedTickets: string[]; // Array of ticket IDs
+  specifications?: {
+    motherboard?: string;
+    gpu?: string;
+    biosVersion?: string;
+    serialNumber?: string;
+  };
 };
 
 export type KnowledgeBaseArticle = {

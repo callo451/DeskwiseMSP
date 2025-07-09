@@ -77,3 +77,9 @@ export type DashboardStat = {
   changeType: 'increase' | 'decrease';
   description: string;
 }
+
+export type AssetHealthAnalysis = {
+  overallStatus: 'Healthy' | 'Needs Attention' | 'Critical';
+  analysis: string[];
+  recommendations: string[];
+};

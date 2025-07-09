@@ -40,6 +40,12 @@ import {
   ShieldCheck,
   ShieldAlert,
 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import Link from 'next/link';
 
 const StatCard = ({ stat }: { stat: DashboardStat }) => {
@@ -118,10 +124,19 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
         </Badge>
       </TableCell>
       <TableCell className="hidden lg:table-cell">
-        <div className={`flex items-center gap-1.5 ${asset.isSecure ? 'text-green-600' : 'text-amber-600'}`}>
-            {asset.isSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
-            <span className="hidden xl:inline">{asset.isSecure ? 'Secured' : 'At Risk'}</span>
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <div className={`flex items-center gap-1.5 ${asset.isSecure ? 'text-green-600' : 'text-amber-600'}`}>
+                  {asset.isSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+                  <span className="hidden xl:inline">{asset.isSecure ? 'Secured' : 'At Risk'}</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{asset.isSecure ? 'Antivirus is active and up-to-date.' : 'Security software not detected or out-of-date.'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TableCell>
       <TableCell className="hidden md:table-cell">{asset.lastSeen}</TableCell>
       <TableCell>

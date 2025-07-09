@@ -10,3 +10,5 @@ import '@/ai/flows/suggested-reply.ts';
 import '@/ai/flows/proactive-kb-search.ts';
 import '@/ai/flows/client-insights.ts';
 import '@/ai/flows/knowledge-base-article-generation.ts';
+import '@/ai/flows/portal-chat.ts';
+import '@/ai/flows/text-to-speech.ts';

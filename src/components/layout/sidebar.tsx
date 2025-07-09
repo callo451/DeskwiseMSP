@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -7,6 +8,9 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -19,18 +23,31 @@ import {
   Settings,
   Gem,
   LogOut,
+  ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '../ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ticketQueues } from '@/lib/placeholder-data';
+import { cn } from '@/lib/utils';
+import React from 'react';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/contacts', label: 'Contacts', icon: Contact },
-  { href: '/tickets', label: 'Tickets', icon: Ticket },
+  { 
+    href: '/tickets', 
+    label: 'Tickets', 
+    icon: Ticket,
+    subItems: ticketQueues.map(q => ({
+      label: q,
+      href: `/tickets?queue=${encodeURIComponent(q)}`
+    }))
+  },
   { href: '/assets', label: 'Assets', icon: HardDrive },
   { href: '/billing', label: 'Billing', icon: CreditCard },
   { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
@@ -39,8 +56,16 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const isActive = (href: string) => {
+    const queueParam = searchParams.get('queue');
+    if (href === '/tickets') {
+      return pathname.startsWith(href) && !queueParam;
+    }
+    if (href.startsWith('/tickets?queue=')) {
+        return pathname.startsWith('/tickets') && queueParam === href.split('=')[1];
+    }
     if (href === '/dashboard') {
       return pathname === href;
     }
@@ -58,20 +83,47 @@ export function AppSidebar() {
       
       <div className="flex-1 overflow-y-auto">
         <SidebarMenu className="px-4">
-          {menuItems.map(item => (
-            <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive(item.href)}
-                className="justify-start"
-              >
-                <Link href={item.href}>
-                  <item.icon className="h-5 w-5 mr-3" />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {menuItems.map(item =>
+            item.subItems ? (
+              <Collapsible key={item.label} defaultOpen={pathname.startsWith('/tickets')} className="space-y-1">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <div className={cn("flex w-full items-center rounded-md p-2", isActive('/tickets') && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
+                      <Link href={item.href} className="flex-1 flex items-center gap-2 text-sm">
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                      <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                    </div>
+                  </CollapsibleTrigger>
+                </SidebarMenuItem>
+                <CollapsibleContent>
+                    <SidebarMenuSub>
+                        {item.subItems.map(subItem => (
+                            <SidebarMenuSubItem key={subItem.label}>
+                                <SidebarMenuSubButton asChild isActive={isActive(subItem.href)}>
+                                    <Link href={subItem.href}>{subItem.label}</Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                        ))}
+                    </SidebarMenuSub>
+                </CollapsibleContent>
+              </Collapsible>
+            ) : (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive(item.href)}
+                  className="justify-start"
+                >
+                  <Link href={item.href}>
+                    <item.icon className="h-5 w-5 mr-3" />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          )}
         </SidebarMenu>
       </div>
 

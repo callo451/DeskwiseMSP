@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { tickets, ticketPageStats } from '@/lib/placeholder-data';
+import { tickets, ticketPageStats, ticketQueues } from '@/lib/placeholder-data';
 import type { Ticket, DashboardStat } from '@/lib/types';
 import {
   File,
@@ -83,10 +84,11 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => {
         <Link href={`/tickets/${ticket.id}`} className="font-medium hover:underline">
             {ticket.subject}
         </Link>
-        <div className="hidden text-sm text-muted-foreground md:inline">
-          {ticket.client}
+        <div className="hidden text-sm text-muted-foreground md:inline ml-2">
+          - {ticket.client}
         </div>
       </TableCell>
+      <TableCell className="hidden sm:table-cell">{ticket.queue}</TableCell>
       <TableCell className="hidden sm:table-cell">{ticket.assignee}</TableCell>
       <TableCell className="hidden sm:table-cell">
         <Badge variant={getPriorityVariant(ticket.priority)} className="capitalize">
@@ -164,11 +166,21 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
 };
 
 export default function TicketsPage() {
+  const searchParams = useSearchParams();
   const ticketStatuses = ['Open', 'In Progress', 'On Hold', 'Resolved', 'Closed'];
   const ticketPriorities = ['Low', 'Medium', 'High', 'Critical'];
+  const queues = ticketQueues;
 
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [priorityFilters, setPriorityFilters] = useState<string[]>([]);
+  const [queueFilters, setQueueFilters] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const queueParam = searchParams.get('queue');
+    if (queueParam) {
+      setQueueFilters([queueParam]);
+    }
+  }, [searchParams]);
 
   const handleStatusFilterChange = (status: string, checked: boolean) => {
     setStatusFilters(prev =>
@@ -182,16 +194,24 @@ export default function TicketsPage() {
     );
   };
 
+  const handleQueueFilterChange = (queue: string, checked: boolean) => {
+    setQueueFilters(prev =>
+      checked ? [...prev, queue] : prev.filter(q => q !== queue)
+    );
+  };
+
   const clearFilters = () => {
     setStatusFilters([]);
     setPriorityFilters([]);
+    setQueueFilters([]);
   };
 
   const filteredTickets = tickets.filter(ticket => {
     const statusMatch = statusFilters.length === 0 || statusFilters.includes(ticket.status);
     const priorityMatch =
       priorityFilters.length === 0 || priorityFilters.includes(ticket.priority);
-    return statusMatch && priorityMatch;
+    const queueMatch = queueFilters.length === 0 || queueFilters.includes(ticket.queue);
+    return statusMatch && priorityMatch && queueMatch;
   });
 
   return (
@@ -221,6 +241,20 @@ export default function TicketsPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Filter by Queue</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {queues.map(queue => (
+                    <DropdownMenuCheckboxItem
+                      key={queue}
+                      checked={queueFilters.includes(queue)}
+                      onCheckedChange={checked =>
+                        handleQueueFilterChange(queue, !!checked)
+                      }
+                    >
+                      {queue}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  <DropdownMenuSeparator />
                   <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {ticketStatuses.map(status => (
@@ -275,6 +309,7 @@ export default function TicketsPage() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Subject / Client</TableHead>
+                <TableHead className="hidden sm:table-cell">Queue</TableHead>
                 <TableHead className="hidden sm:table-cell">Assignee</TableHead>
                 <TableHead className="hidden sm:table-cell">Priority</TableHead>
                 <TableHead className="hidden md:table-cell">Status</TableHead>

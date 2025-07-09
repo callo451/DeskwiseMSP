@@ -32,6 +32,8 @@ export type TimeLog = {
   isBillable: boolean;
 };
 
+export type TicketQueue = 'Tier 1 Support' | 'Network Ops' | 'Billing' | 'Unassigned';
+
 export type Ticket = {
   id: string;
   subject: string;
@@ -42,6 +44,7 @@ export type Ticket = {
   status: 'Open' | 'In Progress' | 'On Hold' | 'Resolved' | 'Closed';
   createdDate: string;
   lastUpdate: string;
+  queue: TicketQueue;
   activity: {
     timestamp: string;
     user: string;

@@ -1,8 +1,10 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
+
+export const ticketQueues: TicketQueue[] = ['Tier 1 Support', 'Network Ops', 'Billing', 'Unassigned'];
 
 export const dashboardStats: DashboardStat[] = [
   {
@@ -112,6 +114,7 @@ export const tickets: Ticket[] = [
     status: 'Open', 
     createdDate: '2024-05-20', 
     lastUpdate: '10m ago',
+    queue: 'Tier 1 Support',
     activity: [
       { timestamp: '10 mins ago', user: 'Jane Doe', activity: 'Ticket created via email: "Help! The main server is down, no one can log in!"' },
       { timestamp: '8 mins ago', user: 'System', activity: 'Ticket automatically assigned to Alice based on routing rules.' },
@@ -133,6 +136,7 @@ export const tickets: Ticket[] = [
     status: 'In Progress', 
     createdDate: '2024-05-19', 
     lastUpdate: '2h ago',
+    queue: 'Billing',
     activity: [
        { timestamp: '3 hours ago', user: 'John Smith', activity: 'Ticket created.' },
        { timestamp: '2 hours ago', user: 'Bob', activity: 'I have checked the file permissions and they seem correct. I will check the user group policies now.' },
@@ -157,6 +161,7 @@ export const tickets: Ticket[] = [
     status: 'On Hold', 
     createdDate: '2024-05-18', 
     lastUpdate: '1d ago',
+    queue: 'Tier 1 Support',
     activity: [
         { timestamp: '1 day ago', user: 'Dr. Emily White', activity: 'Ticket created.' },
         { timestamp: '22 hours ago', user: 'Charlie', activity: 'Status changed to On Hold. Waiting for HR to confirm the new user\'s start date.' },
@@ -177,6 +182,7 @@ export const tickets: Ticket[] = [
     status: 'Open', 
     createdDate: '2024-05-20', 
     lastUpdate: '1h ago',
+    queue: 'Unassigned',
     activity: [
         { timestamp: '1 hour ago', user: 'Sarah Green', activity: 'Ticket created.' },
     ],
@@ -196,6 +202,7 @@ export const tickets: Ticket[] = [
     status: 'Resolved', 
     createdDate: '2024-05-15', 
     lastUpdate: '3d ago',
+    queue: 'Billing',
     activity: [
         { timestamp: '5 days ago', user: 'Jane Doe', activity: 'Ticket created.' },
         { timestamp: '3 days ago', user: 'Alice', activity: 'Licenses renewed and applied to all users. Marked as resolved.' },
@@ -218,6 +225,7 @@ export const tickets: Ticket[] = [
     status: 'Closed', 
     createdDate: '2024-05-17', 
     lastUpdate: '2d ago',
+    queue: 'Network Ops',
     activity: [
         { timestamp: '3 days ago', user: 'John Smith', activity: 'Ticket created.' },
         { timestamp: '2 days ago', user: 'Bob', activity: 'Identified a configuration issue on the firewall. The issue has been resolved and monitoring shows stable connections. Closing ticket.' },

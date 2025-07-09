@@ -182,7 +182,7 @@ export default function EditScriptPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>AI Script Generator</CardTitle>
+                  <CardTitle className="text-primary">Generate</CardTitle>
                   <CardDescription>Describe a script to generate and replace the existing code.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

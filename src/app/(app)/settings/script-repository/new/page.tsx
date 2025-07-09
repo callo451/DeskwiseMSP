@@ -143,7 +143,7 @@ export default function NewScriptPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>AI Script Generator</CardTitle>
+                  <CardTitle className="text-primary">Generate</CardTitle>
                   <CardDescription>Describe the script you want to create.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

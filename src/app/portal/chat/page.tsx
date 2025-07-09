@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Send, Sparkles, User, Bot, Phone, HelpCircle, Volume2, MoreHorizontal, PhoneOff } from 'lucide-react';
+import { Send, Sparkles, User, Bot, Phone, HelpCircle, Volume2, MoreHorizontal, PhoneOff, Mic, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { portalChat } from '@/ai/flows/portal-chat';
-import { textToSpeech } from '@/ai/flows/text-to-speech';
+import { voiceCall } from '@/ai/flows/voice-call';
 import ReactMarkdown from 'react-markdown';
 
 
@@ -32,103 +32,93 @@ function VoiceCallDialog({ open, onOpenChange }: { open: boolean, onOpenChange: 
   const { toast } = useToast();
   const [status, setStatus] = useState<CallStatus>('idle');
   const [callDuration, setCallDuration] = useState(0);
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isMounted = useRef(true);
 
-  // Effect for the call timer
+  // Initialize SpeechRecognition and audio player logic once
   useEffect(() => {
-    if (open) {
-      isMounted.current = true;
-      setStatus('listening'); // Start listening immediately
-      timerRef.current = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-    } else {
-      isMounted.current = false;
-      if (timerRef.current) clearInterval(timerRef.current);
-      setCallDuration(0);
-      setStatus('idle');
-      recognitionRef.current?.stop();
-    }
-    return () => {
-      isMounted.current = false;
-      if (timerRef.current) clearInterval(timerRef.current);
-      recognitionRef.current?.abort();
-    };
-  }, [open]);
+    isMounted.current = true;
+    if (!SpeechRecognition) return;
 
-  // Effect for the main conversational loop
-  useEffect(() => {
-    if (!open) return;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    recognitionRef.current = recognition;
 
-    if (!SpeechRecognition) {
-      toast({ variant: 'destructive', title: "Voice input not supported in this browser." });
-      return;
-    }
-
-    if (!recognitionRef.current) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-      recognitionRef.current = recognition;
-
-      recognition.onresult = async (event) => {
+    recognition.onresult = async (event) => {
+      if (!isMounted.current || status !== 'listening') return;
+      const transcript = event.results[0][0].transcript;
+      setStatus('connecting');
+      try {
+        const aiResponse = await voiceCall({ query: transcript, clientId: 'CLI-001' });
         if (!isMounted.current) return;
-        const transcript = event.results[0][0].transcript;
-        setStatus('connecting');
-        try {
-          const chatResponse = await portalChat({ query: transcript, clientId: 'CLI-001' });
-          if (!isMounted.current) return;
+        if (aiResponse.audioDataUri && audioRef.current) {
           setStatus('speaking');
-          const ttsResponse = await textToSpeech({ text: chatResponse.response });
-          if (audioRef.current && ttsResponse.audioDataUri) {
-            audioRef.current.src = ttsResponse.audioDataUri;
-            await audioRef.current.play();
-          } else {
-            if (isMounted.current) setStatus('listening');
-          }
-        } catch (error) {
-          console.error('Voice call error:', error);
-          toast({ variant: 'destructive', title: 'AI Error', description: 'Could not get a response.' });
-          if (isMounted.current) setStatus('listening');
+          audioRef.current.src = aiResponse.audioDataUri;
+          await audioRef.current.play();
+        } else {
+          setStatus('listening');
         }
-      };
-      
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
+      } catch (error) {
+        console.error('Voice call error:', error);
+        toast({ variant: 'destructive', title: 'AI Error', description: 'Could not get a response.' });
+        if (isMounted.current) setStatus('listening');
+      }
+    };
+    
+    recognition.onerror = (event) => {
+      if (isMounted.current && status === 'listening') {
         if (event.error !== 'no-speech' && event.error !== 'aborted') {
+          console.error('Speech recognition error:', event.error);
           toast({ variant: 'destructive', title: 'Voice Error', description: `An error occurred: ${event.error}` });
         }
-        if (isMounted.current) setStatus('listening');
-      };
-      
-      // When user stops talking, recognition will automatically finalize.
-      recognition.onspeechend = () => {
-         if (isMounted.current && status === 'listening') {
-            recognitionRef.current?.stop();
-         }
-      };
-    }
+        setStatus('listening');
+      }
+    };
 
     if (audioRef.current) {
       audioRef.current.onended = () => {
         if (isMounted.current) setStatus('listening');
       };
     }
+    
+    return () => { isMounted.current = false; };
+  }, [status, toast]);
 
-    if (status === 'listening') {
+  // Main lifecycle effect for the call state
+  useEffect(() => {
+    if (open) {
+      setStatus('listening');
+      timerRef.current = setInterval(() => setCallDuration(prev => prev + 1), 1000);
+    } else {
+      setStatus('idle');
+      if (timerRef.current) clearInterval(timerRef.current);
+      setCallDuration(0);
+      recognitionRef.current?.abort();
+      if (audioRef.current) audioRef.current.pause();
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      recognitionRef.current?.abort();
+    };
+  }, [open]);
+
+  // Effect to control the recognition start/stop based on status
+  useEffect(() => {
+    if (status === 'listening' && recognitionRef.current?.start) {
       try {
-        recognitionRef.current?.start();
+        recognitionRef.current.start();
       } catch (e) {
         // Ignore errors from trying to start recognition when it's already active.
       }
-    } else {
-      recognitionRef.current?.stop();
+    } else if (status !== 'listening' && recognitionRef.current?.stop) {
+      recognitionRef.current.stop();
     }
-  }, [open, toast, status]);
+  }, [status]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -138,12 +128,28 @@ function VoiceCallDialog({ open, onOpenChange }: { open: boolean, onOpenChange: 
 
   const getStatusIndicator = () => {
     let color = 'bg-gray-500';
+    let text = 'Idle';
     switch (status) {
-      case 'listening': color = 'bg-green-500 animate-pulse'; break;
-      case 'connecting': color = 'bg-yellow-500 animate-pulse'; break;
-      case 'speaking': color = 'bg-blue-500'; break;
+      case 'listening': color = 'bg-green-500 animate-pulse'; text = 'Listening...'; break;
+      case 'connecting': color = 'bg-yellow-500 animate-pulse'; text = 'Thinking...'; break;
+      case 'speaking': color = 'bg-blue-500'; text = "Bernardo is speaking..."; break;
     }
-    return <div className={cn('absolute top-0 right-0 h-4 w-4 rounded-full border-2 border-zinc-800', color)} />;
+    return (
+      <div className="flex flex-col items-center gap-2">
+          <div className={cn('relative h-24 w-24')}>
+            <Avatar className="h-24 w-24">
+              <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Bernardo" data-ai-hint="man cartoon" />
+              <AvatarFallback>B</AvatarFallback>
+            </Avatar>
+            <div className={cn('absolute top-0 right-0 h-4 w-4 rounded-full border-2 border-zinc-800', color)} />
+          </div>
+           <div className="text-center">
+            <p className="text-zinc-400">On call with</p>
+            <p className="text-2xl font-bold">Bernardo</p>
+            <p className="text-sm text-zinc-300 min-h-[20px]">{text}</p>
+          </div>
+      </div>
+    );
   };
 
   return (
@@ -157,26 +163,16 @@ function VoiceCallDialog({ open, onOpenChange }: { open: boolean, onOpenChange: 
         </DialogHeader>
 
         <div className="flex flex-col items-center justify-center p-8 gap-4">
-          <div className="relative">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Bernardo" data-ai-hint="man cartoon" />
-              <AvatarFallback>B</AvatarFallback>
-            </Avatar>
-            {getStatusIndicator()}
-          </div>
-          <div className="text-center">
-            <p className="text-zinc-400">On call with</p>
-            <p className="text-2xl font-bold">Bernardo</p>
-          </div>
+          {getStatusIndicator()}
           <p className="text-5xl font-mono font-light tracking-wider">{formatTime(callDuration)}</p>
         </div>
 
         <DialogFooter className="bg-zinc-900/50 p-4 flex-row justify-center gap-4">
           <Button variant="secondary" size="icon" className="h-14 w-14 rounded-full bg-zinc-700 hover:bg-zinc-600">
-            <Volume2 className="h-6 w-6" />
+            <Settings className="h-6 w-6" />
           </Button>
           <Button variant="secondary" size="icon" className="h-14 w-14 rounded-full bg-zinc-700 hover:bg-zinc-600">
-            <MoreHorizontal className="h-6 w-6" />
+            <Mic className="h-6 w-6" />
           </Button>
           <Button variant="destructive" size="icon" className="h-14 w-14 rounded-full" onClick={() => onOpenChange(false)}>
             <PhoneOff className="h-6 w-6" />
@@ -249,7 +245,7 @@ export default function ClientChatPage() {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
             <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary h-5 w-5" /> AI Assistant</CardTitle>
-            <CardDescription>Chat with Gemini about your tickets, assets, and more.</CardDescription>
+            <CardDescription>Chat with Bernardo about your tickets, assets, and more.</CardDescription>
         </div>
         <Button variant="outline" onClick={() => setIsVoiceCallOpen(true)}>
             <Phone className="mr-2 h-4 w-4" /> Voice Call
@@ -269,7 +265,8 @@ export default function ClientChatPage() {
                         <div key={message.id} className={cn('flex items-start gap-4', message.role === 'user' && 'justify-end')}>
                             {message.role === 'assistant' && (
                                 <Avatar className="h-9 w-9 border">
-                                    <AvatarFallback><Sparkles className="h-5 w-5" /></AvatarFallback>
+                                   <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Bernardo" data-ai-hint="man cartoon" />
+                                   <AvatarFallback>B</AvatarFallback>
                                 </Avatar>
                             )}
                             <div className={cn('max-w-md rounded-2xl px-4 py-3 text-sm',
@@ -289,7 +286,10 @@ export default function ClientChatPage() {
                 )}
                 {isLoading && (
                     <div className="flex items-start gap-4">
-                       <Avatar className="h-9 w-9 border"><AvatarFallback><Sparkles className="h-5 w-5" /></AvatarFallback></Avatar>
+                       <Avatar className="h-9 w-9 border">
+                         <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Bernardo" data-ai-hint="man cartoon" />
+                         <AvatarFallback>B</AvatarFallback>
+                       </Avatar>
                        <div className="bg-secondary rounded-2xl rounded-bl-none px-4 py-3">
                          <div className="flex items-center gap-2 text-muted-foreground">
                            <div className="h-2 w-2 bg-primary rounded-full animate-pulse [animation-delay:-0.3s]"></div>

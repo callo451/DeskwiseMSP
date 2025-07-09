@@ -37,6 +37,55 @@ export const dashboardStats: DashboardStat[] = [
   }
 ];
 
+export const personalDashboardStats: DashboardStat[] = [
+  {
+    title: "My Open Tickets",
+    value: "1",
+    change: "+1",
+    changeType: "increase",
+    description: "since yesterday"
+  },
+  {
+    title: "My Overdue Tickets",
+    value: "0",
+    change: "-1",
+    changeType: "decrease",
+    description: "since yesterday"
+  },
+  {
+    title: "My CSAT Score",
+    value: "92%",
+    change: "-1%",
+    changeType: "decrease",
+    description: "this month"
+  },
+  {
+    title: "My Logged Hours (Week)",
+    value: "32h",
+    change: "+4h",
+    changeType: "increase",
+    description: "from last week"
+  }
+];
+
+export const myRecentActivity = [
+    { id: 1, type: 'note', ticketId: 'TKT-001', description: 'Added a note to TKT-001: "Checked server logs..."', timestamp: '15m ago' },
+    { id: 2, type: 'status', ticketId: 'TKT-005', description: 'Changed status of TKT-005 to Resolved.', timestamp: '3h ago' },
+    { id: 3, type: 'timelog', ticketId: 'TKT-002', description: 'Logged 1.5 hours on TKT-002.', timestamp: '5h ago' },
+    { id: 4, type: 'assign', ticketId: 'TKT-004', description: 'Assigned TKT-004 to Bob.', timestamp: '1d ago' },
+    { id: 5, type: 'reply', ticketId: 'TKT-001', description: 'Replied to client on TKT-001.', timestamp: '1d ago' },
+];
+
+export const myWeeklyTimeLogs = [
+  { day: 'Mon', billable: 6, nonBillable: 1 },
+  { day: 'Tue', billable: 5, nonBillable: 2 },
+  { day: 'Wed', billable: 7, nonBillable: 1 },
+  { day: 'Thu', billable: 4, nonBillable: 3 },
+  { day: 'Fri', billable: 6, nonBillable: 1.5 },
+  { day: 'Sat', billable: 0, nonBillable: 0 },
+  { day: 'Sun', billable: 0, nonBillable: 0 },
+];
+
 export const clients: Client[] = [
   { 
     id: 'CLI-001', 

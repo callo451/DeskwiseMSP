@@ -74,9 +74,15 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => {
 
   return (
     <TableRow>
-      <TableCell className="font-medium">{ticket.id}</TableCell>
       <TableCell>
-        <div className="font-medium">{ticket.subject}</div>
+        <Link href={`/tickets/${ticket.id}`} className="font-medium text-primary hover:underline">
+            {ticket.id}
+        </Link>
+      </TableCell>
+      <TableCell>
+        <Link href={`/tickets/${ticket.id}`} className="font-medium hover:underline">
+            {ticket.subject}
+        </Link>
         <div className="hidden text-sm text-muted-foreground md:inline">
           {ticket.client}
         </div>
@@ -114,7 +120,9 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>View Details</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/tickets/${ticket.id}`}>View Details</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>Assign</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>

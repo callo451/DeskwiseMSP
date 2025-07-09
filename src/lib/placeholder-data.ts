@@ -1,3 +1,4 @@
+
 import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script } from './types';
 
 export const dashboardStats: DashboardStat[] = [
@@ -48,12 +49,100 @@ export const contacts: Contact[] = [
 ];
 
 export const tickets: Ticket[] = [
-  { id: 'TKT-001', subject: 'Server is down', client: 'TechCorp', assignee: 'Alice', priority: 'Critical', status: 'Open', createdDate: '2024-05-20', lastUpdate: '10m ago' },
-  { id: 'TKT-002', subject: 'Cannot access financial reports', client: 'GlobalInnovate', assignee: 'Bob', priority: 'High', status: 'In Progress', createdDate: '2024-05-19', lastUpdate: '2h ago' },
-  { id: 'TKT-003', subject: 'New user setup for Dr. Adams', client: 'HealthWell', assignee: 'Charlie', priority: 'Medium', status: 'On Hold', createdDate: '2024-05-18', lastUpdate: '1d ago' },
-  { id: 'TKT-004', subject: 'Printer not working in main office', client: 'RetailRight', assignee: 'Unassigned', priority: 'Low', status: 'Open', createdDate: '2024-05-20', lastUpdate: '1h ago' },
-  { id: 'TKT-005', subject: 'Software license renewal', client: 'TechCorp', assignee: 'Alice', priority: 'Medium', status: 'Resolved', createdDate: '2024-05-15', lastUpdate: '3d ago' },
-  { id: 'TKT-006', subject: 'VPN connection issues', client: 'GlobalInnovate', assignee: 'Bob', priority: 'High', status: 'Closed', createdDate: '2024-05-17', lastUpdate: '2d ago' }
+  { 
+    id: 'TKT-001',
+    subject: 'Server is down',
+    description: 'The primary domain controller (DC-SRV-01) is unresponsive. Cannot RDP or ping the server. This is affecting all users trying to log in. Please investigate immediately.',
+    client: 'TechCorp', 
+    assignee: 'Alice', 
+    priority: 'Critical', 
+    status: 'Open', 
+    createdDate: '2024-05-20', 
+    lastUpdate: '10m ago',
+    activity: [
+      { timestamp: '10 mins ago', user: 'Jane Doe', activity: 'Ticket created via email: "Help! The main server is down, no one can log in!"' },
+      { timestamp: '8 mins ago', user: 'System', activity: 'Ticket automatically assigned to Alice based on routing rules.' },
+    ],
+    associatedAssets: ['AST-001', 'AST-005'],
+  },
+  { 
+    id: 'TKT-002', 
+    subject: 'Cannot access financial reports',
+    description: 'When I try to open the quarterly financial reports from the network drive, I get an "Access Denied" error. I was able to access them yesterday. My workstation is FIN-WS-05.',
+    client: 'GlobalInnovate', 
+    assignee: 'Bob', 
+    priority: 'High', 
+    status: 'In Progress', 
+    createdDate: '2024-05-19', 
+    lastUpdate: '2h ago',
+    activity: [
+       { timestamp: '3 hours ago', user: 'John Smith', activity: 'Ticket created.' },
+       { timestamp: '2 hours ago', user: 'Bob', activity: 'I have checked the file permissions and they seem correct. I will check the user group policies now.' },
+    ],
+    associatedAssets: ['AST-002'],
+  },
+  { 
+    id: 'TKT-003', 
+    subject: 'New user setup for Dr. Adams', 
+    description: 'We have a new physician, Dr. Adams, starting next Monday. Please set up a new user account with standard physician access, an email address, and access to the EMR system.',
+    client: 'HealthWell', 
+    assignee: 'Charlie', 
+    priority: 'Medium', 
+    status: 'On Hold', 
+    createdDate: '2024-05-18', 
+    lastUpdate: '1d ago',
+    activity: [
+        { timestamp: '1 day ago', user: 'Dr. Emily White', activity: 'Ticket created.' },
+        { timestamp: '22 hours ago', user: 'Charlie', activity: 'Status changed to On Hold. Waiting for HR to confirm the new user\'s start date.' },
+    ]
+  },
+  { 
+    id: 'TKT-004', 
+    subject: 'Printer not working in main office', 
+    description: 'The main office printer (RR-PRINTER-01) is not printing. It says "Low Toner" on the screen, but we just replaced the cartridge. Multiple users have reported the issue.',
+    client: 'RetailRight', 
+    assignee: 'Unassigned', 
+    priority: 'Low', 
+    status: 'Open', 
+    createdDate: '2024-05-20', 
+    lastUpdate: '1h ago',
+    activity: [
+        { timestamp: '1 hour ago', user: 'Sarah Green', activity: 'Ticket created.' },
+    ],
+    associatedAssets: ['AST-004'],
+  },
+  { 
+    id: 'TKT-005', 
+    subject: 'Software license renewal', 
+    description: 'Requesting renewal for our Adobe Creative Cloud licenses. The current licenses expire at the end of the month.',
+    client: 'TechCorp', 
+    assignee: 'Alice', 
+    priority: 'Medium', 
+    status: 'Resolved', 
+    createdDate: '2024-05-15', 
+    lastUpdate: '3d ago',
+    activity: [
+        { timestamp: '5 days ago', user: 'Jane Doe', activity: 'Ticket created.' },
+        { timestamp: '3 days ago', user: 'Alice', activity: 'Licenses renewed and applied to all users. Marked as resolved.' },
+    ],
+    associatedAssets: ['AST-001'],
+  },
+  { 
+    id: 'TKT-006', 
+    subject: 'VPN connection issues', 
+    description: 'Users are reporting intermittent disconnections from the corporate VPN. The issue seems to have started this morning.',
+    client: 'GlobalInnovate', 
+    assignee: 'Bob', 
+    priority: 'High', 
+    status: 'Closed', 
+    createdDate: '2024-05-17', 
+    lastUpdate: '2d ago',
+    activity: [
+        { timestamp: '3 days ago', user: 'John Smith', activity: 'Ticket created.' },
+        { timestamp: '2 days ago', user: 'Bob', activity: 'Identified a configuration issue on the firewall. The issue has been resolved and monitoring shows stable connections. Closing ticket.' },
+    ],
+    associatedAssets: ['AST-002'],
+  }
 ];
 
 export const assets: Asset[] = [

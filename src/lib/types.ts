@@ -1,3 +1,4 @@
+
 export type Client = {
   id: string;
   name: string;
@@ -19,12 +20,19 @@ export type Contact = {
 export type Ticket = {
   id: string;
   subject: string;
+  description: string;
   client: string;
   assignee: string;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   status: 'Open' | 'In Progress' | 'On Hold' | 'Resolved' | 'Closed';
   createdDate: string;
   lastUpdate: string;
+  activity: {
+    timestamp: string;
+    user: string;
+    activity: string;
+  }[];
+  associatedAssets?: string[];
 };
 
 export type Asset = {

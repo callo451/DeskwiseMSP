@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -30,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ChevronLeft, Sparkles, Bot } from 'lucide-react';
 import { generateKbArticle } from '@/ai/flows/knowledge-base-article-generation';
 import { knowledgeBaseArticles } from '@/lib/placeholder-data';
+import { MarkdownEditor } from '@/components/ui/markdown-editor';
 
 const articleSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -205,7 +205,7 @@ export default function NewKnowledgeBaseArticlePage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Content</CardTitle>
-                  <CardDescription>Write the article content using Markdown for formatting.</CardDescription>
+                  <CardDescription>Write the article content using the Markdown editor.</CardDescription>
                 </CardHeader>
                 <CardContent>
                    <FormField
@@ -214,10 +214,9 @@ export default function NewKnowledgeBaseArticlePage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Textarea
-                            placeholder="Your article content goes here..."
-                            className="min-h-[400px] font-mono text-sm resize-y"
-                            {...field}
+                          <MarkdownEditor
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         <FormMessage />

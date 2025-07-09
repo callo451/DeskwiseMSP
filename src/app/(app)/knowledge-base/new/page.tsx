@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ChevronLeft, Save } from 'lucide-react';
+import React from 'react';
 
 const articleSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -66,7 +67,7 @@ export default function NewKnowledgeBaseArticlePage() {
     router.push('/knowledge-base');
   };
 
-  return (
+  const pageContent = (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
@@ -178,4 +179,6 @@ export default function NewKnowledgeBaseArticlePage() {
       </Form>
     </div>
   );
+
+  return pageContent;
 }

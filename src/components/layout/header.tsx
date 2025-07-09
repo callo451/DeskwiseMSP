@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AIAssistant } from '../ai/ai-assistant';
 import React from 'react';
+import { ThemeToggle } from '../theme-toggle';
 
 function BreadcrumbResponsive() {
   const pathname = usePathname();
@@ -76,6 +77,7 @@ export function Header() {
           className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
         />
       </div>
+      <ThemeToggle />
       <AIAssistant />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

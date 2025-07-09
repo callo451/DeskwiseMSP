@@ -6,6 +6,12 @@ export type Client = {
   contacts: number;
   tickets: number;
   status: 'Active' | 'Inactive' | 'Onboarding';
+  mainContact: {
+    name: string;
+    email: string;
+  };
+  phone: string;
+  address: string;
 };
 
 export type Contact = {

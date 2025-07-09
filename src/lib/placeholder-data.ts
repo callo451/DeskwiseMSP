@@ -36,11 +36,61 @@ export const dashboardStats: DashboardStat[] = [
 ];
 
 export const clients: Client[] = [
-  { id: 'CLI-001', name: 'TechCorp', industry: 'Technology', contacts: 5, tickets: 12, status: 'Active' },
-  { id: 'CLI-002', name: 'GlobalInnovate', industry: 'Finance', contacts: 3, tickets: 8, status: 'Active' },
-  { id: 'CLI-003', name: 'HealthWell', industry: 'Healthcare', contacts: 8, tickets: 25, status: 'Onboarding' },
-  { id: 'CLI-004', name: 'EduSphere', industry: 'Education', contacts: 2, tickets: 4, status: 'Inactive' },
-  { id: 'CLI-005', name: 'RetailRight', industry: 'Retail', contacts: 10, tickets: 15, status: 'Active' },
+  { 
+    id: 'CLI-001', 
+    name: 'TechCorp', 
+    industry: 'Technology', 
+    contacts: 5, 
+    tickets: 12, 
+    status: 'Active',
+    mainContact: { name: 'Jane Doe', email: 'jane.doe@techcorp.com' },
+    phone: '123-456-7890',
+    address: '123 Tech Lane\nInnovation City, TX 75001'
+  },
+  { 
+    id: 'CLI-002', 
+    name: 'GlobalInnovate', 
+    industry: 'Finance', 
+    contacts: 3, 
+    tickets: 8, 
+    status: 'Active',
+    mainContact: { name: 'John Smith', email: 'john.smith@globalinnovate.com' },
+    phone: '234-567-8901',
+    address: '456 Finance Ave\nNew York, NY 10001'
+  },
+  { 
+    id: 'CLI-003', 
+    name: 'HealthWell', 
+    industry: 'Healthcare', 
+    contacts: 8, 
+    tickets: 25, 
+    status: 'Onboarding',
+    mainContact: { name: 'Dr. Emily White', email: 'emily.white@healthwell.org' },
+    phone: '345-678-9012',
+    address: '789 Wellness Way\nChicago, IL 60601'
+  },
+  { 
+    id: 'CLI-004', 
+    name: 'EduSphere', 
+    industry: 'Education', 
+    contacts: 2, 
+    tickets: 4, 
+    status: 'Inactive',
+    mainContact: { name: 'Michael Brown', email: 'mbrown@edusphere.edu' },
+    phone: '456-789-0123',
+    address: '101 University Dr\nBoston, MA 02101'
+  },
+  { 
+    id: 'CLI-005', 
+    name: 'RetailRight', 
+    industry: 'Retail', 
+    contacts: 10, 
+    tickets: 15, 
+    status: 'Active',
+    mainContact: { name: 'Sarah Green', email: 'sarah.g@retailright.com' },
+    phone: '567-890-1234',
+    address: '210 Market St\nSan Francisco, CA 94101'
+  },
 ];
 
 export const contacts: Contact[] = [
@@ -317,7 +367,7 @@ export const knowledgeBaseArticles: KnowledgeBaseArticle[] = [
   { id: 'KB-001', title: 'How to set up a new VPN connection', category: 'Networking', author: 'Alice', lastUpdated: '2024-04-10', type: 'Internal' },
   { id: 'KB-002', title: 'Resetting your password', category: 'User Guides', author: 'System', lastUpdated: '2024-03-01', type: 'Public' },
   { id: 'KB-003', title: 'Troubleshooting common printer issues', category: 'Hardware', author: 'Bob', lastUpdated: '2024-05-05', type: 'Public' },
-  { id: 'KB-004', title: 'Onboarding process for new clients', category: 'Standard Operating Procedures', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal' },
+  { id: 'KB-004', title: 'Onboarding process for new clients', category: 'SOPs', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal' },
 ];
 
 export const ticketPageStats: DashboardStat[] = [
@@ -381,6 +431,37 @@ export const assetPageStats: DashboardStat[] = [
     description: "since yesterday"
   }
 ];
+
+export const clientPageStats: DashboardStat[] = [
+    {
+      title: "Total Clients",
+      value: "5",
+      change: "+1",
+      changeType: "increase",
+      description: "since last quarter"
+    },
+    {
+      title: "Active Clients",
+      value: "4",
+      change: "",
+      changeType: "increase",
+      description: "vs last quarter"
+    },
+    {
+      title: "Clients with Open Tickets",
+      value: "3",
+      change: "-1",
+      changeType: "decrease",
+      description: "vs last week"
+    },
+    {
+      title: "Avg. Client Health",
+      value: "Good",
+      change: "",
+      changeType: "increase",
+      description: "based on AI analysis"
+    }
+  ];
 
 export const scripts: Script[] = [
   {

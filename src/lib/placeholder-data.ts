@@ -1,4 +1,4 @@
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script } from './types';
 
 export const dashboardStats: DashboardStat[] = [
   {
@@ -250,4 +250,58 @@ export const assetPageStats: DashboardStat[] = [
     changeType: "increase",
     description: "since yesterday"
   }
+];
+
+export const scripts: Script[] = [
+  {
+    id: 'SCR-001',
+    name: 'Clear DNS Cache',
+    description: 'A PowerShell script to flush the DNS resolver cache.',
+    language: 'PowerShell',
+    createdBy: 'John Doe',
+    lastModified: '2024-05-21',
+    code: 'ipconfig /flushdns',
+  },
+  {
+    id: 'SCR-002',
+    name: 'Check Disk Space',
+    description: 'A Bash script to report disk space usage.',
+    language: 'Bash',
+    createdBy: 'Jane Smith',
+    lastModified: '2024-05-20',
+    code: 'df -h',
+  },
+  {
+    id: 'SCR-003',
+    name: 'List Installed Apps',
+    description: 'A Python script to list all installed applications on a Windows machine.',
+    language: 'Python',
+    createdBy: 'John Doe',
+    lastModified: '2024-05-19',
+    code: `import winreg
+
+def get_installed_apps():
+    uninstall_key = r"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    apps = []
+    for hkey in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+        try:
+            with winreg.OpenKey(hkey, uninstall_key) as key:
+                for i in range(winreg.QueryInfoKey(key)[0]):
+                    sub_key_name = winreg.EnumKey(key, i)
+                    with winreg.OpenKey(key, sub_key_name) as sub_key:
+                        try:
+                            display_name = winreg.QueryValueEx(sub_key, "DisplayName")[0]
+                            apps.append(display_name)
+                        except OSError:
+                            pass
+        except OSError:
+            pass
+    return sorted(list(set(apps)))
+
+if __name__ == "__main__":
+    installed_apps = get_installed_apps()
+    for app in installed_apps:
+        print(app)
+`,
+  },
 ];

@@ -83,3 +83,13 @@ export type AssetHealthAnalysis = {
   analysis: string[];
   recommendations: string[];
 };
+
+export type Script = {
+  id: string;
+  name: string;
+  description: string;
+  language: 'PowerShell' | 'Bash' | 'Python';
+  createdBy: string;
+  lastModified: string;
+  code: string;
+};

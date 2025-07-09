@@ -13,6 +13,7 @@ import {
   Shield,
   Plug,
   ChevronRight,
+  FileCode,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -46,6 +47,12 @@ const settingsItems = [
     title: 'SLA Management',
     description: 'Define and manage Service Level Agreements.',
     href: '/settings/sla',
+  },
+  {
+    icon: FileCode,
+    title: 'Script Repository',
+    description: 'Manage and generate scripts for automation.',
+    href: '/settings/script-repository',
   },
   {
     icon: Plug,

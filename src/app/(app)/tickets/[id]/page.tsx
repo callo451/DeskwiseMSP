@@ -41,8 +41,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { analyzeTicket, type AnalyzeTicketOutput } from '@/ai/flows/ticket-insights';
+import { generateKnowledgeBaseArticle } from '@/ai/flows/knowledge-base-article-generation';
 import {
-  AlertTriangle,
+  BookText,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -58,8 +59,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
-import { Separator } from '@/components/ui/separator';
+import { useParams, useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const DetailRow = ({ label, value, icon: Icon }: { label: string; value?: React.ReactNode, icon?: React.ElementType }) => {
   if (!value) return null;
@@ -97,6 +98,9 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
 
 export default function TicketDetailsPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { toast } = useToast();
+  
   const ticket = tickets.find(t => t.id === params.id);
   const client = ticket ? clients.find(c => c.name === ticket.client) : undefined;
   const associatedAssets = ticket ? allAssets.filter(a => ticket.associatedAssets?.includes(a.id)) : [];
@@ -104,6 +108,7 @@ export default function TicketDetailsPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeTicketOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
+  const [isGeneratingArticle, setIsGeneratingArticle] = useState(false);
 
   if (!ticket) {
     return (
@@ -144,6 +149,48 @@ export default function TicketDetailsPage() {
       setIsAnalyzing(false);
     }
   };
+  
+  const handleCreateArticle = async () => {
+    if (!ticket) return;
+
+    setIsGeneratingArticle(true);
+    toast({
+      title: 'Generating Knowledge Base Article...',
+      description: 'Gemini is working on it. Please wait.',
+    });
+
+    try {
+        const resolutionActivity = ticket.activity.find(a => ticket.status === 'Resolved' || ticket.status === 'Closed' ? a.activity.toLowerCase().includes('resolve') || a.activity.toLowerCase().includes('close') : false)
+                                    ?.activity || 'No specific resolution comment found. The issue was resolved.';
+
+        const articlePrompt = `Ticket Subject: ${ticket.subject}\nTicket Description: ${ticket.description}\nTicket Resolution: ${resolutionActivity}`;
+        
+        const result = await generateKnowledgeBaseArticle({
+            prompt: articlePrompt,
+            useWebSearch: false,
+        });
+
+        toast({
+            title: 'Article Generated!',
+            description: 'Redirecting you to the new article page to review and save.',
+        });
+
+        const params = new URLSearchParams();
+        params.set('title', result.title);
+        params.set('content', result.content);
+        router.push(`/knowledge-base/new?${params.toString()}`);
+
+    } catch (error) {
+        console.error("AI Article Generation failed:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Generation Failed',
+            description: 'The AI failed to generate the article. Please try again.',
+        });
+    } finally {
+        setIsGeneratingArticle(false);
+    }
+  };
 
   const getStatusVariant = (status: Ticket['status']) => {
     switch (status) {
@@ -166,7 +213,6 @@ export default function TicketDetailsPage() {
   
   const getAvatarForUser = (userName: string) => {
       const initials = userName.split(' ').map(n => n[0]).join('');
-      // Simple logic to assign different avatars, can be expanded
       if (userName === 'Alice') return "https://placehold.co/40x40/F87171/FFFFFF.png";
       if (userName === 'Bob') return "https://placehold.co/40x40/60A5FA/FFFFFF.png";
       if (userName === 'Charlie') return "https://placehold.co/40x40/34D399/FFFFFF.png";
@@ -269,6 +315,35 @@ export default function TicketDetailsPage() {
                   )}
               </CardContent>
             </Card>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <BookText className="h-5 w-5" />
+                        Knowledge Base
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                        Link this ticket to an existing article or generate a new one from the resolution.
+                    </p>
+                    <div className="space-y-4">
+                        <Button 
+                            onClick={handleCreateArticle} 
+                            disabled={isGeneratingArticle}
+                            className="w-full"
+                        >
+                            {isGeneratingArticle ? 'Generating...' : (
+                                <>
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    Create Article from Ticket
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
           </div>
 
           <div className="lg:col-span-2 space-y-6">

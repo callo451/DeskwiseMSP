@@ -12,15 +12,15 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const KnowledgeBaseArticleInputSchema = z.object({
-  prompt: z.string().describe('The prompt for generating the knowledge base article.'),
-  webSearchResults: z.string().describe('Relevant web search results to incorporate into the article.'),
+  prompt: z.string().describe('The prompt for generating the knowledge base article, usually containing ticket details.'),
+  webSearchResults: z.string().optional().describe('Relevant web search results to incorporate into the article.'),
   useWebSearch: z.boolean().optional().describe('Whether or not to include web search results. Defaults to false.'),
 });
 export type KnowledgeBaseArticleInput = z.infer<typeof KnowledgeBaseArticleInputSchema>;
 
 const KnowledgeBaseArticleOutputSchema = z.object({
   title: z.string().describe('The title of the knowledge base article.'),
-  content: z.string().describe('The content of the knowledge base article.'),
+  content: z.string().describe('The content of the knowledge base article in Markdown format.'),
 });
 export type KnowledgeBaseArticleOutput = z.infer<typeof KnowledgeBaseArticleOutputSchema>;
 
@@ -34,18 +34,19 @@ const prompt = ai.definePrompt({
   name: 'knowledgeBaseArticlePrompt',
   input: {schema: KnowledgeBaseArticleInputSchema},
   output: {schema: KnowledgeBaseArticleOutputSchema},
-  prompt: `You are an expert knowledge base article writer.
+  prompt: `You are an expert technical writer who specializes in creating knowledge base articles from IT support tickets. Your goal is to transform the raw ticket information into a clean, well-structured, and easy-to-understand article for end-users or other technicians.
 
-  You will generate a knowledge base article based on the given prompt and web search results.
+Based on the provided ticket information, generate an article with a clear title and content.
 
-  Prompt: {{{prompt}}}
+The content should be in Markdown and follow this structure:
+1.  **Problem Summary:** A brief, one or two-sentence summary of the issue.
+2.  **Symptoms:** A bulleted list of symptoms the user was experiencing.
+3.  **Solution/Resolution:** A clear, step-by-step guide on how to resolve the issue.
 
-  {{#if useWebSearch}}
-  Web Search Results:
-  {{{webSearchResults}}}
-  {{/if}}
-  Please generate the knowledge base article with a title and content.
-  The title and content must be well formatted.
+Ticket Information:
+{{{prompt}}}
+
+Generate only the title and content for the knowledge base article.
   `,
 });
 

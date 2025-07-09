@@ -111,9 +111,17 @@ export default function ScriptRepositoryPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {scripts.map(script => (
-              <ScriptRow key={script.id} script={script} />
-            ))}
+            {scripts && scripts.length > 0 ? (
+              scripts.map(script => (
+                <ScriptRow key={script.id} script={script} />
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No scripts available.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>

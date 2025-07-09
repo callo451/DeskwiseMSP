@@ -54,8 +54,8 @@ export type Ticket = {
   associatedAssets?: string[];
   sla?: {
     responseDue: string;
-    resolutionDue: string;
     respondedAt?: string;
+    resolutionDue: string;
     resolvedAt?: string;
   };
   timeLogs?: TimeLog[];
@@ -137,4 +137,25 @@ export type CsatResponse = {
   score: 'Great' | 'Okay' | 'Not Good';
   comment: string;
   respondedAt: string;
+};
+
+export type TicketStatusSetting = {
+  id: string;
+  name: string;
+  color: string; // hex color
+  type: 'Open' | 'Closed';
+};
+
+export type TicketPrioritySetting = {
+  id: string;
+  name: 'Low' | 'Medium' | 'High' | 'Critical';
+  color: string; // hex color
+  responseSla: string; // e.g., '4 hours'
+  resolutionSla: string; // e.g., '24 hours'
+};
+
+export type TicketQueueSetting = {
+  id: string;
+  name: string;
+  ticketCount: number;
 };

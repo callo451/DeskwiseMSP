@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -623,4 +623,26 @@ export const recentCsatResponses: CsatResponse[] = [
   { id: 'CSAT-002', ticketId: 'TKT-006', client: 'GlobalInnovate', technician: 'Bob', score: 'Great', comment: 'Excellent service.', respondedAt: '1 day ago' },
   { id: 'CSAT-003', ticketId: 'TKT-008', client: 'HealthWell', technician: 'Charlie', score: 'Okay', comment: 'It took a bit longer than I expected, but the issue was fixed.', respondedAt: '2 days ago' },
   { id: 'CSAT-004', ticketId: 'TKT-009', client: 'RetailRight', technician: 'Alice', score: 'Not Good', comment: 'The first solution provided did not work and I had to follow up multiple times.', respondedAt: '2 days ago' },
+];
+
+export const ticketStatusSettings: TicketStatusSetting[] = [
+  { id: 'status-1', name: 'Open', color: '#3b82f6', type: 'Open' },
+  { id: 'status-2', name: 'In Progress', color: '#f97316', type: 'Open' },
+  { id: 'status-3', name: 'On Hold', color: '#a855f7', type: 'Open' },
+  { id: 'status-4', name: 'Resolved', color: '#22c55e', type: 'Closed' },
+  { id: 'status-5', name: 'Closed', color: '#6b7280', type: 'Closed' },
+];
+
+export const ticketPrioritySettings: TicketPrioritySetting[] = [
+  { id: 'priority-1', name: 'Low', color: '#6b7280', responseSla: '24 hours', resolutionSla: '5 days' },
+  { id: 'priority-2', name: 'Medium', color: '#3b82f6', responseSla: '8 hours', resolutionSla: '3 days' },
+  { id: 'priority-3', name: 'High', color: '#f97316', responseSla: '4 hours', resolutionSla: '24 hours' },
+  { id: 'priority-4', name: 'Critical', color: '#ef4444', responseSla: '1 hour', resolutionSla: '8 hours' },
+];
+
+export const ticketQueuesSettings: TicketQueueSetting[] = [
+  { id: 'queue-1', name: 'Tier 1 Support', ticketCount: 45 },
+  { id: 'queue-2', name: 'Network Ops', ticketCount: 12 },
+  { id: 'queue-3', name: 'Billing', ticketCount: 8 },
+  { id: 'queue-4', name: 'Unassigned', ticketCount: 5 },
 ];

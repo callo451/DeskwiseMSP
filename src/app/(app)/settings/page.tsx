@@ -19,6 +19,7 @@ import {
   FileCode,
   Globe,
   Smile,
+  Ticket,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -49,6 +50,13 @@ const settingsItems = [
     title: 'Custom Fields',
     description: 'Create and manage custom fields for modules.',
     href: '/settings/fields',
+    target: '_self',
+  },
+  {
+    icon: Ticket,
+    title: 'Ticket Management',
+    description: 'Manage queues, statuses, and priorities.',
+    href: '/settings/tickets',
     target: '_self',
   },
   {

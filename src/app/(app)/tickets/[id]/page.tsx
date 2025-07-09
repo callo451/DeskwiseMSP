@@ -272,67 +272,9 @@ export default function TicketDetailsPage() {
             </DropdownMenu>
           </div>
         </div>
-
-        <Tabs defaultValue="activity" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
-                <TabsTrigger value="activity">Activity & Notes</TabsTrigger>
-                <TabsTrigger value="details">Details</TabsTrigger>
-                <TabsTrigger value="assets">Associated Assets</TabsTrigger>
-                <TabsTrigger value="kb">Knowledge Base</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="activity" className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Full Description</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ticket.description}</p>
-                    </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Activity Feed</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {ticket.activity.map((item, index) => (
-                      <div key={index} className="flex gap-4">
-                         <Avatar>
-                            <AvatarImage src={getAvatarForUser(item.user)} alt={item.user} data-ai-hint="user avatar" />
-                            <AvatarFallback>{item.user.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center">
-                            <span className="font-semibold text-sm">{item.user}</span>
-                            <span className="text-xs text-muted-foreground">{item.timestamp}</span>
-                          </div>
-                          <div className="p-3 mt-1 rounded-md bg-secondary/50 text-sm text-foreground">
-                            <p className="whitespace-pre-wrap">{item.activity}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                  <CardFooter>
-                     <div className="w-full flex gap-4">
-                        <Avatar>
-                            <AvatarImage src="https://placehold.co/40x40.png" alt="Current User" data-ai-hint="user avatar"/>
-                            <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                        <div className="w-full space-y-2">
-                            <Textarea placeholder="Add a comment or internal note..." rows={3} />
-                            <div className="flex justify-end gap-2">
-                               <Button variant="outline">Add Internal Note</Button>
-                               <Button>Reply to Client</Button>
-                            </div>
-                        </div>
-                     </div>
-                  </CardFooter>
-                </Card>
-            </TabsContent>
-
-            <TabsContent value="details">
+        
+        <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-6">
                  <Card>
                     <CardHeader>
                         <CardTitle>Details</CardTitle>
@@ -345,9 +287,6 @@ export default function TicketDetailsPage() {
                         <DetailRow label="Created" value={ticket.createdDate} icon={Clock} />
                     </CardContent>
                 </Card>
-            </TabsContent>
-
-            <TabsContent value="assets">
                 <Card>
                   <CardHeader>
                     <CardTitle>Associated Assets</CardTitle>
@@ -376,38 +315,97 @@ export default function TicketDetailsPage() {
                       )}
                   </CardContent>
                 </Card>
-            </TabsContent>
+            </div>
+            <div className="lg:col-span-2">
+                <Tabs defaultValue="activity" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                        <TabsTrigger value="activity">Activity &amp; Notes</TabsTrigger>
+                        <TabsTrigger value="kb">Knowledge Base</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="activity" className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Full Description</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ticket.description}</p>
+                            </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Activity Feed</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-6">
+                            {ticket.activity.map((item, index) => (
+                              <div key={index} className="flex gap-4">
+                                 <Avatar>
+                                    <AvatarImage src={getAvatarForUser(item.user)} alt={item.user} data-ai-hint="user avatar" />
+                                    <AvatarFallback>{item.user.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-semibold text-sm">{item.user}</span>
+                                    <span className="text-xs text-muted-foreground">{item.timestamp}</span>
+                                  </div>
+                                  <div className="p-3 mt-1 rounded-md bg-secondary/50 text-sm text-foreground">
+                                    <p className="whitespace-pre-wrap">{item.activity}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </CardContent>
+                          <CardFooter>
+                             <div className="w-full flex gap-4">
+                                <Avatar>
+                                    <AvatarImage src="https://placehold.co/40x40.png" alt="Current User" data-ai-hint="user avatar"/>
+                                    <AvatarFallback>U</AvatarFallback>
+                                </Avatar>
+                                <div className="w-full space-y-2">
+                                    <Textarea placeholder="Add a comment or internal note..." rows={3} />
+                                    <div className="flex justify-end gap-2">
+                                       <Button variant="outline">Add Internal Note</Button>
+                                       <Button>Reply to Client</Button>
+                                    </div>
+                                </div>
+                             </div>
+                          </CardFooter>
+                        </Card>
+                    </TabsContent>
 
-            <TabsContent value="kb">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <BookText className="h-5 w-5" />
-                            Knowledge Base
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Link this ticket to an existing article or generate a new one from the resolution.
-                        </p>
-                        <div className="space-y-4">
-                            <Button 
-                                onClick={handleCreateArticle} 
-                                disabled={isGeneratingArticle}
-                                className="w-full"
-                            >
-                                {isGeneratingArticle ? 'Generating...' : (
-                                    <>
-                                        <Sparkles className="mr-2 h-4 w-4" />
-                                        Create Article from Ticket
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-        </Tabs>
+                    <TabsContent value="kb">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <BookText className="h-5 w-5" />
+                                    Knowledge Base
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    Link this ticket to an existing article or generate a new one from the resolution.
+                                </p>
+                                <div className="space-y-4">
+                                    <Button 
+                                        onClick={handleCreateArticle} 
+                                        disabled={isGeneratingArticle}
+                                        className="w-full"
+                                    >
+                                        {isGeneratingArticle ? 'Generating...' : (
+                                            <>
+                                                <Sparkles className="mr-2 h-4 w-4" />
+                                                Create Article from Ticket
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
+            </div>
+        </div>
       </div>
       
        <AlertDialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>

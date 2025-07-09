@@ -43,7 +43,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { analyzeTicket, type AnalyzeTicketOutput } from '@/ai/flows/ticket-insights';
-import { generateKnowledgeBaseArticle } from '@/ai/flows/knowledge-base-article-generation';
 import { summarizeTicket } from '@/ai/flows/ticket-summary';
 import { generateSuggestedReply } from '@/ai/flows/suggested-reply';
 import { findRelevantArticles, ProactiveKbSearchOutput } from '@/ai/flows/proactive-kb-search';
@@ -241,7 +240,6 @@ export default function TicketDetailsPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeTicketOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
-  const [isGeneratingArticle, setIsGeneratingArticle] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState('');
   const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
@@ -311,23 +309,6 @@ export default function TicketDetailsPage() {
     }
   };
   
-  const handleCreateArticle = async () => {
-    setIsGeneratingArticle(true);
-    toast({ title: 'Generating Knowledge Base Article...', description: 'Gemini is working on it.' });
-
-    try {
-        const result = await generateKnowledgeBaseArticle({ prompt: ticketContext, useWebSearch: false });
-        toast({ title: 'Article Generated!', description: 'Redirecting you to review and save.' });
-        const params = new URLSearchParams({ title: result.title, content: result.content });
-        router.push(`/knowledge-base/new?${params.toString()}`);
-    } catch (error) {
-        console.error("AI Article Generation failed:", error);
-        toast({ variant: 'destructive', title: 'Generation Failed', description: 'The AI failed to generate the article.' });
-    } finally {
-        setIsGeneratingArticle(false);
-    }
-  };
-
   const handleSummarize = async () => {
     setIsSummaryDialogOpen(true);
     setIsSummarizing(true);
@@ -521,13 +502,6 @@ export default function TicketDetailsPage() {
                                       ))
                                   ) : <p className="text-sm text-muted-foreground">No relevant articles found.</p>}
                                 </div>
-                              </div>
-                              <div className="border-t pt-6">
-                                  <h3 className="font-semibold mb-2">Create New Article</h3>
-                                  <p className="text-sm text-muted-foreground mb-4">Generate a new article from this ticket's resolution details.</p>
-                                  <Button onClick={handleCreateArticle} disabled={isGeneratingArticle} className="w-full">
-                                      {isGeneratingArticle ? 'Generating...' : <><Sparkles className="mr-2 h-4 w-4" />Create Article from Ticket</>}
-                                  </Button>
                               </div>
                             </CardContent>
                         </Card>

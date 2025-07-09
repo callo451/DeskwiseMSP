@@ -70,3 +70,34 @@ export const knowledgeBaseArticles: KnowledgeBaseArticle[] = [
   { id: 'KB-003', title: 'Troubleshooting common printer issues', category: 'Hardware', author: 'Bob', lastUpdated: '2024-05-05', type: 'Public' },
   { id: 'KB-004', title: 'Onboarding process for new clients', category: 'Standard Operating Procedures', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal' },
 ];
+
+export const ticketPageStats: DashboardStat[] = [
+  {
+    title: "All Open Tickets",
+    value: "128",
+    change: "+5",
+    changeType: "increase",
+    description: "since last hour"
+  },
+  {
+    title: "Overdue Tickets",
+    value: "12",
+    change: "-2",
+    changeType: "decrease",
+    description: "from yesterday"
+  },
+  {
+    title: "Unassigned Tickets",
+    value: "5",
+    change: "+1",
+    changeType: "increase",
+    description: "since last hour"
+  },
+  {
+    title: "Avg. Resolution Time",
+    value: "2.5h",
+    change: "+0.2h",
+    changeType: "increase",
+    description: "from yesterday"
+  }
+];

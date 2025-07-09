@@ -87,7 +87,12 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
   return (
     <TableRow>
       <TableCell>
-        <div className="font-medium">{asset.name}</div>
+        <Link
+          href={`/assets/${asset.id}`}
+          className="font-medium text-primary hover:underline"
+        >
+          {asset.name}
+        </Link>
         <div className="hidden text-sm text-muted-foreground md:inline">
           {asset.id}
         </div>
@@ -121,10 +126,14 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>View Details</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/assets/${asset.id}`}>View Details</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>Remote Session</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive">
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
@@ -133,8 +142,8 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
 };
 
 export default function AssetsPage() {
-  const assetTypes: Asset['type'][] = ['Server', 'Workstation', 'Network', 'Printer'];
-  const assetStatuses: Asset['status'][] = ['Online', 'Offline', 'Warning'];
+  const assetTypes: Array<Asset['type']> = ['Server', 'Workstation', 'Network', 'Printer'];
+  const assetStatuses: Array<Asset['status']> = ['Online', 'Offline', 'Warning'];
 
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [statusFilters, setStatusFilters] = useState<string[]>([]);

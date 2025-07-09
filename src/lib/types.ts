@@ -28,12 +28,30 @@ export type Ticket = {
 };
 
 export type Asset = {
-    id: string;
-    name: string;
-    client: string;
-    type: 'Server' | 'Workstation' | 'Network' | 'Printer';
-    status: 'Online' | 'Offline' | 'Warning';
-    lastSeen: string;
+  id: string;
+  name: string;
+  client: string;
+  type: 'Server' | 'Workstation' | 'Network' | 'Printer';
+  status: 'Online' | 'Offline' | 'Warning';
+  lastSeen: string;
+  ipAddress: string;
+  macAddress: string;
+  os: string;
+  cpu: {
+    model: string;
+    usage: number; // percentage
+  };
+  ram: {
+    total: number; // GB
+    used: number; // GB
+  };
+  disk: {
+    total: number; // GB
+    used: number; // GB
+  };
+  notes?: string;
+  activityLogs: { timestamp: string; activity: string }[];
+  associatedTickets: string[]; // Array of ticket IDs
 };
 
 export type KnowledgeBaseArticle = {

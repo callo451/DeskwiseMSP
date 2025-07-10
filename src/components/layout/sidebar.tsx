@@ -40,10 +40,7 @@ import React from 'react';
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/contacts', label: 'Contacts', icon: Contact },
-  { 
-    href: '/tickets', 
+  { href: '/tickets', 
     label: 'Tickets', 
     icon: Ticket,
     subItems: ticketQueues.map(q => ({
@@ -51,8 +48,11 @@ const menuItems = [
       href: `/tickets?queue=${encodeURIComponent(q)}`
     }))
   },
+  { href: '/clients', label: 'Clients', icon: Users },
+  { href: '/contacts', label: 'Contacts', icon: Contact },
   { href: '/assets', label: 'Assets', icon: HardDrive },
   { href: '/inventory', label: 'Inventory', icon: Warehouse },
+  { href: '/billing', label: 'Billing', icon: CreditCard },
   { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

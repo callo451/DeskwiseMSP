@@ -23,7 +23,7 @@ const ReportConfigSchema = z.object({
 
 export type ReportConfig = z.infer<typeof ReportConfigSchema>;
 
-export const ReportGenerationInputSchema = z.object({
+const ReportGenerationInputSchema = z.object({
   query: z.string().describe("The user's natural language query for the report."),
   module: z.enum(['Tickets', 'Assets', 'Clients']).describe("The module to generate the report for."),
 });

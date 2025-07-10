@@ -7,14 +7,14 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const ReportInsightsInputSchema = z.object({
+const ReportInsightsInputSchema = z.object({
   reportTitle: z.string().describe("The title of the report being analyzed."),
   reportData: z.string().describe("The report data as a JSON string."),
 });
 
 export type ReportInsightsInput = z.infer<typeof ReportInsightsInputSchema>;
 
-export const ReportInsightsOutputSchema = z.object({
+const ReportInsightsOutputSchema = z.object({
     insights: z.array(z.string()).describe("A list of 2-3 bullet-point insights derived from the report data."),
 });
 export type ReportInsightsOutput = z.infer<typeof ReportInsightsOutputSchema>;

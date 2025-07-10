@@ -1,15 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
 export type Client = {
   id: string;
   name: string;
@@ -330,6 +318,6 @@ export type CustomField = {
   module: 'Tickets' | 'Assets' | 'Clients';
   name: string;
   type: CustomFieldType;
-  options?: string[]; // For Dropdown type
+  options?: string; // For Dropdown type, comma-separated
   required: boolean;
 };

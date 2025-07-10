@@ -410,7 +410,7 @@ export default function TicketDetailsPage() {
                     <CardContent className="divide-y divide-border -mt-2">
                         <DetailRow label="Status" value={<Badge variant={getStatusVariant(currentTicket.status)} style={currentTicket.status === 'Resolved' ? { backgroundColor: 'hsl(var(--success))', color: 'hsl(var(--success-foreground))'} : {}}>{currentTicket.status}</Badge>} />
                         <DetailRow label="Priority" value={<Badge variant={getPriorityVariant(currentTicket.priority)}>{currentTicket.priority}</Badge>} />
-                        <DetailRow label="Client" value={<Link href="#" className="font-medium text-primary hover:underline">{client?.name}</Link>} />
+                        <DetailRow label="Client" value={<Link href={`/clients/${client?.id}`} className="font-medium text-primary hover:underline">{client?.name}</Link>} />
                         <DetailRow label="Assignee" value={currentTicket.assignee} icon={User} />
                         <DetailRow label="Created" value={currentTicket.createdDate} icon={Clock} />
                     </CardContent>

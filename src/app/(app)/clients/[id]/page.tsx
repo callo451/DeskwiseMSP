@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -18,8 +19,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { assets as allAssets, clients, tickets as allTickets, contacts as allContacts } from '@/lib/placeholder-data';
-import type { Asset, Ticket, Contact } from '@/lib/types';
+import { assets as allAssets, clients, tickets as allTickets, contacts as allContacts, contracts as allContracts } from '@/lib/placeholder-data';
+import type { Asset, Ticket, Contact, Contract } from '@/lib/types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +50,7 @@ import {
     Ticket as TicketIcon,
     User,
     Users,
+    FileText
 } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState, useMemo } from 'react';
@@ -113,6 +115,18 @@ const ContactRow = ({ contact }: { contact: Contact }) => (
     </TableRow>
 );
 
+const ContractRow = ({ contract }: { contract: Contract }) => {
+    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    return (
+        <TableRow>
+            <TableCell><Link href={`/billing/${contract.id}`} className="font-medium text-primary hover:underline">{contract.name}</Link></TableCell>
+            <TableCell><Badge variant={contract.status === 'Active' ? 'default' : 'secondary'}>{contract.status}</Badge></TableCell>
+            <TableCell>{formatCurrency(contract.mrr)}</TableCell>
+            <TableCell className="text-right"><Button variant="ghost" size="icon" asChild><Link href={`/billing/${contract.id}`}><ChevronRight className="h-4 w-4" /></Link></Button></TableCell>
+        </TableRow>
+    );
+};
+
 
 export default function ClientDetailsPage() {
   const params = useParams<{ id: string }>();
@@ -122,6 +136,7 @@ export default function ClientDetailsPage() {
   const associatedTickets = client ? allTickets.filter(t => t.client === client.name) : [];
   const associatedAssets = client ? allAssets.filter(a => a.client === client.name) : [];
   const associatedContacts = client ? allContacts.filter(c => c.client === client.name) : [];
+  const associatedContracts = client ? allContracts.filter(c => c.clientId === client.id) : [];
   
   const [analysisResult, setAnalysisResult] = useState<ClientInsightsOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -288,8 +303,16 @@ export default function ClientDetailsPage() {
                     </TabsContent>
                     <TabsContent value="billing">
                         <Card>
-                            <CardHeader><CardTitle>Billing & Contracts</CardTitle></CardHeader>
-                             <CardContent><p className="text-center text-muted-foreground py-12">Billing module coming soon.</p></CardContent>
+                            <CardHeader>
+                                <CardTitle>Billing & Contracts</CardTitle>
+                                <CardDescription>Contracts and billing agreements for {client.name}.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader><TableRow><TableHead>Contract</TableHead><TableHead>Status</TableHead><TableHead>MRR</TableHead><TableHead><span className="sr-only">View</span></TableHead></TableRow></TableHeader>
+                                    <TableBody>{associatedContracts.length > 0 ? associatedContracts.map(c => <ContractRow key={c.id} contract={c} />) : <TableRow><TableCell colSpan={4} className="text-center h-24">No contracts found for this client.</TableCell></TableRow>}</TableBody>
+                                </Table>
+                            </CardContent>
                         </Card>
                     </TabsContent>
                 </Tabs>

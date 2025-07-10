@@ -8,6 +8,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -103,6 +104,7 @@ export type Asset = {
     serialNumber?: string;
   };
   sku?: string; // Link back to inventory item
+  contractId?: string;
 };
 
 export type KnowledgeBaseArticle = {
@@ -297,4 +299,25 @@ export type ReportFilter = {
   field: string;
   operator: FilterOperator;
   value: string;
+};
+
+export type ContractService = {
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  rate: number;
+  total: number;
+};
+
+export type Contract = {
+  id: string;
+  name: string;
+  clientId: string;
+  clientName: string;
+  status: 'Active' | 'Expired' | 'Pending';
+  startDate: string; // ISO Date
+  endDate: string; // ISO Date
+  mrr: number;
+  services: ContractService[];
 };

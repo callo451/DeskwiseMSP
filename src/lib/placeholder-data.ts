@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -345,7 +345,8 @@ export const assets: Asset[] = [
       biosVersion: '2.1b',
       serialNumber: 'VM-12345-67890',
     },
-    sku: 'HW-SRV-SM01'
+    sku: 'HW-SRV-SM01',
+    contractId: 'CTR-001',
   },
   {
     id: 'AST-002',
@@ -370,7 +371,8 @@ export const assets: Asset[] = [
       biosVersion: '1.8.2',
       serialNumber: 'DK-98765-43210',
     },
-    sku: 'HW-LAP-D01'
+    sku: 'HW-LAP-D01',
+    contractId: 'CTR-002',
   },
   {
     id: 'AST-003',
@@ -444,7 +446,8 @@ export const assets: Asset[] = [
       biosVersion: '1.5c',
       serialNumber: 'VM-09876-54321',
     },
-    sku: 'HW-SRV-SM02'
+    sku: 'HW-SRV-SM02',
+    contractId: 'CTR-001',
   },
 ];
 
@@ -840,4 +843,91 @@ export const inventorySupplierSettings: InventorySupplierSetting[] = [
     { id: 'sup-1', name: 'TechData', contactPerson: 'John Carter', email: 'jcarter@techdata.com', phone: '111-222-3333' },
     { id: 'sup-2', name: 'Ingram Micro', contactPerson: 'Susan Reid', email: 'sreid@ingrammicro.com', phone: '222-333-4444' },
     { id: 'sup-3', name: 'Pax8', contactPerson: 'Cloud Team', email: 'sales@pax8.com', phone: '333-444-5555' },
+];
+
+export const billingPageStats: DashboardStat[] = [
+  {
+    title: "Total MRR",
+    value: "$4,250",
+    change: "+$500",
+    changeType: "increase",
+    description: "since last month"
+  },
+  {
+    title: "Active Contracts",
+    value: "3",
+    change: "+1",
+    changeType: "increase",
+    description: "since last month"
+  },
+  {
+    title: "Pending Renewals",
+    value: "1",
+    change: "",
+    changeType: "increase",
+    description: "in the next 30 days"
+  },
+  {
+    title: "Recently Expired",
+    value: "0",
+    change: "-1",
+    changeType: "decrease",
+    description: "in the last 30 days"
+  }
+];
+
+export const contracts: Contract[] = [
+  {
+    id: 'CTR-001',
+    name: 'TechCorp Gold Support',
+    clientId: 'CLI-001',
+    clientName: 'TechCorp',
+    status: 'Active',
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    mrr: 2500,
+    services: [
+      { id: 'SVC-001', name: 'Managed Server Support', description: '24/7 monitoring and support for all servers.', quantity: 2, rate: 1000, total: 2000 },
+      { id: 'SVC-002', name: 'Managed Workstation Support', description: 'Support for up to 50 workstations.', quantity: 50, rate: 10, total: 500 },
+    ]
+  },
+  {
+    id: 'CTR-002',
+    name: 'GlobalInnovate Standard',
+    clientId: 'CLI-002',
+    clientName: 'GlobalInnovate',
+    status: 'Active',
+    startDate: '2023-06-01',
+    endDate: '2024-05-31',
+    mrr: 1500,
+    services: [
+      { id: 'SVC-003', name: 'Managed Workstation Support', description: 'Support for up to 100 workstations.', quantity: 100, rate: 15, total: 1500 },
+    ]
+  },
+  {
+    id: 'CTR-003',
+    name: 'RetailRight Basic',
+    clientId: 'CLI-005',
+    clientName: 'RetailRight',
+    status: 'Pending',
+    startDate: '2024-07-01',
+    endDate: '2025-06-30',
+    mrr: 250,
+    services: [
+      { id: 'SVC-004', name: 'Managed Printer Support', description: 'On-site support for all printers.', quantity: 5, rate: 50, total: 250 },
+    ]
+  },
+  {
+    id: 'CTR-004',
+    name: 'Old EduSphere Contract',
+    clientId: 'CLI-004',
+    clientName: 'EduSphere',
+    status: 'Expired',
+    startDate: '2022-01-01',
+    endDate: '2023-12-31',
+    mrr: 1000,
+    services: [
+      { id: 'SVC-005', name: 'Campus-wide WiFi Management', description: 'Management of all campus access points.', quantity: 1, rate: 1000, total: 1000 },
+    ]
+  },
 ];

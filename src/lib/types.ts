@@ -2,6 +2,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -95,6 +96,7 @@ export type Asset = {
     biosVersion?: string;
     serialNumber?: string;
   };
+  sku?: string; // Link back to inventory item
 };
 
 export type KnowledgeBaseArticle = {

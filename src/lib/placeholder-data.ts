@@ -321,6 +321,7 @@ export const assets: Asset[] = [
       biosVersion: '2.1b',
       serialNumber: 'VM-12345-67890',
     },
+    sku: 'HW-SRV-SM01'
   },
   {
     id: 'AST-002',
@@ -345,6 +346,7 @@ export const assets: Asset[] = [
       biosVersion: '1.8.2',
       serialNumber: 'DK-98765-43210',
     },
+    sku: 'HW-LAP-D01'
   },
   {
     id: 'AST-003',
@@ -369,6 +371,7 @@ export const assets: Asset[] = [
       motherboard: 'Cisco 4000 Series ISR',
       serialNumber: 'CIS-ABCDE-FGHIJ',
     },
+    sku: 'HW-NET-C4000'
   },
   {
     id: 'AST-004',
@@ -389,6 +392,7 @@ export const assets: Asset[] = [
     specifications: {
       serialNumber: 'PRN-ZYXWV-UTSRQ',
     },
+    sku: 'HW-PRN-HP01'
   },
   {
     id: 'AST-005',
@@ -416,6 +420,7 @@ export const assets: Asset[] = [
       biosVersion: '1.5c',
       serialNumber: 'VM-09876-54321',
     },
+    sku: 'HW-SRV-SM02'
   },
 ];
 

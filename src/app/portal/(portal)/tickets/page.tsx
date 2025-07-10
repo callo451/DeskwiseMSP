@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { allTickets, contacts as allContacts } from '@/lib/placeholder-data';
+import { tickets as allTickets, contacts as allContacts } from '@/lib/placeholder-data';
 import type { Ticket } from '@/lib/types';
 import { ChevronRight, PlusCircle } from 'lucide-react';
 import Link from 'next/link';

@@ -3,6 +3,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -221,4 +222,25 @@ export type InventoryItem = {
   quantity: number;
   reorderPoint: number;
   notes?: string;
+};
+
+export type InventoryCategorySetting = {
+  id: string;
+  name: string;
+  itemCount: number;
+};
+
+export type InventoryLocationSetting = {
+  id: string;
+  name: string;
+  address?: string;
+  itemCount: number;
+};
+
+export type InventorySupplierSetting = {
+  id: string;
+  name: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
 };

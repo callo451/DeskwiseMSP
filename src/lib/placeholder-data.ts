@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -754,4 +754,24 @@ export const inventoryItems: InventoryItem[] = [
   { id: 'INV-005', sku: 'CS-CAT6-100', name: 'Cat6 Ethernet Cable (100ft)', category: 'Consumable', owner: 'MSP', location: 'Main Warehouse', quantity: 200, reorderPoint: 100 },
   { id: 'INV-006', sku: 'HW-LAP-TC01', name: 'Lenovo ThinkPad X1 Carbon', category: 'Hardware', owner: 'TechCorp', location: 'TechCorp HQ', quantity: 5, reorderPoint: 2, notes: 'Reserved for new hires.' },
   { id: 'INV-007', sku: 'SW-ACRO-PRO', name: 'Adobe Acrobat Pro License', category: 'Software License', owner: 'GlobalInnovate', location: 'Digital', quantity: 10, reorderPoint: 3 },
+];
+
+export const inventoryCategorySettings: InventoryCategorySetting[] = [
+    { id: 'inv-cat-1', name: 'Hardware', itemCount: 4 },
+    { id: 'inv-cat-2', name: 'Software License', itemCount: 2 },
+    { id: 'inv-cat-3', name: 'Consumable', itemCount: 1 },
+    { id: 'inv-cat-4', name: 'Part', itemCount: 1 },
+];
+
+export const inventoryLocationSettings: InventoryLocationSetting[] = [
+    { id: 'inv-loc-1', name: 'Main Warehouse', address: '123 Storage Rd, Suite 100', itemCount: 4 },
+    { id: 'inv-loc-2', name: 'Repair Bench', itemCount: 1 },
+    { id: 'inv-loc-3', name: 'Digital', itemCount: 2 },
+    { id: 'inv-loc-4', name: 'TechCorp HQ', address: '123 Tech Lane, Innovation City', itemCount: 1 },
+];
+
+export const inventorySupplierSettings: InventorySupplierSetting[] = [
+    { id: 'sup-1', name: 'TechData', contactPerson: 'John Carter', email: 'jcarter@techdata.com', phone: '111-222-3333' },
+    { id: 'sup-2', name: 'Ingram Micro', contactPerson: 'Susan Reid', email: 'sreid@ingrammicro.com', phone: '222-333-4444' },
+    { id: 'sup-3', name: 'Pax8', contactPerson: 'Cloud Team', email: 'sales@pax8.com', phone: '333-444-5555' },
 ];

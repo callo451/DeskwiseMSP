@@ -20,6 +20,7 @@ import {
   Smile,
   Ticket,
   HardDrive,
+  Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -57,6 +58,13 @@ const settingsItems = [
     title: 'Asset Management',
     description: 'Manage asset statuses, categories, and locations.',
     href: '/settings/assets',
+    target: '_self',
+  },
+  {
+    icon: Warehouse,
+    title: 'Inventory Management',
+    description: 'Manage inventory categories, locations, and suppliers.',
+    href: '/settings/inventory',
     target: '_self',
   },
   {

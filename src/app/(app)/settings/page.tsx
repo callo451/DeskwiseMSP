@@ -20,10 +20,18 @@ import {
   Ticket,
   HardDrive,
   Warehouse,
+  Building,
 } from 'lucide-react';
 import Link from 'next/link';
 
 const settingsItems = [
+  {
+    icon: Building,
+    title: 'Company Settings',
+    description: 'Manage your company info and subdomain.',
+    href: '/settings/company',
+    target: '_self',
+  },
   {
     icon: Users,
     title: 'Users & Permissions',
@@ -113,21 +121,6 @@ export default function SettingsPage() {
         </p>
       </div>
       <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>General Settings</CardTitle>
-            <CardDescription>
-              View and update your personal and company information.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* General Settings Form can go here */}
-            <p className="text-sm text-muted-foreground">
-              Profile and company settings form will be here.
-            </p>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>System Configuration</CardTitle>

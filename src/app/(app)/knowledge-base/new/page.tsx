@@ -215,7 +215,7 @@ export default function NewKnowledgeBaseArticlePage() {
 
                <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-primary"><Sparkles className="h-5 w-5"/>AI Generator</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-primary"><Sparkles className="h-5 w-5"/>Generate</CardTitle>
                   <CardDescription>Describe the article you want to create, and AI will write it for you.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

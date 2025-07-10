@@ -38,6 +38,7 @@ import {
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
+    Eye,
     HardDrive,
     Lightbulb,
     Phone,
@@ -100,6 +101,14 @@ const ContactRow = ({ contact }: { contact: Contact }) => (
       <TableCell className="font-medium">{contact.name}</TableCell>
       <TableCell>{contact.role}</TableCell>
       <TableCell className="hidden sm:table-cell">{contact.email}</TableCell>
+       <TableCell className="hidden md:table-cell">
+        {contact.canViewOrgTickets && (
+          <Badge variant="secondary" className="flex items-center gap-1.5">
+            <Eye className="h-3 w-3" />
+            Org Tickets
+          </Badge>
+        )}
+      </TableCell>
       <TableCell className="text-right"><Button variant="ghost" size="icon"><ChevronRight className="h-4 w-4" /></Button></TableCell>
     </TableRow>
 );
@@ -271,8 +280,8 @@ export default function ClientDetailsPage() {
                             <CardHeader><CardTitle>Contacts</CardTitle><CardDescription>All contacts at {client.name}.</CardDescription></CardHeader>
                             <CardContent>
                                 <Table>
-                                    <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead className="hidden sm:table-cell">Email</TableHead><TableHead><span className="sr-only">View</span></TableHead></TableRow></TableHeader>
-                                    <TableBody>{associatedContacts.length > 0 ? associatedContacts.map(c => <ContactRow key={c.id} contact={c} />) : <TableRow><TableCell colSpan={4} className="text-center h-24">No contacts found.</TableCell></TableRow>}</TableBody>
+                                    <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead className="hidden sm:table-cell">Email</TableHead><TableHead className="hidden md:table-cell">Permissions</TableHead><TableHead><span className="sr-only">View</span></TableHead></TableRow></TableHeader>
+                                    <TableBody>{associatedContacts.length > 0 ? associatedContacts.map(c => <ContactRow key={c.id} contact={c} />) : <TableRow><TableCell colSpan={5} className="text-center h-24">No contacts found.</TableCell></TableRow>}</TableBody>
                                 </Table>
                             </CardContent>
                         </Card>

@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { tickets as allTickets } from '@/lib/placeholder-data';
+import { allTickets, contacts as allContacts } from '@/lib/placeholder-data';
 import type { Ticket } from '@/lib/types';
 import { ChevronRight, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -25,6 +25,10 @@ import Link from 'next/link';
 // For demonstration, we assume the logged-in client and user.
 const CURRENT_CLIENT_NAME = 'TechCorp';
 const CURRENT_USER_NAME = 'Jane Doe';
+
+// Find the current user and check their permissions
+const currentUser = allContacts.find(c => c.name === CURRENT_USER_NAME && c.client === CURRENT_CLIENT_NAME);
+const canViewOrgTickets = currentUser?.canViewOrgTickets || false;
 
 const TicketRow = ({ ticket }: { ticket: Ticket }) => {
   const getStatusVariant = (status: Ticket['status']) => {
@@ -100,16 +104,24 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => {
 
 export default function ClientTicketsPage() {
   const clientTickets = allTickets.filter(
-    // Filter for tickets created by the current user within their organization.
-    (ticket) => ticket.client === CURRENT_CLIENT_NAME && ticket.activity[0]?.user === CURRENT_USER_NAME
+    (ticket) => {
+      if (ticket.client !== CURRENT_CLIENT_NAME) return false;
+      if (canViewOrgTickets) return true; // Show all org tickets if permission is granted
+      return ticket.activity[0]?.user === CURRENT_USER_NAME; // Otherwise, show only user's own tickets
+    }
   );
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>My Tickets</CardTitle>
-          <CardDescription>Track and manage the support requests you have created.</CardDescription>
+          <CardTitle>{canViewOrgTickets ? 'Organization Tickets' : 'My Tickets'}</CardTitle>
+          <CardDescription>
+            {canViewOrgTickets 
+              ? `All support requests for ${CURRENT_CLIENT_NAME}.`
+              : 'Track and manage the support requests you have created.'
+            }
+          </CardDescription>
         </div>
         <Link href="/portal/tickets/new">
             <Button size="sm" className="gap-1">

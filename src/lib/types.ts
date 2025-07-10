@@ -5,6 +5,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -27,6 +28,7 @@ export type Contact = {
   client: string;
   role: string;
   lastActivity: string;
+  canViewOrgTickets?: boolean;
 };
 
 export type TimeLog = {

@@ -145,11 +145,13 @@ export const clients: Client[] = [
 ];
 
 export const contacts: Contact[] = [
-  { id: 'CON-001', name: 'Jane Doe', email: 'jane.doe@techcorp.com', client: 'TechCorp', role: 'IT Manager', lastActivity: '2 hours ago' },
+  { id: 'CON-001', name: 'Jane Doe', email: 'jane.doe@techcorp.com', client: 'TechCorp', role: 'IT Manager', lastActivity: '2 hours ago', canViewOrgTickets: true },
   { id: 'CON-002', name: 'John Smith', email: 'john.smith@globalinnovate.com', client: 'GlobalInnovate', role: 'CEO', lastActivity: '1 day ago' },
   { id: 'CON-003', name: 'Dr. Emily White', email: 'emily.white@healthwell.org', client: 'HealthWell', role: 'Chief Medical Officer', lastActivity: '5 hours ago' },
   { id: 'CON-004', name: 'Michael Brown', email: 'mbrown@edusphere.edu', client: 'EduSphere', role: 'Dean of Students', lastActivity: '3 days ago' },
   { id: 'CON-005', name: 'Sarah Green', email: 'sarah.g@retailright.com', client: 'RetailRight', role: 'Operations Head', lastActivity: 'Just now' },
+  { id: 'CON-006', name: 'Mark Johnson', email: 'mark.j@techcorp.com', client: 'TechCorp', role: 'Developer', lastActivity: '6 hours ago', canViewOrgTickets: false },
+  { id: 'CON-007', name: 'Laura Chen', email: 'laura.c@techcorp.com', client: 'TechCorp', role: 'Developer', lastActivity: '1 day ago', canViewOrgTickets: false },
 ];
 
 export const tickets: Ticket[] = [
@@ -290,6 +292,28 @@ export const tickets: Ticket[] = [
       { id: 'TL-002', technician: 'Bob', hours: 2, description: 'Troubleshooting firewall and VPN configuration.', date: '2024-05-18', isBillable: true },
       { id: 'TL-003', technician: 'Bob', hours: 0.5, description: 'Monitoring connection stability post-fix.', date: '2024-05-18', isBillable: false },
     ],
+  },
+  { 
+    id: 'TKT-007',
+    subject: 'Cannot access shared drive',
+    description: 'I cannot access the Marketing shared drive. I need to upload new campaign assets.',
+    client: 'TechCorp', 
+    assignee: 'Charlie', 
+    priority: 'Medium', 
+    status: 'In Progress', 
+    createdDate: '2024-05-21', 
+    lastUpdate: '30m ago',
+    queue: 'Tier 1 Support',
+    activity: [
+      { timestamp: '2 hours ago', user: 'Mark Johnson', activity: 'Ticket created.' },
+      { timestamp: '30 mins ago', user: 'Charlie', activity: 'Checking permissions for user Mark Johnson on the Marketing share.' },
+    ],
+    associatedAssets: [],
+    sla: {
+      responseDue: formatISO(addHours(now, 8)),
+      resolutionDue: formatISO(addDays(now, 2)),
+    },
+    timeLogs: [],
   }
 ];
 

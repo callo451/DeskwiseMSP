@@ -78,7 +78,7 @@ const InventoryItemRow = ({ item }: { item: InventoryItem }) => {
   return (
     <TableRow className={isLowStock ? 'bg-destructive/5' : ''}>
       <TableCell>
-        <div className="font-medium text-primary hover:underline">{item.name}</div>
+        <Link href={`/inventory/${item.id}`} className="font-medium text-primary hover:underline">{item.name}</Link>
         <div className="hidden text-sm text-muted-foreground md:inline">
           {item.sku}
         </div>
@@ -104,7 +104,9 @@ const InventoryItemRow = ({ item }: { item: InventoryItem }) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>View Details</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+                <Link href={`/inventory/${item.id}`}>View Details</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>Deploy as Asset</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive">

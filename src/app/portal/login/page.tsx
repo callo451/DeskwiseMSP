@@ -17,7 +17,7 @@ export default function ClientLoginPage() {
           <div className="mb-4 flex justify-center">
              <Link href="/" className="flex items-center gap-2 font-semibold text-2xl">
               <Gem className="h-7 w-7 text-primary" />
-              <span className="font-headline">ServiceFlow AI</span>
+              <span className="font-headline">Deskwise</span>
             </Link>
           </div>
           <CardTitle className="font-headline text-3xl">Client Portal Login</CardTitle>

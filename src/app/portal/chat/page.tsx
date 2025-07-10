@@ -132,20 +132,20 @@ function VoiceCallDialog({ open, onOpenChange }: { open: boolean, onOpenChange: 
     switch (status) {
       case 'listening': color = 'bg-green-500 animate-pulse'; text = 'Listening...'; break;
       case 'connecting': color = 'bg-yellow-500 animate-pulse'; text = 'Thinking...'; break;
-      case 'speaking': color = 'bg-blue-500'; text = "Bernardo is speaking..."; break;
+      case 'speaking': color = 'bg-blue-500'; text = "Deskwise AI is speaking..."; break;
     }
     return (
       <div className="flex flex-col items-center gap-2">
           <div className={cn('relative h-24 w-24')}>
             <Avatar className="h-24 w-24">
-              <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Bernardo" data-ai-hint="man cartoon" />
-              <AvatarFallback>B</AvatarFallback>
+              <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Deskwise AI" data-ai-hint="man cartoon" />
+              <AvatarFallback>AI</AvatarFallback>
             </Avatar>
             <div className={cn('absolute top-0 right-0 h-4 w-4 rounded-full border-2 border-zinc-800', color)} />
           </div>
            <div className="text-center">
             <p className="text-zinc-400">On call with</p>
-            <p className="text-2xl font-bold">Bernardo</p>
+            <p className="text-2xl font-bold">Deskwise AI</p>
             <p className="text-sm text-zinc-300 min-h-[20px]">{text}</p>
           </div>
       </div>
@@ -245,7 +245,7 @@ export default function ClientChatPage() {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
             <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary h-5 w-5" /> AI Assistant</CardTitle>
-            <CardDescription>Chat with Bernardo about your tickets, assets, and more.</CardDescription>
+            <CardDescription>Chat with our AI about your tickets, assets, and more.</CardDescription>
         </div>
         <Button variant="outline" onClick={() => setIsVoiceCallOpen(true)}>
             <Phone className="mr-2 h-4 w-4" /> Voice Call
@@ -265,8 +265,8 @@ export default function ClientChatPage() {
                         <div key={message.id} className={cn('flex items-start gap-4', message.role === 'user' && 'justify-end')}>
                             {message.role === 'assistant' && (
                                 <Avatar className="h-9 w-9 border">
-                                   <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Bernardo" data-ai-hint="man cartoon" />
-                                   <AvatarFallback>B</AvatarFallback>
+                                   <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Deskwise AI" data-ai-hint="man cartoon" />
+                                   <AvatarFallback>AI</AvatarFallback>
                                 </Avatar>
                             )}
                             <div className={cn('max-w-md rounded-2xl px-4 py-3 text-sm',
@@ -287,8 +287,8 @@ export default function ClientChatPage() {
                 {isLoading && (
                     <div className="flex items-start gap-4">
                        <Avatar className="h-9 w-9 border">
-                         <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Bernardo" data-ai-hint="man cartoon" />
-                         <AvatarFallback>B</AvatarFallback>
+                         <AvatarImage src="https://placehold.co/96x96/c4b5fd/312e81.png" alt="Deskwise AI" data-ai-hint="man cartoon" />
+                         <AvatarFallback>AI</AvatarFallback>
                        </Avatar>
                        <div className="bg-secondary rounded-2xl rounded-bl-none px-4 py-3">
                          <div className="flex items-center gap-2 text-muted-foreground">

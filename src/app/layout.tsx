@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'ServiceFlow AI',
-  description: 'The next-generation PSA for Managed Service Providers.',
+  title: 'Deskwise',
+  description: 'The AI-powered PSA for Managed Service Providers.',
 };
 
 export default function RootLayout({

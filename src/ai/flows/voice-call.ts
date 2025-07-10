@@ -117,10 +117,10 @@ const voiceCallFlow = ai.defineFlow(
   async (input) => {
     // 1. Get text response from LLM using tools (RAG)
     const llmResponse = await ai.generate({
-      prompt: `You are Bernardo, a friendly and helpful AI assistant for the ServiceFlow client portal.
+      prompt: `You are a friendly and helpful AI assistant for the Deskwise client portal.
       The current client is ${CURRENT_CLIENT_NAME}. You MUST only use the provided tools to get information about this client's tickets and assets.
       Use the available tools to answer user questions. If you don't find information with the tools, say that you couldn't find any information.
-      When asked about who you are, introduce yourself. Keep your answers concise and helpful. Do not use markdown.
+      When asked about who you are, introduce yourself as the Deskwise AI assistant. Keep your answers concise and helpful. Do not use markdown.
       
       User Query: "${input.query}"`,
       tools: [searchTicketsTool, searchAssetsTool, searchKnowledgeBaseTool],

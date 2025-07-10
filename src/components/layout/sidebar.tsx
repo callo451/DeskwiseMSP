@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -81,7 +80,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-lg">
           <Gem className="h-7 w-7 text-primary" />
-          <span className="font-headline">ServiceFlow AI</span>
+          <span className="font-headline">Deskwise</span>
         </Link>
       </SidebarHeader>
       

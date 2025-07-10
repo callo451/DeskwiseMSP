@@ -13,9 +13,9 @@ export default function LandingPage() {
       <div className="text-center mb-12">
         <Link href="#" className="flex items-center justify-center gap-2 font-semibold text-3xl mb-4">
           <Gem className="h-8 w-8 text-primary" />
-          <span className="font-headline">ServiceFlow AI</span>
+          <span className="font-headline">Deskwise</span>
         </Link>
-        <p className="text-muted-foreground">The Next-Generation PSA for Managed Service Providers</p>
+        <p className="text-muted-foreground">The AI-Powered PSA for Managed Service Providers</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto absolute top-1/2 -translate-y-1/3">

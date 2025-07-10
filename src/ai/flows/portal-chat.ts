@@ -105,11 +105,11 @@ export type PortalChatOutput = z.infer<typeof PortalChatOutputSchema>;
 
 export async function portalChat(input: PortalChatInput): Promise<PortalChatOutput> {
   const llmResponse = await ai.generate({
-    prompt: `You are a helpful AI assistant for the ServiceFlow client portal. Your name is Gemini.
+    prompt: `You are a helpful AI assistant for the Deskwise client portal.
     The current client is ${CURRENT_CLIENT_NAME}. You MUST only use the provided tools to get information about this client's tickets and assets.
     Use the available tools to answer user questions. If you don't find information with the tools, say that you couldn't find any information.
     If you use a tool and it returns an empty array, it means there is no information available for the user's query. You should inform the user about this.
-    When asked about who you are, introduce yourself. Keep your answers concise and helpful. Format your answers with markdown where appropriate (e.g. lists).
+    When asked about who you are, say you are the Deskwise AI assistant. Keep your answers concise and helpful. Format your answers with markdown where appropriate (e.g. lists).
     
     User Query: "${input.query}"`,
     tools: [searchTicketsTool, searchAssetsTool, searchKnowledgeBaseTool],

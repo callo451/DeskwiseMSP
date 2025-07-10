@@ -43,7 +43,7 @@ export function PortalSidebar() {
       <SidebarHeader>
         <Link href="/portal/dashboard" className="flex items-center gap-2 font-semibold text-lg">
           <Gem className="h-7 w-7 text-primary" />
-          <span className="font-headline">Client Portal</span>
+          <span className="font-headline">Deskwise</span>
         </Link>
       </SidebarHeader>
       

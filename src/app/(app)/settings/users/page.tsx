@@ -1,4 +1,3 @@
-
 'use client';
 
 import { z } from 'zod';
@@ -214,7 +213,7 @@ function SsoSettings() {
     resolver: zodResolver(ssoSettingsSchema),
     defaultValues: {
       enabled: false,
-      entityId: 'https://api.serviceflow.ai/sso/metadata',
+      entityId: 'https://api.deskwise.io/sso/metadata',
       ssoUrl: '',
       certificate: '',
     },
@@ -261,11 +260,11 @@ function SsoSettings() {
             <CardDescription>Use these values to configure your Identity Provider (IdP).</CardDescription>
             <div>
               <FormLabel>Entity ID / Audience URI</FormLabel>
-              <Input readOnly value="https://api.serviceflow.ai/sso/metadata" />
+              <Input readOnly value="https://api.deskwise.io/sso/metadata" />
             </div>
             <div>
               <FormLabel>Assertion Consumer Service (ACS) URL</FormLabel>
-              <Input readOnly value="https://api.serviceflow.ai/sso/acs" />
+              <Input readOnly value="https://api.deskwise.io/sso/acs" />
             </div>
 
             <CardTitle className="text-xl pt-4">Identity Provider Details</CardTitle>

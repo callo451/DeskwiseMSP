@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/form';
 import { users, roles } from '@/lib/placeholder-data';
 import type { User, Role } from '@/lib/types';
-import { MoreHorizontal, PlusCircle, CheckCircle, XCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, BarChart3, BookOpen, Warehouse, HardDrive } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -153,6 +153,39 @@ const RoleCard = ({ role }: { role: Role }) => {
                     <PermissionRow label="Read" value={role.permissions.clients.read} />
                     <PermissionRow label="Update" value={role.permissions.clients.update} />
                     <PermissionRow label="Delete" value={role.permissions.clients.delete} />
+                </div>
+            </div>
+             <div>
+                <h4 className="font-semibold text-sm">Assets</h4>
+                <div className="divide-y mt-2 border-t">
+                    <PermissionRow label="Create" value={role.permissions.assets.create} />
+                    <PermissionRow label="Read" value={role.permissions.assets.read} />
+                    <PermissionRow label="Update" value={role.permissions.assets.update} />
+                    <PermissionRow label="Delete" value={role.permissions.assets.delete} />
+                </div>
+            </div>
+            <div>
+                <h4 className="font-semibold text-sm">Inventory</h4>
+                <div className="divide-y mt-2 border-t">
+                    <PermissionRow label="Create" value={role.permissions.inventory.create} />
+                    <PermissionRow label="Read" value={role.permissions.inventory.read} />
+                    <PermissionRow label="Update" value={role.permissions.inventory.update} />
+                    <PermissionRow label="Delete" value={role.permissions.inventory.delete} />
+                </div>
+            </div>
+            <div>
+                <h4 className="font-semibold text-sm">Knowledge Base</h4>
+                <div className="divide-y mt-2 border-t">
+                    <PermissionRow label="Create" value={role.permissions.knowledgeBase.create} />
+                    <PermissionRow label="Read Access" value={role.permissions.knowledgeBase.read} />
+                    <PermissionRow label="Update" value={role.permissions.knowledgeBase.update} />
+                    <PermissionRow label="Delete" value={role.permissions.knowledgeBase.delete} />
+                </div>
+            </div>
+             <div>
+                <h4 className="font-semibold text-sm">Reports</h4>
+                <div className="divide-y mt-2 border-t">
+                    <PermissionRow label="View Reports" value={role.permissions.reports.view} />
                 </div>
             </div>
              <div>

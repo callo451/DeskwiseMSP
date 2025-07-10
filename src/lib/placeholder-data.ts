@@ -719,6 +719,9 @@ export const roles: Role[] = [
             tickets: { create: true, read: 'all', update: true, delete: true },
             clients: { create: true, read: true, update: true, delete: true },
             assets: { create: true, read: true, update: true, delete: true },
+            inventory: { create: true, read: true, update: true, delete: true },
+            knowledgeBase: { create: true, read: 'all', update: true, delete: true },
+            reports: { view: true },
             settings: { adminAccess: true },
         }
     },
@@ -731,6 +734,9 @@ export const roles: Role[] = [
             tickets: { create: true, read: 'all', update: true, delete: false },
             clients: { create: false, read: true, update: true, delete: false },
             assets: { create: true, read: true, update: true, delete: false },
+            inventory: { create: true, read: true, update: true, delete: false },
+            knowledgeBase: { create: true, read: 'all', update: true, delete: false },
+            reports: { view: false },
             settings: { adminAccess: false },
         }
     },
@@ -743,6 +749,9 @@ export const roles: Role[] = [
             tickets: { create: false, read: 'all', update: false, delete: false },
             clients: { create: false, read: true, update: false, delete: false },
             assets: { create: false, read: true, update: false, delete: false },
+            inventory: { create: false, read: true, update: false, delete: false },
+            knowledgeBase: { create: false, read: 'public_only', update: false, delete: false },
+            reports: { view: true },
             settings: { adminAccess: false },
         }
     },

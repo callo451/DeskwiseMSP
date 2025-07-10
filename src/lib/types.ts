@@ -7,6 +7,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -209,6 +210,21 @@ export type Permissions = {
     read: boolean;
     update: boolean;
     delete: boolean;
+  };
+  inventory: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  knowledgeBase: {
+    create: boolean;
+    read: 'all' | 'public_only';
+    update: boolean;
+    delete: boolean;
+  };
+  reports: {
+    view: boolean;
   };
   settings: {
     adminAccess: boolean;

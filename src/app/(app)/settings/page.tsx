@@ -11,7 +11,6 @@ import {
 import {
   Users,
   CreditCard,
-  Lock,
   Cog,
   Shield,
   Plug,
@@ -27,7 +26,7 @@ const settingsItems = [
   {
     icon: Users,
     title: 'Users & Permissions',
-    description: 'Manage user accounts and roles.',
+    description: 'Manage user accounts, roles, and single sign-on.',
     href: '/settings/users',
     target: '_self',
   },
@@ -36,13 +35,6 @@ const settingsItems = [
     title: 'Billing & Subscriptions',
     description: 'Manage your payment methods and plan.',
     href: '/settings/billing',
-    target: '_self',
-  },
-  {
-    icon: Lock,
-    title: 'SAML SSO',
-    description: 'Configure Single Sign-On for your organization.',
-    href: '/settings/sso',
     target: '_self',
   },
   {

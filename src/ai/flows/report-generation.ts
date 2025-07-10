@@ -43,13 +43,13 @@ const prompt = ai.definePrompt({
 The user wants a report for the "{{{module}}}" module.
 
 Based on the module, here are the available fields and their types:
-{{#if module == 'Tickets'}}
+{{#if (eq module "Tickets")}}
 - id (string), subject (string), client (string), assignee (string), priority (string), status (string), createdDate (date), queue (string)
 {{/if}}
-{{#if module == 'Assets'}}
+{{#if (eq module "Assets")}}
 - id (string), name (string), client (string), type (string), status (string), isSecure (boolean), lastSeen (date), os (string)
 {{/if}}
-{{#if module == 'Clients'}}
+{{#if (eq module "Clients")}}
 - id (string), name (string), industry (string), status (string), contacts (number), tickets (number)
 {{/if}}
 
@@ -75,4 +75,3 @@ const generateReportConfigFlow = ai.defineFlow(
     return output!;
   }
 );
-

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { z } from 'zod';
@@ -164,7 +165,7 @@ export default function NewTicketPage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select priority level" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Low">Low</SelectItem>
@@ -187,11 +188,10 @@ export default function NewTicketPage() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Assign to a technician" />
+                              <SelectValue placeholder="Unassigned" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                             <SelectItem value="">Unassigned</SelectItem>
                             {uniqueAssignees.map(assignee => (
                               <SelectItem key={assignee} value={assignee}>
                                 {assignee}

@@ -19,6 +19,7 @@ import {
   Globe,
   Smile,
   Ticket,
+  HardDrive,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -49,6 +50,13 @@ const settingsItems = [
     title: 'Ticket Management',
     description: 'Manage queues, statuses, and priorities.',
     href: '/settings/tickets',
+    target: '_self',
+  },
+  {
+    icon: HardDrive,
+    title: 'Asset Management',
+    description: 'Manage asset statuses, categories, and locations.',
+    href: '/settings/assets',
     target: '_self',
   },
   {

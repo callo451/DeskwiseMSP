@@ -1,5 +1,6 @@
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -188,3 +189,21 @@ export type Role = {
     description: string;
     userCount: number;
 }
+
+export type AssetStatusSetting = {
+  id: string;
+  name: string;
+  color: string;
+};
+
+export type AssetCategorySetting = {
+  id: string;
+  name: string;
+  assetCount: number;
+};
+
+export type AssetLocationSetting = {
+  id: string;
+  name: string;
+  assetCount: number;
+};

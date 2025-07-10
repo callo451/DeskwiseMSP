@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -685,3 +685,27 @@ export const roles: Role[] = [
     { id: 'ROLE-002', name: 'Technician', description: 'Can manage tickets, clients, and assets. Limited settings access.', userCount: 3 },
     { id: 'ROLE-003', name: 'Read-Only', description: 'Can view data but cannot make changes.', userCount: 1 },
 ];
+
+export const assetStatusSettings: AssetStatusSetting[] = [
+  { id: 'asset-status-1', name: 'In Stock', color: '#3b82f6' },
+  { id: 'asset-status-2', name: 'Deployed', color: '#22c55e' },
+  { id: 'asset-status-3', name: 'In Repair', color: '#f97316' },
+  { id: 'asset-status-4', name: 'Retired', color: '#6b7280' },
+  { id: 'asset-status-5', name: 'Missing', color: '#ef4444' },
+];
+
+export const assetCategorySettings: AssetCategorySetting[] = [
+    { id: 'asset-cat-1', name: 'Workstation', assetCount: 150 },
+    { id: 'asset-cat-2', name: 'Server', assetCount: 45 },
+    { id: 'asset-cat-3', name: 'Network Device', assetCount: 80 },
+    { id: 'asset-cat-4', name: 'Printer', assetCount: 35 },
+    { id: 'asset-cat-5', name: 'Mobile Device', assetCount: 90 },
+];
+
+export const assetLocationSettings: AssetLocationSetting[] = [
+    { id: 'asset-loc-1', name: 'Main Office - 1st Floor', assetCount: 120 },
+    { id: 'asset-loc-2', name: 'Main Office - 2nd Floor', assetCount: 110 },
+    { id: 'asset-loc-3', name: 'Data Center A', assetCount: 50 },
+    { id: 'asset-loc-4', name: 'Warehouse', assetCount: 30 },
+    { id: 'asset-loc-5', name: 'Remote (Home Office)', assetCount: 40 },
+]

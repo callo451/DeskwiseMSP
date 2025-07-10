@@ -1,3 +1,4 @@
+
 import { PortalHeader } from '@/components/layout/portal-header';
 import { PortalSidebar } from '@/components/layout/portal-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';

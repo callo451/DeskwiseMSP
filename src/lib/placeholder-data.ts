@@ -1,6 +1,5 @@
-
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions } from './types';
-import { subHours, addHours, addDays, formatISO } from 'date-fns';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem } from './types';
+import { subHours, addHours, addDays, format, formatISO } from 'date-fns';
 
 const now = new Date();
 
@@ -952,4 +951,15 @@ export const customFields: CustomField[] = [
   { id: 'CF-AST-01', module: 'Assets', name: 'Warranty Expiration', type: 'Date', required: false },
   { id: 'CF-AST-02', module: 'Assets', name: 'Purchase Price', type: 'Number', required: false },
   { id: 'CF-CLI-01', module: 'Clients', name: 'Account Manager', type: 'Text', required: true },
+];
+
+const todayStr = format(now, 'yyyy-MM-dd');
+export const scheduleItems: ScheduleItem[] = [
+  { id: 'SCH-001', title: 'On-site server maintenance', technicianId: 'USR-002', type: 'Appointment', start: `${todayStr} 09:00`, end: `${todayStr} 11:00`, ticketId: 'TKT-001' },
+  { id: 'SCH-002', title: 'Team Sync Meeting', technicianId: 'USR-002', type: 'Meeting', start: `${todayStr} 11:30`, end: `${todayStr} 12:00` },
+  { id: 'SCH-003', title: 'Work on TKT-002', technicianId: 'USR-003', type: 'Ticket', start: `${todayStr} 10:00`, end: `${todayStr} 12:30`, ticketId: 'TKT-002' },
+  { id: 'SCH-004', title: 'Dentist Appointment', technicianId: 'USR-003', type: 'Time Off', start: `${todayStr} 14:00`, end: `${todayStr} 15:00` },
+  { id: 'SCH-005', title: 'Follow up with GlobalInnovate', technicianId: 'USR-001', type: 'Appointment', start: `${todayStr} 15:00`, end: `${todayStr} 15:30` },
+  { id: 'SCH-006', title: 'New User Setup for HealthWell', technicianId: 'USR-004', type: 'Ticket', start: format(addDays(now, 1), 'yyyy-MM-dd') + ' 09:00', end: format(addDays(now, 1), 'yyyy-MM-dd') + ' 10:00', ticketId: 'TKT-003' },
+  { id: 'SCH-007', title: 'Product Demo', technicianId: 'USR-001', type: 'Meeting', start: format(addDays(now, 2), 'yyyy-MM-dd') + ' 13:00', end: format(addDays(now, 2), 'yyyy-MM-dd') + ' 14:00' },
 ];

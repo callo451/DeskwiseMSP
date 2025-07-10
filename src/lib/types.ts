@@ -330,3 +330,14 @@ export type CustomField = {
   options?: string; // For Dropdown type, comma-separated
   required: boolean;
 };
+
+export type ScheduleItem = {
+  id: string;
+  title: string;
+  technicianId: string;
+  type: 'Ticket' | 'Meeting' | 'Time Off' | 'Appointment';
+  start: string; // yyyy-MM-dd HH:mm
+  end: string;   // yyyy-MM-dd HH:mm
+  ticketId?: string;
+  notes?: string;
+};

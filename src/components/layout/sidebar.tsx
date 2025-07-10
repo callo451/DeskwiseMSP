@@ -25,6 +25,7 @@ import {
   ChevronRight,
   BarChart3,
   Warehouse,
+  Calendar,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -47,6 +48,7 @@ const menuItems = [
       href: `/tickets?queue=${encodeURIComponent(q)}`
     }))
   },
+  { href: '/scheduling', label: 'Scheduling', icon: Calendar },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/contacts', label: 'Contacts', icon: Contact },
   { href: '/assets', label: 'Assets', icon: HardDrive },

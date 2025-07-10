@@ -42,23 +42,23 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert data analyst who creates report configurations from user requests.
 The user wants a report for the "{{{module}}}" module.
 
-Based on the module, here are the available fields:
+Based on the module, here are the available fields and their types:
 {{#if module == 'Tickets'}}
-- id, subject, client, assignee, priority, status, createdDate, queue
+- id (string), subject (string), client (string), assignee (string), priority (string), status (string), createdDate (date), queue (string)
 {{/if}}
 {{#if module == 'Assets'}}
-- id, name, client, type, status, isSecure, lastSeen, os
+- id (string), name (string), client (string), type (string), status (string), isSecure (boolean), lastSeen (date), os (string)
 {{/if}}
 {{#if module == 'Clients'}}
-- id, name, industry, status, contacts, tickets
+- id (string), name (string), industry (string), status (string), contacts (number), tickets (number)
 {{/if}}
 
 Parse the user's query and generate a JSON object matching the ReportConfig schema.
 - **title**: Create a concise, descriptive title for the report based on the query.
 - **columns**: Select relevant columns from the available fields. If the user asks to group by a field, you MUST include that field and a count/metric column (e.g., for "tickets per client", columns should be ['client', 'count']). Default to all available fields if not specified.
-- **filters**: Identify any filters. For example, "critical tickets" means a filter where 'priority' equals 'Critical'. "for TechCorp" means a filter where 'client' equals 'TechCorp'.
+- **filters**: Identify any filters. For example, "critical tickets" means a filter where 'priority' equals 'Critical'. "for TechCorp" means a filter where 'client' equals 'TechCorp'. "in the last 7 days" implies a date filter on 'createdDate'.
 - **groupBy**: If the user asks to aggregate or group data (e.g., "by assignee", "per client"), specify the field here.
-- **chartType**: Suggest a suitable chart type. Use 'bar' for counts by category, 'line' for trends over time, 'pie' for proportions, and 'table_only' if no chart is suitable (e.g., just a list of tickets).
+- **chartType**: Suggest a suitable chart type. Use 'bar' for counts by category, 'pie' for proportions of a whole (e.g., tickets by priority), 'line' for trends over time, and 'table_only' if no chart is suitable (e.g., just a list of tickets).
 
 User Query: "{{{query}}}"
 `,
@@ -75,3 +75,4 @@ const generateReportConfigFlow = ai.defineFlow(
     return output!;
   }
 );
+

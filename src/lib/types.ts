@@ -4,6 +4,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -47,7 +48,7 @@ export type Ticket = {
   assignee: string;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   status: 'Open' | 'In Progress' | 'On Hold' | 'Resolved' | 'Closed';
-  createdDate: string;
+  createdDate: string; // ISO Date string
   lastUpdate: string;
   queue: TicketQueue;
   activity: {
@@ -243,4 +244,13 @@ export type InventorySupplierSetting = {
   contactPerson?: string;
   email?: string;
   phone?: string;
+};
+
+export type FilterOperator = 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
+
+export type ReportFilter = {
+  id: string;
+  field: string;
+  operator: FilterOperator;
+  value: string;
 };

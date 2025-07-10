@@ -27,7 +27,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { clients, tickets } from '@/lib/placeholder-data';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import React from 'react';
 
@@ -41,12 +40,12 @@ const ticketSchema = z.object({
 
 type TicketFormValues = z.infer<typeof ticketSchema>;
 
-const uniqueAssignees = [...new Set(tickets.map(t => t.assignee).filter(a => a !== 'Unassigned'))];
-
 export default function NewTicketPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+
+  const uniqueAssignees = [...new Set(tickets.map(t => t.assignee).filter(a => a !== 'Unassigned'))];
 
   const subjectFromAI = searchParams.get('subject');
   const descriptionFromAI = searchParams.get('description');
@@ -185,7 +184,7 @@ export default function NewTicketPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Assignee (Optional)</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Unassigned" />

@@ -25,6 +25,7 @@ import {
   LogOut,
   ChevronRight,
   BarChart3,
+  Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -51,6 +52,7 @@ const menuItems = [
     }))
   },
   { href: '/assets', label: 'Assets', icon: HardDrive },
+  { href: '/inventory', label: 'Inventory', icon: Warehouse },
   { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

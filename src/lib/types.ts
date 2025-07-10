@@ -1,6 +1,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -206,4 +207,16 @@ export type AssetLocationSetting = {
   id: string;
   name: string;
   assetCount: number;
+};
+
+export type InventoryItem = {
+  id: string;
+  sku: string;
+  name: string;
+  category: 'Hardware' | 'Software License' | 'Consumable' | 'Part';
+  owner: string; // 'MSP' or Client Name
+  location: string;
+  quantity: number;
+  reorderPoint: number;
+  notes?: string;
 };

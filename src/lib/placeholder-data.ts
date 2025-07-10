@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -708,4 +708,45 @@ export const assetLocationSettings: AssetLocationSetting[] = [
     { id: 'asset-loc-3', name: 'Data Center A', assetCount: 50 },
     { id: 'asset-loc-4', name: 'Warehouse', assetCount: 30 },
     { id: 'asset-loc-5', name: 'Remote (Home Office)', assetCount: 40 },
-]
+];
+
+export const inventoryPageStats: DashboardStat[] = [
+  {
+    title: "Total Item SKUs",
+    value: "124",
+    change: "+8",
+    changeType: "increase",
+    description: "since last month"
+  },
+  {
+    title: "Total Item Count",
+    value: "2,480",
+    change: "+250",
+    changeType: "increase",
+    description: "all locations"
+  },
+  {
+    title: "Items Below Reorder Point",
+    value: "15",
+    change: "+3",
+    changeType: "increase",
+    description: "require attention"
+  },
+  {
+    title: "Value of Inventory",
+    value: "$125,430",
+    change: "+$5,200",
+    changeType: "increase",
+    description: "estimated value"
+  }
+];
+
+export const inventoryItems: InventoryItem[] = [
+  { id: 'INV-001', sku: 'HW-LAP-D01', name: 'Dell Latitude 5420 Laptop', category: 'Hardware', owner: 'MSP', location: 'Main Warehouse', quantity: 25, reorderPoint: 10 },
+  { id: 'INV-002', sku: 'HW-MON-D24', name: 'Dell 24" Monitor P2422H', category: 'Hardware', owner: 'MSP', location: 'Main Warehouse', quantity: 50, reorderPoint: 20 },
+  { id: 'INV-003', sku: 'SW-M365-BUS', name: 'Microsoft 365 Business Premium License', category: 'Software License', owner: 'MSP', location: 'Digital', quantity: 150, reorderPoint: 50 },
+  { id: 'INV-004', sku: 'PT-SSD-1TB', name: 'Samsung 1TB NVMe SSD', category: 'Part', owner: 'MSP', location: 'Repair Bench', quantity: 12, reorderPoint: 5 },
+  { id: 'INV-005', sku: 'CS-CAT6-100', name: 'Cat6 Ethernet Cable (100ft)', category: 'Consumable', owner: 'MSP', location: 'Main Warehouse', quantity: 200, reorderPoint: 100 },
+  { id: 'INV-006', sku: 'HW-LAP-TC01', name: 'Lenovo ThinkPad X1 Carbon', category: 'Hardware', owner: 'TechCorp', location: 'TechCorp HQ', quantity: 5, reorderPoint: 2, notes: 'Reserved for new hires.' },
+  { id: 'INV-007', sku: 'SW-ACRO-PRO', name: 'Adobe Acrobat Pro License', category: 'Software License', owner: 'GlobalInnovate', location: 'Digital', quantity: 10, reorderPoint: 3 },
+];

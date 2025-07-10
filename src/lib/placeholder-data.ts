@@ -1,3 +1,4 @@
+
 import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem } from './types';
 import { subHours, addHours, addDays, format, formatISO } from 'date-fns';
 
@@ -955,11 +956,73 @@ export const customFields: CustomField[] = [
 
 const todayStr = format(now, 'yyyy-MM-dd');
 export const scheduleItems: ScheduleItem[] = [
-  { id: 'SCH-001', title: 'On-site server maintenance', technicianId: 'USR-002', type: 'Appointment', start: `${todayStr} 09:00`, end: `${todayStr} 11:00`, ticketId: 'TKT-001' },
-  { id: 'SCH-002', title: 'Team Sync Meeting', technicianId: 'USR-002', type: 'Meeting', start: `${todayStr} 11:30`, end: `${todayStr} 12:00` },
-  { id: 'SCH-003', title: 'Work on TKT-002', technicianId: 'USR-003', type: 'Ticket', start: `${todayStr} 10:00`, end: `${todayStr} 12:30`, ticketId: 'TKT-002' },
-  { id: 'SCH-004', title: 'Dentist Appointment', technicianId: 'USR-003', type: 'Time Off', start: `${todayStr} 14:00`, end: `${todayStr} 15:00` },
-  { id: 'SCH-005', title: 'Follow up with GlobalInnovate', technicianId: 'USR-001', type: 'Appointment', start: `${todayStr} 15:00`, end: `${todayStr} 15:30` },
-  { id: 'SCH-006', title: 'New User Setup for HealthWell', technicianId: 'USR-004', type: 'Ticket', start: format(addDays(now, 1), 'yyyy-MM-dd') + ' 09:00', end: format(addDays(now, 1), 'yyyy-MM-dd') + ' 10:00', ticketId: 'TKT-003' },
-  { id: 'SCH-007', title: 'Product Demo', technicianId: 'USR-001', type: 'Meeting', start: format(addDays(now, 2), 'yyyy-MM-dd') + ' 13:00', end: format(addDays(now, 2), 'yyyy-MM-dd') + ' 14:00' },
+  { 
+    id: 'SCH-001', 
+    title: 'On-site server maintenance for TechCorp', 
+    technicianId: 'USR-002', // Alice
+    type: 'Appointment', 
+    start: `${todayStr} 09:00`, 
+    end: `${todayStr} 11:00`, 
+    ticketId: 'TKT-001',
+    clientId: 'CLI-001',
+    notes: 'Investigate DC-SRV-01 being unresponsive. Bring diagnostic tools.'
+  },
+  { 
+    id: 'SCH-002', 
+    title: 'Team Sync Meeting', 
+    technicianId: 'USR-002', // Alice
+    type: 'Meeting', 
+    start: `${todayStr} 11:30`, 
+    end: `${todayStr} 12:00`,
+    participants: ['Alice', 'Bob', 'Charlie', 'John Doe'],
+    notes: 'Weekly sync to discuss high-priority tickets and project status.'
+  },
+  { 
+    id: 'SCH-003', 
+    title: 'Work on TKT-002 - Access Denied', 
+    technicianId: 'USR-003', // Bob
+    type: 'Ticket', 
+    start: `${todayStr} 10:00`, 
+    end: `${todayStr} 12:30`, 
+    ticketId: 'TKT-002',
+    clientId: 'CLI-002'
+  },
+  { 
+    id: 'SCH-004', 
+    title: 'Dentist Appointment', 
+    technicianId: 'USR-003', // Bob
+    type: 'Time Off', 
+    start: `${todayStr} 14:00`, 
+    end: `${todayStr} 15:00`,
+    notes: 'Personal appointment.'
+  },
+  { 
+    id: 'SCH-005', 
+    title: 'Follow up with GlobalInnovate CEO', 
+    technicianId: 'USR-001', // John Doe
+    type: 'Appointment', 
+    start: `${todayStr} 15:00`, 
+    end: `${todayStr} 15:30`,
+    clientId: 'CLI-002',
+    notes: 'Quarterly business review call with John Smith.'
+  },
+  { 
+    id: 'SCH-006', 
+    title: 'New User Setup for HealthWell', 
+    technicianId: 'USR-004', // Charlie
+    type: 'Ticket', 
+    start: format(addDays(now, 1), 'yyyy-MM-dd') + ' 09:00', 
+    end: format(addDays(now, 1), 'yyyy-MM-dd') + ' 10:00', 
+    ticketId: 'TKT-003' 
+  },
+  { 
+    id: 'SCH-007', 
+    title: 'Product Demo', 
+    technicianId: 'USR-001', // John Doe
+    type: 'Meeting', 
+    start: format(addDays(now, 2), 'yyyy-MM-dd') + ' 13:00', 
+    end: format(addDays(now, 2), 'yyyy-MM-dd') + ' 14:00',
+    participants: ['John Doe', 'Prospective Client'],
+    notes: 'Demo of Deskwise for a new lead.'
+  },
 ];

@@ -1,12 +1,10 @@
+
 'use client';
 
 import React from 'react';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import {
   Calendar,
@@ -30,20 +28,20 @@ import {
   startOfToday,
 } from 'date-fns';
 import { scheduleItems, users } from '@/lib/placeholder-data';
-import type { ScheduleItem } from '@/lib/types';
+import type { ScheduleItem, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { ScheduleItemDialog } from '@/components/scheduling/schedule-item-dialog';
 
 const colStartClasses = [
   '',
@@ -67,6 +65,8 @@ export default function SchedulingPage() {
     new Date()
   );
 
+  const [selectedItem, setSelectedItem] = React.useState<ScheduleItem | null>(null);
+
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfMonth(firstDayCurrentMonth),
@@ -89,149 +89,174 @@ export default function SchedulingPage() {
     isSameDay(parse(item.start, 'yyyy-MM-dd HH:mm', new Date()), selectedDay) && visibleTechnicians.includes(item.technicianId)
   );
 
+  const handleItemClick = (item: ScheduleItem) => {
+    setSelectedItem(item);
+  };
+  
+  const handleDialogClose = () => {
+    setSelectedItem(null);
+  };
+  
+  const handleItemSave = (updatedItem: ScheduleItem) => {
+    // Here you would typically make an API call to save the changes.
+    // For this demo, we'll just log it and close the dialog.
+    console.log("Saving item:", updatedItem);
+    setSelectedItem(null);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Scheduling</h1>
-          <p className="text-muted-foreground">
-            Manage technician schedules, appointments, and dispatching.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Users className="mr-2 h-4 w-4" />
-                Technicians ({visibleTechnicians.length}/{technicians.length})
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Visible Technicians</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {technicians.map(tech => (
-                <DropdownMenuCheckboxItem
-                  key={tech.id}
-                  checked={visibleTechnicians.includes(tech.id)}
-                  onCheckedChange={(checked) => {
-                    setVisibleTechnicians(prev => 
-                      checked ? [...prev, tech.id] : prev.filter(id => id !== tech.id)
-                    )
-                  }}
-                >
-                  {tech.name}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Appointment
-          </Button>
-        </div>
-      </div>
-      <Card>
-        <CardContent className="p-0">
-          <div className="md:grid md:grid-cols-2 md:divide-x md:divide-border">
-            <div className="p-6">
-              <div className="flex items-center">
-                <h2 className="flex-auto font-semibold text-foreground">
-                  {format(firstDayCurrentMonth, 'MMMM yyyy')}
-                </h2>
-                <button
-                  type="button"
-                  onClick={previousMonth}
-                  className="-my-1.5 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground"
-                >
-                  <span className="sr-only">Previous month</span>
-                  <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                </button>
-                <button
-                  onClick={nextMonth}
-                  type="button"
-                  className="-my-1.5 -mr-1.5 ml-2 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground"
-                >
-                  <span className="sr-only">Next month</span>
-                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </div>
-              <div className="mt-6 grid grid-cols-7 text-center text-xs leading-6 text-muted-foreground">
-                <div>S</div>
-                <div>M</div>
-                <div>T</div>
-                <div>W</div>
-                <div>T</div>
-                <div>F</div>
-                <div>S</div>
-              </div>
-              <div className="mt-2 grid grid-cols-7 text-sm">
-                {days.map((day, dayIdx) => (
-                  <div
-                    key={day.toString()}
-                    className={cn(
-                      dayIdx === 0 && colStartClasses[getDay(day)],
-                      'py-1.5'
-                    )}
+    <>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold font-headline">Scheduling</h1>
+            <p className="text-muted-foreground">
+              Manage technician schedules, appointments, and dispatching.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Users className="mr-2 h-4 w-4" />
+                  Technicians ({visibleTechnicians.length}/{technicians.length})
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Visible Technicians</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {technicians.map(tech => (
+                  <DropdownMenuCheckboxItem
+                    key={tech.id}
+                    checked={visibleTechnicians.includes(tech.id)}
+                    onCheckedChange={(checked) => {
+                      setVisibleTechnicians(prev => 
+                        checked ? [...prev, tech.id] : prev.filter(id => id !== tech.id)
+                      )
+                    }}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDay(day)}
+                    {tech.name}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Appointment
+            </Button>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="p-0">
+            <div className="md:grid md:grid-cols-2 md:divide-x md:divide-border">
+              <div className="p-6">
+                <div className="flex items-center">
+                  <h2 className="flex-auto font-semibold text-foreground">
+                    {format(firstDayCurrentMonth, 'MMMM yyyy')}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={previousMonth}
+                    className="-my-1.5 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground"
+                  >
+                    <span className="sr-only">Previous month</span>
+                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                  <button
+                    onClick={nextMonth}
+                    type="button"
+                    className="-my-1.5 -mr-1.5 ml-2 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground"
+                  >
+                    <span className="sr-only">Next month</span>
+                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="mt-6 grid grid-cols-7 text-center text-xs leading-6 text-muted-foreground">
+                  <div>S</div>
+                  <div>M</div>
+                  <div>T</div>
+                  <div>W</div>
+                  <div>T</div>
+                  <div>F</div>
+                  <div>S</div>
+                </div>
+                <div className="mt-2 grid grid-cols-7 text-sm">
+                  {days.map((day, dayIdx) => (
+                    <div
+                      key={day.toString()}
                       className={cn(
-                        'mx-auto flex h-8 w-8 items-center justify-center rounded-full',
-                        isEqual(day, selectedDay) && 'text-white',
-                        !isEqual(day, selectedDay) &&
-                          isToday(day) &&
-                          'text-primary',
-                        !isEqual(day, selectedDay) &&
-                          !isToday(day) &&
-                          isSameMonth(day, firstDayCurrentMonth) &&
-                          'text-foreground',
-                        !isEqual(day, selectedDay) &&
-                          !isToday(day) &&
-                          !isSameMonth(day, firstDayCurrentMonth) &&
-                          'text-muted-foreground',
-                        isEqual(day, selectedDay) && isToday(day) && 'bg-primary',
-                        isEqual(day, selectedDay) &&
-                          !isToday(day) &&
-                          'bg-primary/80',
-                        !isEqual(day, selectedDay) && 'hover:bg-accent',
-                        (isEqual(day, selectedDay) || isToday(day)) &&
-                          'font-semibold'
+                        dayIdx === 0 && colStartClasses[getDay(day)],
+                        'py-1.5'
                       )}
                     >
-                      <time dateTime={format(day, 'yyyy-MM-dd')}>
-                        {format(day, 'd')}
-                      </time>
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDay(day)}
+                        className={cn(
+                          'mx-auto flex h-8 w-8 items-center justify-center rounded-full',
+                          isEqual(day, selectedDay) && 'text-white',
+                          !isEqual(day, selectedDay) &&
+                            isToday(day) &&
+                            'text-primary',
+                          !isEqual(day, selectedDay) &&
+                            !isToday(day) &&
+                            isSameMonth(day, firstDayCurrentMonth) &&
+                            'text-foreground',
+                          !isEqual(day, selectedDay) &&
+                            !isToday(day) &&
+                            !isSameMonth(day, firstDayCurrentMonth) &&
+                            'text-muted-foreground',
+                          isEqual(day, selectedDay) && isToday(day) && 'bg-primary',
+                          isEqual(day, selectedDay) &&
+                            !isToday(day) &&
+                            'bg-primary/80',
+                          !isEqual(day, selectedDay) && 'hover:bg-accent',
+                          (isEqual(day, selectedDay) || isToday(day)) &&
+                            'font-semibold'
+                        )}
+                      >
+                        <time dateTime={format(day, 'yyyy-MM-dd')}>
+                          {format(day, 'd')}
+                        </time>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
+              <section className="p-6">
+                <h2 className="font-semibold text-foreground">
+                  Schedule for{' '}
+                  <time dateTime={format(selectedDay, 'yyyy-MM-dd')}>
+                    {format(selectedDay, 'MMM dd, yyy')}
+                  </time>
+                </h2>
+                <ol className="mt-4 space-y-1 text-sm leading-6 text-muted-foreground">
+                  {meetingsForDay.length > 0 ? (
+                    meetingsForDay.sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()).map((meeting) => (
+                      <Meeting meeting={meeting} key={meeting.id} onClick={() => handleItemClick(meeting)} />
+                    ))
+                  ) : (
+                    <p>No appointments for today.</p>
+                  )}
+                </ol>
+              </section>
             </div>
-            <section className="p-6">
-              <h2 className="font-semibold text-foreground">
-                Schedule for{' '}
-                <time dateTime={format(selectedDay, 'yyyy-MM-dd')}>
-                  {format(selectedDay, 'MMM dd, yyy')}
-                </time>
-              </h2>
-              <ol className="mt-4 space-y-1 text-sm leading-6 text-muted-foreground">
-                {meetingsForDay.length > 0 ? (
-                  meetingsForDay.sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()).map((meeting) => (
-                    <Meeting meeting={meeting} key={meeting.id} />
-                  ))
-                ) : (
-                  <p>No appointments for today.</p>
-                )}
-              </ol>
-            </section>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+      {selectedItem && (
+        <ScheduleItemDialog 
+          item={selectedItem}
+          isOpen={!!selectedItem}
+          onClose={handleDialogClose}
+          onSave={handleItemSave}
+        />
+      )}
+    </>
   );
 }
 
-function Meeting({ meeting }: { meeting: ScheduleItem }) {
+function Meeting({ meeting, onClick }: { meeting: ScheduleItem, onClick: () => void }) {
   const startDateTime = parse(meeting.start, 'yyyy-MM-dd HH:mm', new Date());
   const endDateTime = parse(meeting.end, 'yyyy-MM-dd HH:mm', new Date());
   const technician = users.find(u => u.id === meeting.technicianId);
@@ -243,7 +268,7 @@ function Meeting({ meeting }: { meeting: ScheduleItem }) {
   }[meeting.type];
 
   return (
-    <li className="flex items-center rounded-xl p-2 group hover:bg-secondary">
+    <li className="flex items-center rounded-xl p-2 group hover:bg-secondary cursor-pointer" onClick={onClick}>
       <div className={cn("w-2 h-10 rounded-full mr-4", typeColor)}></div>
       <div className="flex-auto">
         <p className="font-semibold text-foreground">{meeting.title}</p>

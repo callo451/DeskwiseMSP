@@ -1,3 +1,4 @@
+
 export type Client = {
   id: string;
   name: string;
@@ -338,6 +339,8 @@ export type ScheduleItem = {
   type: 'Ticket' | 'Meeting' | 'Time Off' | 'Appointment';
   start: string; // yyyy-MM-dd HH:mm
   end: string;   // yyyy-MM-dd HH:mm
+  clientId?: string;
+  participants?: string[];
   ticketId?: string;
   notes?: string;
 };

@@ -178,7 +178,7 @@ export default function DashboardPage() {
   const myOpenTickets = tickets.filter(t => t.assignee === 'Alice' && t.status !== 'Resolved' && t.status !== 'Closed');
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl md:text-3xl font-bold font-headline">Dashboard</h1>
         <Link href="/tickets/new">
@@ -268,7 +268,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
         </TabsContent>
-        <TabsContent value="company">
+        <TabsContent value="company" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {dashboardStats.map(stat => (
               <StatCard key={stat.title} stat={stat} />

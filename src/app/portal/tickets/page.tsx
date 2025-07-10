@@ -22,8 +22,9 @@ import type { Ticket } from '@/lib/types';
 import { ChevronRight, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 
-// For demonstration, we assume the logged-in client is 'TechCorp'.
+// For demonstration, we assume the logged-in client and user.
 const CURRENT_CLIENT_NAME = 'TechCorp';
+const CURRENT_USER_NAME = 'Jane Doe';
 
 const TicketRow = ({ ticket }: { ticket: Ticket }) => {
   const getStatusVariant = (status: Ticket['status']) => {
@@ -99,7 +100,8 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => {
 
 export default function ClientTicketsPage() {
   const clientTickets = allTickets.filter(
-    (ticket) => ticket.client === CURRENT_CLIENT_NAME
+    // Filter for tickets created by the current user within their organization.
+    (ticket) => ticket.client === CURRENT_CLIENT_NAME && ticket.activity[0]?.user === CURRENT_USER_NAME
   );
 
   return (
@@ -107,7 +109,7 @@ export default function ClientTicketsPage() {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>My Tickets</CardTitle>
-          <CardDescription>Track and manage your support requests.</CardDescription>
+          <CardDescription>Track and manage the support requests you have created.</CardDescription>
         </div>
         <Link href="/portal/tickets/new">
             <Button size="sm" className="gap-1">
@@ -140,7 +142,7 @@ export default function ClientTicketsPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
-                  No tickets found.
+                  You have not created any tickets yet.
                 </TableCell>
               </TableRow>
             )}

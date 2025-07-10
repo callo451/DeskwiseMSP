@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/form';
 import { users, roles } from '@/lib/placeholder-data';
 import type { User, Role } from '@/lib/types';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -105,31 +105,67 @@ const UserRow = ({ user }: { user: User }) => {
   );
 };
 
-const RoleRow = ({ role }: { role: Role }) => {
-    return (
-      <TableRow>
-        <TableCell>
-          <div className="font-medium">{role.name}</div>
-          <div className="text-sm text-muted-foreground">{role.description}</div>
-        </TableCell>
-        <TableCell className="text-center">{role.userCount}</TableCell>
-        <TableCell>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button aria-haspopup="true" size="icon" variant="ghost">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem>Edit Permissions</DropdownMenuItem>
-              <DropdownMenuItem>Duplicate Role</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TableCell>
-      </TableRow>
+const PermissionIcon = ({ allowed }: { allowed: boolean }) => {
+    return allowed ? (
+      <CheckCircle className="h-5 w-5 text-green-500" />
+    ) : (
+      <XCircle className="h-5 w-5 text-muted-foreground" />
     );
 };
+
+const PermissionRow = ({ label, value }: { label: string, value: boolean | string }) => (
+    <div className="flex items-center justify-between py-2">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      {typeof value === 'boolean' ? (
+        <PermissionIcon allowed={value} />
+      ) : (
+        <Badge variant="secondary" className="capitalize text-xs">{value.replace(/_/g, ' ')}</Badge>
+      )}
+    </div>
+);
+
+const RoleCard = ({ role }: { role: Role }) => {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>{role.name}</CardTitle>
+              <CardDescription>{role.userCount} users • {role.description}</CardDescription>
+            </div>
+             <Button variant="outline" size="sm">Edit</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div>
+                <h4 className="font-semibold text-sm">Tickets</h4>
+                <div className="divide-y mt-2 border-t">
+                    <PermissionRow label="Create" value={role.permissions.tickets.create} />
+                    <PermissionRow label="Read Access" value={role.permissions.tickets.read} />
+                    <PermissionRow label="Update" value={role.permissions.tickets.update} />
+                    <PermissionRow label="Delete" value={role.permissions.tickets.delete} />
+                </div>
+            </div>
+             <div>
+                <h4 className="font-semibold text-sm">Clients</h4>
+                <div className="divide-y mt-2 border-t">
+                    <PermissionRow label="Create" value={role.permissions.clients.create} />
+                    <PermissionRow label="Read" value={role.permissions.clients.read} />
+                    <PermissionRow label="Update" value={role.permissions.clients.update} />
+                    <PermissionRow label="Delete" value={role.permissions.clients.delete} />
+                </div>
+            </div>
+             <div>
+                <h4 className="font-semibold text-sm">Settings</h4>
+                <div className="divide-y mt-2 border-t">
+                    <PermissionRow label="Admin Access" value={role.permissions.settings.adminAccess} />
+                </div>
+            </div>
+        </CardContent>
+      </Card>
+    );
+};
+
 
 const ssoSettingsSchema = z.object({
   enabled: z.boolean(),
@@ -290,34 +326,21 @@ export default function UserManagementPage() {
             </Card>
         </TabsContent>
          <TabsContent value="roles" className="mt-6">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                        <CardTitle>Roles</CardTitle>
-                        <CardDescription>Define permission sets to assign to users.</CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                        <TableRow>
-                            <TableHead>Role</TableHead>
-                            <TableHead className="text-center">Users</TableHead>
-                            <TableHead>
-                            <span className="sr-only">Actions</span>
-                            </TableHead>
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {roles.map(role => (
-                            <RoleRow key={role.id} role={role} />
-                        ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-semibold">Roles</h2>
+                    <p className="text-muted-foreground">Define permission sets to assign to users.</p>
+                </div>
+                 <Button size="sm" className="gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    New Role
+                </Button>
+            </div>
+            <div className="grid gap-6 mt-4 md:grid-cols-2 lg:grid-cols-3">
+                {roles.map(role => (
+                    <RoleCard key={role.id} role={role} />
+                ))}
+            </div>
         </TabsContent>
         <TabsContent value="sso" className="mt-6">
           <SsoSettings />

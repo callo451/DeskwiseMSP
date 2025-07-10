@@ -6,6 +6,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -189,13 +190,38 @@ export type User = {
     status: 'Active' | 'Invited' | 'Inactive';
     avatarUrl: string;
 };
-  
+
+export type Permissions = {
+  tickets: {
+    create: boolean;
+    read: 'all' | 'assigned_only' | 'none';
+    update: boolean;
+    delete: boolean;
+  };
+  clients: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  assets: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  settings: {
+    adminAccess: boolean;
+  };
+};
+
 export type Role = {
     id: string;
     name: 'Administrator' | 'Technician' | 'Read-Only';
     description: string;
     userCount: number;
-}
+    permissions: Permissions;
+};
 
 export type AssetStatusSetting = {
   id: string;

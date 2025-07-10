@@ -208,7 +208,7 @@ export const tickets: Ticket[] = [
     description: 'We have a new physician, Dr. Adams, starting next Monday. Please set up a new user account with standard physician access, an email address, and access to the EMR system.',
     client: 'HealthWell', 
     assignee: 'Charlie', 
-    priority: 'Medium', 
+    priority: 'On Hold', 
     status: 'On Hold', 
     createdDate: '2024-05-18', 
     lastUpdate: '1d ago',
@@ -710,9 +710,42 @@ export const users: User[] = [
 ];
   
 export const roles: Role[] = [
-    { id: 'ROLE-001', name: 'Administrator', description: 'Full access to all features and settings.', userCount: 1 },
-    { id: 'ROLE-002', name: 'Technician', description: 'Can manage tickets, clients, and assets. Limited settings access.', userCount: 3 },
-    { id: 'ROLE-003', name: 'Read-Only', description: 'Can view data but cannot make changes.', userCount: 1 },
+    { 
+        id: 'ROLE-001', 
+        name: 'Administrator', 
+        description: 'Full access to all features and settings.', 
+        userCount: 1,
+        permissions: {
+            tickets: { create: true, read: 'all', update: true, delete: true },
+            clients: { create: true, read: true, update: true, delete: true },
+            assets: { create: true, read: true, update: true, delete: true },
+            settings: { adminAccess: true },
+        }
+    },
+    { 
+        id: 'ROLE-002', 
+        name: 'Technician', 
+        description: 'Can manage tickets, clients, and assets.', 
+        userCount: 3,
+        permissions: {
+            tickets: { create: true, read: 'all', update: true, delete: false },
+            clients: { create: false, read: true, update: true, delete: false },
+            assets: { create: true, read: true, update: true, delete: false },
+            settings: { adminAccess: false },
+        }
+    },
+    { 
+        id: 'ROLE-003', 
+        name: 'Read-Only', 
+        description: 'Can view data but cannot make changes.', 
+        userCount: 1,
+        permissions: {
+            tickets: { create: false, read: 'all', update: false, delete: false },
+            clients: { create: false, read: true, update: false, delete: false },
+            assets: { create: false, read: true, update: false, delete: false },
+            settings: { adminAccess: false },
+        }
+    },
 ];
 
 export const assetStatusSettings: AssetStatusSetting[] = [

@@ -1,4 +1,5 @@
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog } from './types';
+
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -452,12 +453,12 @@ export const assets: Asset[] = [
 
 
 export const knowledgeBaseArticles: KnowledgeBaseArticle[] = [
-  { id: 'KB-001', title: 'How to set up a new VPN connection', content: 'This is an article about setting up a VPN.', category: 'Networking / VPN', author: 'Alice', lastUpdated: '2024-04-10', type: 'Internal' },
-  { id: 'KB-002', title: 'Resetting your password', content: 'Step 1: Click "Forgot Password"...', category: 'User Guides', author: 'System', lastUpdated: '2024-03-01', type: 'Public' },
-  { id: 'KB-003', title: 'Troubleshooting common printer issues', content: 'Is it plugged in? Is there paper? If yes, restart it.', category: 'Hardware / Printers', author: 'Bob', lastUpdated: '2024-05-05', type: 'Public' },
-  { id: 'KB-004', title: 'Onboarding process for new clients', content: 'A step-by-step guide for onboarding new MSP clients.', category: 'SOPs', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal' },
-  { id: 'KB-005', title: 'How to configure a Cisco router', content: '...', category: 'Networking / Routers', author: 'Alice', lastUpdated: '2024-05-12', type: 'Internal' },
-  { id: 'KB-006', title: 'How to Flush DNS', content: 'Open command prompt and type `ipconfig /flushdns`', category: 'User Guides', author: 'Bob', lastUpdated: '2024-05-01', type: 'Public' },
+  { id: 'KB-001', title: 'How to set up a new VPN connection', content: 'This is an article about setting up a VPN.', category: 'Networking / VPN', author: 'Alice', lastUpdated: '2024-04-10', type: 'Internal', visibleTo: ['GRP-001'] },
+  { id: 'KB-002', title: 'Resetting your password', content: 'Step 1: Click "Forgot Password"...', category: 'User Guides', author: 'System', lastUpdated: '2024-03-01', type: 'Public', visibleTo: ['GRP-001', 'GRP-002', 'GRP-003'] },
+  { id: 'KB-003', title: 'Troubleshooting common printer issues', content: 'Is it plugged in? Is there paper? If yes, restart it.', category: 'Hardware / Printers', author: 'Bob', lastUpdated: '2024-05-05', type: 'Public', visibleTo: ['GRP-001', 'GRP-002', 'GRP-003'] },
+  { id: 'KB-004', title: 'Onboarding process for new clients', content: 'A step-by-step guide for onboarding new MSP clients.', category: 'SOPs', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal', visibleTo: ['GRP-001'] },
+  { id: 'KB-005', title: 'How to configure a Cisco router for TechCorp', content: 'Specific Cisco router configuration for the TechCorp network.', category: 'Networking / Routers', author: 'Alice', lastUpdated: '2024-05-12', type: 'Internal', visibleTo: ['GRP-001', 'GRP-002'] },
+  { id: 'KB-006', title: 'How to Flush DNS', content: 'Open command prompt and type `ipconfig /flushdns`', category: 'User Guides', author: 'Bob', lastUpdated: '2024-05-01', type: 'Public', visibleTo: ['GRP-001', 'GRP-002', 'GRP-003'] },
 ];
 
 export const ticketPageStats: DashboardStat[] = [
@@ -705,13 +706,49 @@ export const slaPolicies: SlaPolicy[] = [
   },
 ];
 
-export const users: User[] = [
-    { id: 'USR-001', name: 'John Doe', email: 'john.doe@email.com', role: 'Administrator', status: 'Active', avatarUrl: 'https://placehold.co/40x40.png' },
-    { id: 'USR-002', name: 'Alice', email: 'alice@email.com', role: 'Technician', status: 'Active', avatarUrl: 'https://placehold.co/40x40/f87171/FFFFFF.png' },
-    { id: 'USR-003', name: 'Bob', email: 'bob@email.com', role: 'Technician', status: 'Active', avatarUrl: 'https://placehold.co/40x40/60a5fa/FFFFFF.png' },
-    { id: 'USR-004', name: 'Charlie', email: 'charlie@email.com', role: 'Technician', status: 'Inactive', avatarUrl: 'https://placehold.co/40x40/34d399/FFFFFF.png' },
-    { id: 'USR-005', name: 'new.user@email.com', email: 'new.user@email.com', role: 'Read-Only', status: 'Invited', avatarUrl: '' },
+export const userGroups: UserGroup[] = [
+  { id: 'GRP-001', name: 'All Technicians', description: 'Internal support staff and administrators.', memberIds: ['USR-001', 'USR-002', 'USR-003', 'USR-004'] },
+  { id: 'GRP-002', name: 'Client - TechCorp', description: 'All contacts from TechCorp.', memberIds: ['CON-001', 'CON-006', 'CON-007'] },
+  { id: 'GRP-003', name: 'Client - GlobalInnovate', description: 'All contacts from GlobalInnovate.', memberIds: ['CON-002'] },
 ];
+
+export const users: User[] = [
+    { id: 'USR-001', name: 'John Doe', email: 'john.doe@email.com', role: 'Administrator', status: 'Active', avatarUrl: 'https://placehold.co/40x40.png', groups: ['GRP-001'] },
+    { id: 'USR-002', name: 'Alice', email: 'alice@email.com', role: 'Technician', status: 'Active', avatarUrl: 'https://placehold.co/40x40/f87171/FFFFFF.png', groups: ['GRP-001'] },
+    { id: 'USR-003', name: 'Bob', email: 'bob@email.com', role: 'Technician', status: 'Active', avatarUrl: 'https://placehold.co/40x40/60a5fa/FFFFFF.png', groups: ['GRP-001'] },
+    { id: 'USR-004', name: 'Charlie', email: 'charlie@email.com', role: 'Technician', status: 'Inactive', avatarUrl: 'https://placehold.co/40x40/34d399/FFFFFF.png', groups: ['GRP-001'] },
+    { id: 'USR-005', name: 'new.user@email.com', email: 'new.user@email.com', role: 'Read-Only', status: 'Invited', avatarUrl: '', groups: [] },
+];
+
+const adminPermissions: Permissions = {
+  tickets: { create: true, read: 'all', update: true, delete: true },
+  clients: { create: true, read: true, update: true, delete: true },
+  assets: { create: true, read: true, update: true, delete: true },
+  inventory: { create: true, read: true, update: true, delete: true },
+  knowledgeBase: { create: true, read: 'all', update: true, delete: true },
+  reports: { view: true },
+  settings: { adminAccess: true },
+};
+
+const technicianPermissions: Permissions = {
+  tickets: { create: true, read: 'all', update: true, delete: false },
+  clients: { create: false, read: true, update: true, delete: false },
+  assets: { create: true, read: true, update: true, delete: false },
+  inventory: { create: true, read: true, update: true, delete: false },
+  knowledgeBase: { create: true, read: 'all', update: true, delete: false },
+  reports: { view: true },
+  settings: { adminAccess: false },
+};
+
+const readOnlyPermissions: Permissions = {
+  tickets: { create: false, read: 'all', update: false, delete: false },
+  clients: { create: false, read: true, update: false, delete: false },
+  assets: { create: false, read: true, update: false, delete: false },
+  inventory: { create: false, read: true, update: false, delete: false },
+  knowledgeBase: { create: false, read: 'group', update: false, delete: false },
+  reports: { view: false },
+  settings: { adminAccess: false },
+};
   
 export const roles: Role[] = [
     { 
@@ -719,45 +756,21 @@ export const roles: Role[] = [
         name: 'Administrator', 
         description: 'Full access to all features and settings.', 
         userCount: 1,
-        permissions: {
-            tickets: { create: true, read: 'all', update: true, delete: true },
-            clients: { create: true, read: true, update: true, delete: true },
-            assets: { create: true, read: true, update: true, delete: true },
-            inventory: { create: true, read: true, update: true, delete: true },
-            knowledgeBase: { create: true, read: 'all', update: true, delete: true },
-            reports: { view: true },
-            settings: { adminAccess: true },
-        }
+        permissions: adminPermissions,
     },
     { 
         id: 'ROLE-002', 
         name: 'Technician', 
         description: 'Can manage tickets, clients, and assets.', 
         userCount: 3,
-        permissions: {
-            tickets: { create: true, read: 'all', update: true, delete: false },
-            clients: { create: false, read: true, update: true, delete: false },
-            assets: { create: true, read: true, update: true, delete: false },
-            inventory: { create: true, read: true, update: true, delete: false },
-            knowledgeBase: { create: true, read: 'all', update: true, delete: false },
-            reports: { view: false },
-            settings: { adminAccess: false },
-        }
+        permissions: technicianPermissions,
     },
     { 
         id: 'ROLE-003', 
         name: 'Read-Only', 
         description: 'Can view data but cannot make changes.', 
         userCount: 1,
-        permissions: {
-            tickets: { create: false, read: 'all', update: false, delete: false },
-            clients: { create: false, read: true, update: false, delete: false },
-            assets: { create: false, read: true, update: false, delete: false },
-            inventory: { create: false, read: true, update: false, delete: false },
-            knowledgeBase: { create: false, read: 'public_only', update: false, delete: false },
-            reports: { view: true },
-            settings: { adminAccess: false },
-        }
+        permissions: readOnlyPermissions,
     },
 ];
 
@@ -781,8 +794,8 @@ export const assetLocationSettings: AssetLocationSetting[] = [
     { id: 'asset-loc-1', name: 'Main Office - 1st Floor', assetCount: 120 },
     { id: 'asset-loc-2', name: 'Main Office - 2nd Floor', assetCount: 110 },
     { id: 'asset-loc-3', name: 'Data Center A', assetCount: 50 },
-    { id: 'asset-loc-4', name: 'Warehouse', assetCount: 30 },
-    { id: 'asset-loc-5', name: 'Remote (Home Office)', assetCount: 40 },
+    { id: 'asset-loc-4', name: 'Warehouse', assetCount: 40 },
+    { id: 'asset-loc-5', name: 'Remote (Home Office)', assetCount: 30 },
 ];
 
 export const inventoryPageStats: DashboardStat[] = [

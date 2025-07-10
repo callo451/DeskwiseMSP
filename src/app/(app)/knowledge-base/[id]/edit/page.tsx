@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,15 +24,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ChevronLeft, Sparkles, Bot } from 'lucide-react';
+import { ChevronLeft, Sparkles, Bot, Users } from 'lucide-react';
 import { generateKbArticle } from '@/ai/flows/knowledge-base-article-generation';
-import { knowledgeBaseArticles } from '@/lib/placeholder-data';
-import type { KnowledgeBaseArticle } from '@/lib/types';
+import { knowledgeBaseArticles, userGroups } from '@/lib/placeholder-data';
+import type { KnowledgeBaseArticle, UserGroup } from '@/lib/types';
 import { MarkdownEditor } from '@/components/ui/markdown-editor';
 import Link from 'next/link';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const articleSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -39,6 +44,7 @@ const articleSchema = z.object({
   type: z.enum(['Internal', 'Public']),
   content: z.string().min(20, 'Content must be at least 20 characters.'),
   aiPrompt: z.string().optional(),
+  visibleTo: z.array(z.string()).default([]),
 });
 
 type ArticleFormValues = z.infer<typeof articleSchema>;
@@ -61,6 +67,7 @@ export default function EditKnowledgeBaseArticlePage() {
       type: 'Internal',
       content: '',
       aiPrompt: '',
+      visibleTo: [],
     },
   });
 
@@ -74,6 +81,7 @@ export default function EditKnowledgeBaseArticlePage() {
             type: foundArticle.type,
             content: foundArticle.content,
             aiPrompt: '',
+            visibleTo: foundArticle.visibleTo || [],
         });
     }
   }, [params.id, form]);
@@ -138,6 +146,8 @@ export default function EditKnowledgeBaseArticlePage() {
       </div>
     );
   }
+  
+  const selectedGroups = userGroups.filter(group => form.watch('visibleTo').includes(group.id));
 
   return (
     <div className="space-y-6">
@@ -187,19 +197,52 @@ export default function EditKnowledgeBaseArticlePage() {
                       </FormItem>
                     )}
                   />
-                  <FormField
+                   <FormField
                     control={form.control}
-                    name="type"
+                    name="visibleTo"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Visibility</FormLabel>
-                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            <SelectItem value="Internal">Internal (for technicians only)</SelectItem>
-                            <SelectItem value="Public">Public (visible to clients)</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Visible To</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button variant="outline" role="combobox" className={cn("w-full justify-between", !field.value?.length && "text-muted-foreground")}>
+                                <div className="flex gap-1 flex-wrap">
+                                    {selectedGroups.length > 0 ? selectedGroups.map(group => (
+                                        <Badge variant="secondary" key={group.id}>{group.name}</Badge>
+                                    )) : "Select groups..."}
+                                </div>
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="Search groups..." />
+                                <CommandList>
+                                    <CommandEmpty>No groups found.</CommandEmpty>
+                                    <CommandGroup>
+                                        {userGroups.map((group) => (
+                                            <CommandItem
+                                                key={group.id}
+                                                onSelect={() => {
+                                                    const selected = field.value || [];
+                                                    const isSelected = selected.includes(group.id);
+                                                    const newSelection = isSelected ? selected.filter(id => id !== group.id) : [...selected, group.id];
+                                                    field.onChange(newSelection);
+                                                }}
+                                            >
+                                                <Check className={cn("mr-2 h-4 w-4", (field.value || []).includes(group.id) ? "opacity-100" : "opacity-0")} />
+                                                {group.name}
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormDescription>
+                          Select which user groups can view this article. Leave blank to make it visible to all technicians.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

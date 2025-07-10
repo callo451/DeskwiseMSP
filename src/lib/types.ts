@@ -104,6 +104,7 @@ export type KnowledgeBaseArticle = {
   author: string;
   lastUpdated: string;
   type: 'Internal' | 'Public';
+  visibleTo: string[]; // Array of UserGroup IDs
 };
 
 export type DashboardStat = {
@@ -174,6 +175,13 @@ export type SlaPolicy = {
   targets: SlaPolicyTarget[];
 };
 
+export type UserGroup = {
+  id: string;
+  name: string;
+  description: string;
+  memberIds: string[]; // Array of User IDs
+};
+
 export type User = {
     id: string;
     name: string;
@@ -181,6 +189,7 @@ export type User = {
     role: 'Administrator' | 'Technician' | 'Read-Only';
     status: 'Active' | 'Invited' | 'Inactive';
     avatarUrl: string;
+    groups: string[]; // Array of UserGroup IDs
 };
 
 export type Permissions = {
@@ -210,7 +219,7 @@ export type Permissions = {
   };
   knowledgeBase: {
     create: boolean;
-    read: 'all' | 'public_only';
+    read: 'all' | 'group' | 'public_only';
     update: boolean;
     delete: boolean;
   };

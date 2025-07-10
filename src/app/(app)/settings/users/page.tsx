@@ -1,3 +1,4 @@
+
 'use client';
 
 import { z } from 'zod';
@@ -45,14 +46,15 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { users, roles } from '@/lib/placeholder-data';
-import type { User, Role } from '@/lib/types';
-import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, BarChart3, BookOpen, Warehouse, HardDrive } from 'lucide-react';
+import { users, roles, userGroups } from '@/lib/placeholder-data';
+import type { User, Role, UserGroup } from '@/lib/types';
+import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, Users2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import React from 'react';
 
 const UserRow = ({ user }: { user: User }) => {
   const getStatusVariant = (status: User['status']) => {
@@ -305,6 +307,61 @@ function SsoSettings() {
   );
 }
 
+const UserGroups = () => {
+  const allUsers = React.useMemo(() => {
+    const userMap = new Map<string, User>();
+    users.forEach(user => userMap.set(user.id, user));
+    return userMap;
+  }, []);
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>User Groups</CardTitle>
+              <CardDescription>Manage groups for visibility and permissions.</CardDescription>
+            </div>
+            <Button size="sm" className="gap-1">
+              <PlusCircle className="h-3.5 w-3.5" />
+              New Group
+            </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {userGroups.map(group => (
+          <Card key={group.id} className="bg-secondary/50">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <div>
+                <CardTitle className="text-lg flex items-center gap-2"><Users2 className="h-5 w-5" />{group.name}</CardTitle>
+                <CardDescription>{group.description}</CardDescription>
+              </div>
+              <Button variant="outline" size="sm">Edit</Button>
+            </CardHeader>
+            <CardContent>
+              <h4 className="font-semibold text-sm mb-2">Members ({group.memberIds.length})</h4>
+              <div className="flex flex-wrap gap-2">
+                {group.memberIds.map(memberId => {
+                  const user = allUsers.get(memberId);
+                  return user ? (
+                    <Badge key={user.id} variant="outline" className="flex items-center gap-2 pr-1">
+                       <Avatar className="h-4 w-4">
+                         <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="user avatar" />
+                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                       </Avatar>
+                       {user.name}
+                    </Badge>
+                  ) : null;
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
+
 
 export default function UserManagementPage() {
   return (
@@ -317,9 +374,10 @@ export default function UserManagementPage() {
       </div>
 
        <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-lg">
+        <TabsList className="grid w-full grid-cols-4 max-w-xl">
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="roles">Roles</TabsTrigger>
+          <TabsTrigger value="groups">Groups</TabsTrigger>
           <TabsTrigger value="sso">SSO</TabsTrigger>
         </TabsList>
         <TabsContent value="users" className="mt-6">
@@ -373,6 +431,9 @@ export default function UserManagementPage() {
                     <RoleCard key={role.id} role={role} />
                 ))}
             </div>
+        </TabsContent>
+        <TabsContent value="groups" className="mt-6">
+          <UserGroups />
         </TabsContent>
         <TabsContent value="sso" className="mt-6">
           <SsoSettings />

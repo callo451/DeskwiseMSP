@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField } from './types';
 import { subHours, addHours, addDays, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -930,4 +930,12 @@ export const contracts: Contract[] = [
       { id: 'SVC-005', name: 'Campus-wide WiFi Management', description: 'Management of all campus access points.', quantity: 1, rate: 1000, total: 1000 },
     ]
   },
+];
+
+export const customFields: CustomField[] = [
+  { id: 'CF-TKT-01', module: 'Tickets', name: 'Onboarding Checklist', type: 'Checkbox', required: false },
+  { id: 'CF-TKT-02', module: 'Tickets', name: 'Root Cause', type: 'Dropdown', options: ['Software', 'Hardware', 'User Error', 'Other'], required: true },
+  { id: 'CF-AST-01', module: 'Assets', name: 'Warranty Expiration', type: 'Date', required: false },
+  { id: 'CF-AST-02', module: 'Assets', name: 'Purchase Price', type: 'Number', required: false },
+  { id: 'CF-CLI-01', module: 'Clients', name: 'Account Manager', type: 'Text', required: true },
 ];

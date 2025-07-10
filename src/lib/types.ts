@@ -9,6 +9,7 @@
 
 
 
+
 export type Client = {
   id: string;
   name: string;
@@ -320,4 +321,15 @@ export type Contract = {
   endDate: string; // ISO Date
   mrr: number;
   services: ContractService[];
+};
+
+export type CustomFieldType = 'Text' | 'Textarea' | 'Number' | 'Checkbox' | 'Date' | 'Dropdown';
+
+export type CustomField = {
+  id: string;
+  module: 'Tickets' | 'Assets' | 'Clients';
+  name: string;
+  type: CustomFieldType;
+  options?: string[]; // For Dropdown type
+  required: boolean;
 };

@@ -237,7 +237,6 @@ export default function ReportsPage() {
                                 <Select value={groupBy} onValueChange={setGroupBy}>
                                     <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">None</SelectItem>
                                         {TICKET_GROUPABLE_COLUMNS.map(col => <SelectItem key={col} value={col}>{col}</SelectItem>)}
                                     </SelectContent>
                                 </Select>

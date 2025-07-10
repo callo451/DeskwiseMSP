@@ -452,10 +452,12 @@ export const assets: Asset[] = [
 
 
 export const knowledgeBaseArticles: KnowledgeBaseArticle[] = [
-  { id: 'KB-001', title: 'How to set up a new VPN connection', content: '...', category: 'Networking', author: 'Alice', lastUpdated: '2024-04-10', type: 'Internal' },
-  { id: 'KB-002', title: 'Resetting your password', content: '...', category: 'User Guides', author: 'System', lastUpdated: '2024-03-01', type: 'Public' },
-  { id: 'KB-003', title: 'Troubleshooting common printer issues', content: '...', category: 'Hardware', author: 'Bob', lastUpdated: '2024-05-05', type: 'Public' },
-  { id: 'KB-004', title: 'Onboarding process for new clients', content: '...', category: 'SOPs', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal' },
+  { id: 'KB-001', title: 'How to set up a new VPN connection', content: 'This is an article about setting up a VPN.', category: 'Networking / VPN', author: 'Alice', lastUpdated: '2024-04-10', type: 'Internal' },
+  { id: 'KB-002', title: 'Resetting your password', content: 'Step 1: Click "Forgot Password"...', category: 'User Guides', author: 'System', lastUpdated: '2024-03-01', type: 'Public' },
+  { id: 'KB-003', title: 'Troubleshooting common printer issues', content: 'Is it plugged in? Is there paper? If yes, restart it.', category: 'Hardware / Printers', author: 'Bob', lastUpdated: '2024-05-05', type: 'Public' },
+  { id: 'KB-004', title: 'Onboarding process for new clients', content: 'A step-by-step guide for onboarding new MSP clients.', category: 'SOPs', author: 'Charlie', lastUpdated: '2024-02-15', type: 'Internal' },
+  { id: 'KB-005', title: 'How to configure a Cisco router', content: '...', category: 'Networking / Routers', author: 'Alice', lastUpdated: '2024-05-12', type: 'Internal' },
+  { id: 'KB-006', title: 'How to Flush DNS', content: 'Open command prompt and type `ipconfig /flushdns`', category: 'User Guides', author: 'Bob', lastUpdated: '2024-05-01', type: 'Public' },
 ];
 
 export const ticketPageStats: DashboardStat[] = [

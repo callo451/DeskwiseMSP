@@ -1,7 +1,6 @@
-
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -24,6 +23,7 @@ import type { KnowledgeBaseArticle } from '@/lib/types';
 import {
   BookOpen,
   Folder,
+  FolderOpen,
   MoreHorizontal,
   PlusCircle,
   Search,
@@ -33,14 +33,24 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 const ArticleRow = ({ article }: { article: KnowledgeBaseArticle }) => (
   <TableRow>
-    <TableCell className="font-medium">{article.title}</TableCell>
+    <TableCell className="font-medium">
+      <Link href={`/knowledge-base/${article.id}`} className="hover:underline text-primary">
+        {article.title}
+      </Link>
+    </TableCell>
     <TableCell className="hidden sm:table-cell">{article.category}</TableCell>
     <TableCell className="hidden md:table-cell">{article.author}</TableCell>
     <TableCell className="hidden md:table-cell">{article.lastUpdated}</TableCell>
@@ -55,8 +65,10 @@ const ArticleRow = ({ article }: { article: KnowledgeBaseArticle }) => (
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>View</DropdownMenuItem>
-          <DropdownMenuItem>Edit</DropdownMenuItem>
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem asChild><Link href={`/knowledge-base/${article.id}`}>View</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link href={`/knowledge-base/${article.id}/edit`}>Edit</Link></DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -64,33 +76,113 @@ const ArticleRow = ({ article }: { article: KnowledgeBaseArticle }) => (
   </TableRow>
 );
 
-export default function KnowledgeBasePage() {
+interface CategoryNode {
+  name: string;
+  children: { [key: string]: CategoryNode };
+  articleCount: number;
+}
+
+const CategoryTree = ({ node, path, onSelectCategory, selectedCategory }: { node: CategoryNode, path: string, onSelectCategory: (path: string) => void, selectedCategory: string }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const currentPath = path ? `${path}/${node.name}` : node.name;
+  const isSelected = selectedCategory === currentPath;
+
   return (
-    <div className="grid md:grid-cols-[250px_1fr] gap-8">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="pl-4">
+       <div className="flex items-center gap-2">
+         <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-7 w-7">
+            {Object.keys(node.children).length > 0 ? (isOpen ? <FolderOpen className="h-4 w-4"/> : <Folder className="h-4 w-4"/>) : <div className="w-4"/>}
+          </Button>
+         </CollapsibleTrigger>
+        <Button
+          variant={isSelected ? "secondary" : "ghost"}
+          className="w-full justify-start gap-2 h-8"
+          onClick={() => onSelectCategory(currentPath)}
+        >
+          {node.name}
+          <Badge variant="outline" className="ml-auto">{node.articleCount}</Badge>
+        </Button>
+      </div>
+      <CollapsibleContent>
+        {Object.values(node.children)
+          .sort((a,b) => a.name.localeCompare(b.name))
+          .map(childNode => (
+          <CategoryTree key={childNode.name} node={childNode} path={currentPath} onSelectCategory={onSelectCategory} selectedCategory={selectedCategory} />
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
+
+
+export default function KnowledgeBasePage() {
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const categoryTree = useMemo(() => {
+    const root: CategoryNode = { name: 'All', children: {}, articleCount: 0 };
+    
+    knowledgeBaseArticles.forEach(article => {
+      let currentNode = root;
+      const parts = article.category.split(' / ');
+      parts.forEach(part => {
+        if (!currentNode.children[part]) {
+          currentNode.children[part] = { name: part, children: {}, articleCount: 0 };
+        }
+        currentNode = currentNode.children[part];
+        currentNode.articleCount++;
+      });
+    });
+
+    const countArticles = (node: CategoryNode): number => {
+      let count = Object.keys(node.children).length > 0 ? 0 : node.articleCount;
+      Object.values(node.children).forEach(child => {
+        count += countArticles(child);
+      });
+      node.articleCount = count;
+      return count;
+    };
+    
+    root.articleCount = knowledgeBaseArticles.length;
+    countArticles(root);
+
+    return root;
+  }, []);
+
+  const filteredArticles = useMemo(() => {
+    return knowledgeBaseArticles
+      .filter(article => {
+        const categoryMatch = selectedCategory === 'All' || article.category.startsWith(selectedCategory.replace(/\//g, ' / '));
+        const searchMatch =
+          searchTerm === '' ||
+          article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          article.content.toLowerCase().includes(searchTerm.toLowerCase());
+        return categoryMatch && searchMatch;
+      })
+      .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
+  }, [selectedCategory, searchTerm]);
+
+  return (
+    <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
       <div>
-        <h2 className="text-xl font-semibold mb-4 font-headline">Categories</h2>
-        <div className="space-y-2">
-          <Button variant="ghost" className="w-full justify-start gap-2">
+        <h2 className="text-xl font-semibold mb-4 font-headline px-4">Categories</h2>
+        <div className="space-y-1">
+          <Button
+            variant={selectedCategory === 'All' ? 'secondary' : 'ghost'}
+            className="w-full justify-start gap-2 h-9"
+            onClick={() => setSelectedCategory('All')}
+          >
             <Folder className="h-4 w-4" />
             All Articles
+            <Badge variant="outline" className="ml-auto">{categoryTree.articleCount}</Badge>
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-2">
-            <Folder className="h-4 w-4" />
-            Networking
-          </Button>
-          <Button variant="secondary" className="w-full justify-start gap-2">
-            <Folder className="h-4 w-4" />
-            User Guides
-          </Button>
-          <Button variant="ghost" className="w-full justify-start gap-2">
-            <Folder className="h-4 w-4" />
-            Hardware
-          </Button>
-          <Button variant="ghost" className="w-full justify-start gap-2">
-            <Folder className="h-4 w-4" />
-            SOPs
-          </Button>
-          <Button variant="ghost" className="w-full justify-start gap-2 text-primary">
+          {Object.values(categoryTree.children)
+            .sort((a,b) => a.name.localeCompare(b.name))
+            .map(node => (
+            <CategoryTree key={node.name} node={node} path="" onSelectCategory={setSelectedCategory} selectedCategory={selectedCategory}/>
+          ))}
+           <Button variant="ghost" className="w-full justify-start gap-2 text-primary h-9">
             <PlusCircle className="h-4 w-4" />
             New Category
           </Button>
@@ -108,7 +200,7 @@ export default function KnowledgeBasePage() {
             <div className="w-full sm:w-auto flex gap-2">
               <div className="relative flex-1 sm:flex-initial">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input type="search" placeholder="Search articles..." className="pl-8" />
+                <Input type="search" placeholder="Search articles..." className="pl-8" onChange={e => setSearchTerm(e.target.value)} />
               </div>
               <Button asChild className="gap-1">
                 <Link href="/knowledge-base/new">
@@ -134,9 +226,16 @@ export default function KnowledgeBasePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {knowledgeBaseArticles.map(article => (
+              {filteredArticles.map(article => (
                 <ArticleRow key={article.id} article={article} />
               ))}
+              {filteredArticles.length === 0 && (
+                 <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                        No articles found for the current filter.
+                    </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

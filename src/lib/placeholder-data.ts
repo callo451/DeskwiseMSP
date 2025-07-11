@@ -1,4 +1,5 @@
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting, MajorIncident, Project, ProjectStatusSetting, ProjectTemplateSetting } from './types';
+
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting, MajorIncident, Project, ProjectStatusSetting, ProjectTemplateSetting, Quote, ServiceCatalogueItem } from './types';
 import { subHours, addHours, addDays, format, formatISO, subMinutes, subDays } from 'date-fns';
 
 const now = new Date();
@@ -729,6 +730,8 @@ const adminPermissions: Permissions = {
   reports: { view: true },
   settings: { adminAccess: true },
   projects: { create: true, read: 'all', update: true, delete: true },
+  quoting: { create: true, read: 'all', update: true, delete: true },
+  serviceCatalogue: { create: true, read: 'all', update: true, delete: true },
 };
 
 const technicianPermissions: Permissions = {
@@ -741,6 +744,8 @@ const technicianPermissions: Permissions = {
   reports: { view: true },
   settings: { adminAccess: false },
   projects: { create: true, read: 'assigned_only', update: true, delete: false },
+  quoting: { create: true, read: 'all', update: true, delete: true },
+  serviceCatalogue: { create: true, read: 'all', update: true, delete: true },
 };
 
 const readOnlyPermissions: Permissions = {
@@ -753,6 +758,8 @@ const readOnlyPermissions: Permissions = {
   reports: { view: false },
   settings: { adminAccess: false },
   projects: { create: false, read: 'all', update: false, delete: false },
+  quoting: { create: false, read: 'all', update: false, delete: false },
+  serviceCatalogue: { create: false, read: 'all', update: false, delete: false },
 };
   
 export const roles: Role[] = [
@@ -1220,4 +1227,56 @@ export const projectTemplateSettings: ProjectTemplateSetting[] = [
     { id: 'proj-tpl-1', name: 'New Client Onboarding', description: 'Standard process for onboarding a new client.', taskCount: 15 },
     { id: 'proj-tpl-2', name: 'O365 Migration', description: 'Template for migrating a client to Microsoft 365.', taskCount: 25 },
     { id: 'proj-tpl-3', name: 'Security Audit', description: 'Standard security audit checklist and process.', taskCount: 40 },
+];
+
+export const serviceCatalogueItems: ServiceCatalogueItem[] = [
+  { id: 'SVC-001', name: 'Managed Workstation', description: 'Per-device support for workstations, including monitoring and maintenance.', category: 'Managed Services', price: 65, type: 'Recurring' },
+  { id: 'SVC-002', name: 'Managed Server', description: 'Per-server support, including monitoring, patching, and backups.', category: 'Managed Services', price: 250, type: 'Recurring' },
+  { id: 'SVC-003', name: 'On-site Support (Hourly)', description: 'On-site technician support.', category: 'Professional Services', price: 150, type: 'Hourly' },
+  { id: 'SVC-004', name: 'Microsoft 365 Business Premium', description: 'Per-user license for M365 Business Premium.', category: 'Licenses', price: 22, type: 'Recurring' },
+  { id: 'SVC-005', name: 'New Workstation Setup', description: 'Fixed-fee project to set up a new workstation.', category: 'Professional Services', price: 250, type: 'Fixed' },
+];
+
+export const quotes: Quote[] = [
+    {
+        id: 'QTE-001',
+        subject: 'Q2 Managed Services Renewal',
+        clientId: 'CLI-001',
+        clientName: 'TechCorp',
+        status: 'Sent',
+        createdDate: formatISO(subDays(now, 10)),
+        expiryDate: formatISO(addDays(now, 20)),
+        total: 2500,
+        lineItems: [
+            { serviceId: 'SVC-002', name: 'Managed Server', description: 'Per-server support', quantity: 2, price: 250 },
+            { serviceId: 'SVC-001', name: 'Managed Workstation', description: 'Per-device support', quantity: 50, price: 40 },
+        ]
+    },
+    {
+        id: 'QTE-002',
+        subject: 'New Office Setup',
+        clientId: 'CLI-002',
+        clientName: 'GlobalInnovate',
+        status: 'Accepted',
+        createdDate: formatISO(subDays(now, 30)),
+        expiryDate: formatISO(subDays(now, 1)),
+        total: 5500,
+        lineItems: [
+            { serviceId: 'SVC-005', name: 'New Workstation Setup', description: 'Setup 20 new workstations', quantity: 20, price: 250 },
+            { serviceId: 'SVC-003', name: 'On-site Support', description: 'On-site tech for 1 day', quantity: 8, price: 150 },
+        ]
+    },
+    {
+        id: 'QTE-003',
+        subject: 'Draft Quote for New Hardware',
+        clientId: 'CLI-005',
+        clientName: 'RetailRight',
+        status: 'Draft',
+        createdDate: formatISO(subDays(now, 1)),
+        expiryDate: formatISO(addDays(now, 29)),
+        total: 1200,
+        lineItems: [
+            { serviceId: 'INV-001', name: 'Dell Latitude 5420 Laptop', description: 'New laptop for CEO', quantity: 1, price: 1200 },
+        ]
+    }
 ];

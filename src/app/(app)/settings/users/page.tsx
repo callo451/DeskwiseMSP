@@ -47,7 +47,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { users, roles, userGroups } from '@/lib/placeholder-data';
-import type { User, Role, UserGroup } from '@/lib/types';
+import type { User, Role, UserGroup, Permissions } from '@/lib/types';
 import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, Users2, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';

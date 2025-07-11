@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from "lucide-react";
 
 export type Client = {
@@ -241,6 +242,8 @@ export type Permissions = {
   reports: { view: boolean; };
   settings: { adminAccess: boolean; };
   projects: { create: boolean; read: 'all' | 'assigned_only'; update: boolean; delete: boolean; };
+  quoting: { create: boolean; read: 'all'; update: boolean; delete: boolean; };
+  serviceCatalogue: { create: boolean; read: 'all'; update: boolean; delete: boolean; };
 };
 
 export type Role = {
@@ -393,7 +396,7 @@ export type Project = {
   milestones: ProjectMilestone[];
 };
 
-export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings' | 'change-management' | 'incidents' | 'projects';
+export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings' | 'change-management' | 'incidents' | 'projects' | 'quoting' | 'service-catalogue';
 
 export type ModuleInfo = {
   id: ModuleId;
@@ -403,7 +406,7 @@ export type ModuleInfo = {
 };
 
 // Define ALL_MODULES using the types
-import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar, History, Flame, KanbanSquare } from 'lucide-react';
+import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar, History, Flame, KanbanSquare, Library, FileText } from 'lucide-react';
 
 export const ALL_MODULES: ModuleInfo[] = [
     { id: 'dashboard', label: 'Dashboard', description: 'Main overview dashboard.', icon: Home },
@@ -411,6 +414,7 @@ export const ALL_MODULES: ModuleInfo[] = [
     { id: 'tickets', label: 'Tickets', description: 'Ticket management system.', icon: Ticket },
     { id: 'incidents', label: 'Incidents', description: 'Manage service disruptions.', icon: Flame },
     { id: 'projects', label: 'Projects', description: 'Manage client projects and tasks.', icon: KanbanSquare },
+    { id: 'quoting', label: 'Quoting', description: 'Create and manage sales quotes.', icon: FileText },
     { id: 'scheduling', label: 'Scheduling', description: 'Technician scheduling and calendar.', icon: Calendar },
     { id: 'change-management', label: 'Change Management', description: 'Track and approve IT changes.', icon: History },
     { id: 'clients', label: 'Clients', description: 'Client and company management.', icon: Users },
@@ -418,6 +422,7 @@ export const ALL_MODULES: ModuleInfo[] = [
     { id: 'assets', label: 'Assets', description: 'Asset tracking and management.', icon: HardDrive },
     { id: 'inventory', label: 'Inventory', description: 'Inventory and stock management.', icon: Warehouse },
     { id: 'billing', label: 'Billing', description: 'Contracts and recurring billing.', icon: CreditCard },
+    { id: 'service-catalogue', label: 'Service Catalogue', description: 'Manage service offerings.', icon: Library },
     { id: 'knowledge-base', label: 'Knowledge Base', description: 'Internal and public articles.', icon: BookOpen },
     { id: 'settings', label: 'Settings', description: 'Application and user settings.', icon: Settings },
 ];
@@ -453,4 +458,33 @@ export type ProjectTemplateSetting = {
     name: string;
     description: string;
     taskCount: number;
+};
+
+export type QuoteLineItem = {
+    serviceId: string;
+    name: string;
+    description: string;
+    quantity: number;
+    price: number;
+};
+
+export type Quote = {
+    id: string;
+    subject: string;
+    clientId: string;
+    clientName: string;
+    status: 'Draft' | 'Sent' | 'Accepted' | 'Rejected';
+    createdDate: string; // ISO Date
+    expiryDate: string; // ISO Date
+    total: number;
+    lineItems: QuoteLineItem[];
+};
+
+export type ServiceCatalogueItem = {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    price: number;
+    type: 'Fixed' | 'Recurring' | 'Hourly';
 };

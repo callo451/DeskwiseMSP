@@ -45,7 +45,6 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
@@ -223,22 +222,12 @@ export default function IncidentDetailsPage() {
             <CardContent className="divide-y divide-border -mt-2">
               <DetailRow label="Started At" value={format(parseISO(incident.startedAt), 'PPpp')} icon={Clock} />
               <DetailRow label="Resolved At" value={incident.resolvedAt ? format(parseISO(incident.resolvedAt), 'PPpp') : 'Ongoing'} icon={CheckCircle} />
-              <div className="py-3">
-                 <FormField
-                    control={null as any}
-                    name="isPublished"
-                    render={() => (
-                        <FormItem className="flex flex-row items-center justify-between">
-                            <div className="space-y-0.5">
-                                <FormLabel className="flex items-center gap-2 text-sm text-muted-foreground"><Globe className="h-4 w-4" />Visibility</FormLabel>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">{incident.isPublished ? "Published" : "Internal"}</span>
-                                {isEditing && <Switch checked={incident.isPublished} onCheckedChange={(checked) => setIncident({...incident, isPublished: checked})} />}
-                            </div>
-                        </FormItem>
-                    )}
-                 />
+              <div className="flex items-center justify-between py-3">
+                  <Label htmlFor="visibility" className="flex items-center gap-2 text-sm text-muted-foreground"><Globe className="h-4 w-4" />Visibility</Label>
+                  <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{incident.isPublished ? "Published" : "Internal"}</span>
+                      {isEditing && <Switch id="visibility" checked={incident.isPublished} onCheckedChange={(checked) => setIncident({...incident, isPublished: checked})} />}
+                  </div>
               </div>
             </CardContent>
           </Card>

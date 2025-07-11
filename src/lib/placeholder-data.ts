@@ -1,4 +1,4 @@
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting, MajorIncident } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting, MajorIncident, Project } from './types';
 import { subHours, addHours, addDays, format, formatISO, subMinutes, subDays } from 'date-fns';
 
 const now = new Date();
@@ -728,6 +728,7 @@ const adminPermissions: Permissions = {
   knowledgeBase: { create: true, read: 'all', update: true, delete: true },
   reports: { view: true },
   settings: { adminAccess: true },
+  projects: { create: true, read: 'all', update: true, delete: true },
 };
 
 const technicianPermissions: Permissions = {
@@ -739,6 +740,7 @@ const technicianPermissions: Permissions = {
   knowledgeBase: { create: true, read: 'all', update: true, delete: false },
   reports: { view: true },
   settings: { adminAccess: false },
+  projects: { create: true, read: 'assigned_only', update: true, delete: false },
 };
 
 const readOnlyPermissions: Permissions = {
@@ -750,6 +752,7 @@ const readOnlyPermissions: Permissions = {
   knowledgeBase: { create: false, read: 'group', update: false, delete: false },
   reports: { view: false },
   settings: { adminAccess: false },
+  projects: { create: false, read: 'all', update: false, delete: false },
 };
   
 export const roles: Role[] = [
@@ -1143,4 +1146,62 @@ export const majorIncidents: MajorIncident[] = [
             { id: 'UPD-006', timestamp: formatISO(subDays(now, 1)), status: 'Identified', message: 'The issue has been identified as a slow query on our primary database. We are working on a fix.' },
         ],
     }
+];
+
+export const projects: Project[] = [
+  {
+    id: 'PROJ-001',
+    name: 'New Client Onboarding: HealthWell',
+    client: 'HealthWell',
+    clientId: 'CLI-003',
+    status: 'In Progress',
+    progress: 40,
+    budget: { total: 10000, used: 3500 },
+    startDate: formatISO(subDays(now, 14)),
+    endDate: formatISO(addDays(now, 30)),
+    tasks: [
+      { id: 'T1', name: 'Initial Kick-off Meeting', status: 'Done', assigneeId: 'USR-001', dueDate: formatISO(subDays(now, 13)) },
+      { id: 'T2', name: 'Deploy RMM Agents', status: 'In Progress', assigneeId: 'USR-002', dueDate: formatISO(addDays(now, 2)), dependsOn: ['T1'] },
+      { id: 'T3', name: 'Configure Network Firewall', status: 'To-Do', assigneeId: 'USR-003', dueDate: formatISO(addDays(now, 5)), dependsOn: ['T1'] },
+      { id: 'T4', name: 'Onboard Users to M365', status: 'To-Do', assigneeId: 'USR-004', dueDate: formatISO(addDays(now, 10)) },
+    ],
+    milestones: [
+      { id: 'M1', name: 'Kick-off Completed', status: 'Completed', dueDate: formatISO(subDays(now, 13)), isBillable: true },
+      { id: 'M2', name: 'Core Infrastructure Deployed', status: 'Pending', dueDate: formatISO(addDays(now, 5)), isBillable: true },
+      { id: 'M3', name: 'User Onboarding Completed', status: 'Pending', dueDate: formatISO(addDays(now, 10)), isBillable: true },
+    ]
+  },
+  {
+    id: 'PROJ-002',
+    name: 'TechCorp Office 365 Migration',
+    client: 'TechCorp',
+    clientId: 'CLI-001',
+    status: 'Completed',
+    progress: 100,
+    budget: { total: 15000, used: 14500 },
+    startDate: formatISO(subDays(now, 60)),
+    endDate: formatISO(subDays(now, 15)),
+    tasks: [],
+    milestones: [],
+  },
+  {
+    id: 'PROJ-003',
+    name: 'Security Audit for GlobalInnovate',
+    client: 'GlobalInnovate',
+    clientId: 'CLI-002',
+    status: 'On Hold',
+    progress: 10,
+    budget: { total: 8000, used: 1000 },
+    startDate: formatISO(subDays(now, 5)),
+    endDate: formatISO(addDays(now, 25)),
+    tasks: [],
+    milestones: [],
+  },
+];
+
+export const projectPageStats: DashboardStat[] = [
+    { title: "Active Projects", value: "2", change: "+1", changeType: "increase", description: "since last month" },
+    { title: "Projects On Hold", value: "1", change: "0", changeType: "increase", description: "since last month" },
+    { title: "Completed This Quarter", value: "3", change: "+2", changeType: "increase", description: "vs last quarter" },
+    { title: "Total Budget Utilization", value: "65%", change: "-10%", changeType: "decrease", description: "across all projects" },
 ];

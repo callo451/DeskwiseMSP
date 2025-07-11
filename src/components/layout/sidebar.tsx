@@ -30,6 +30,7 @@ import {
   Calendar,
   History,
   Flame,
+  KanbanSquare
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -46,6 +47,12 @@ const menuItems = [
   { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: Home },
   { id: 'reports', href: '/reports', label: 'Reports', icon: BarChart3 },
   { id: 'incidents', href: '/incidents', label: 'Incidents', icon: Flame },
+  {
+    id: 'projects',
+    href: '/projects',
+    label: 'Projects',
+    icon: KanbanSquare,
+  },
   { id: 'tickets', 
     href: '/tickets', 
     label: 'Tickets', 

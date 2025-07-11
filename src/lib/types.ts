@@ -240,6 +240,7 @@ export type Permissions = {
   knowledgeBase: { create: boolean; read: 'all' | 'group' | 'public_only'; update: boolean; delete: boolean; };
   reports: { view: boolean; };
   settings: { adminAccess: boolean; };
+  projects: { create: boolean; read: 'all' | 'assigned_only'; update: boolean; delete: boolean; };
 };
 
 export type Role = {
@@ -355,7 +356,41 @@ export type ScheduleItem = {
   notes?: string;
 };
 
-export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings' | 'change-management' | 'incidents';
+export type ProjectTask = {
+  id: string;
+  name: string;
+  status: 'To-Do' | 'In Progress' | 'Done' | 'Blocked';
+  assigneeId: string;
+  dueDate: string; // ISO Date
+  dependsOn?: string[]; // Array of task IDs
+};
+
+export type ProjectMilestone = {
+  id: string;
+  name: string;
+  dueDate: string; // ISO Date
+  status: 'Pending' | 'Completed';
+  isBillable: boolean;
+};
+
+export type Project = {
+  id: string;
+  name: string;
+  client: string;
+  clientId: string;
+  status: 'Not Started' | 'In Progress' | 'On Hold' | 'Completed' | 'Cancelled';
+  progress: number; // Percentage
+  budget: {
+    total: number;
+    used: number;
+  };
+  startDate: string; // ISO Date
+  endDate: string; // ISO Date
+  tasks: ProjectTask[];
+  milestones: ProjectMilestone[];
+};
+
+export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings' | 'change-management' | 'incidents' | 'projects';
 
 export type ModuleInfo = {
   id: ModuleId;
@@ -365,13 +400,14 @@ export type ModuleInfo = {
 };
 
 // Define ALL_MODULES using the types
-import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar, History, Flame } from 'lucide-react';
+import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar, History, Flame, KanbanSquare } from 'lucide-react';
 
 export const ALL_MODULES: ModuleInfo[] = [
     { id: 'dashboard', label: 'Dashboard', description: 'Main overview dashboard.', icon: Home },
     { id: 'reports', label: 'Reports', description: 'Analytics and reporting.', icon: BarChart3 },
     { id: 'tickets', label: 'Tickets', description: 'Ticket management system.', icon: Ticket },
     { id: 'incidents', label: 'Incidents', description: 'Manage service disruptions.', icon: Flame },
+    { id: 'projects', label: 'Projects', description: 'Manage client projects and tasks.', icon: KanbanSquare },
     { id: 'scheduling', label: 'Scheduling', description: 'Technician scheduling and calendar.', icon: Calendar },
     { id: 'change-management', label: 'Change Management', description: 'Track and approve IT changes.', icon: History },
     { id: 'clients', label: 'Clients', description: 'Client and company management.', icon: Users },

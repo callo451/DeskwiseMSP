@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -30,7 +31,9 @@ import {
   Calendar,
   History,
   Flame,
-  KanbanSquare
+  KanbanSquare,
+  Library,
+  FileText
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -53,6 +56,12 @@ const menuItems = [
     label: 'Projects',
     icon: KanbanSquare,
   },
+  {
+    id: 'quoting',
+    href: '/quoting',
+    label: 'Quoting',
+    icon: FileText
+  },
   { id: 'tickets', 
     href: '/tickets', 
     label: 'Tickets', 
@@ -69,6 +78,12 @@ const menuItems = [
   { id: 'assets', href: '/assets', label: 'Assets', icon: HardDrive },
   { id: 'inventory', href: '/inventory', label: 'Inventory', icon: Warehouse },
   { id: 'billing', href: '/billing', label: 'Billing', icon: CreditCard },
+  {
+    id: 'service-catalogue',
+    href: '/service-catalogue',
+    label: 'Service Catalogue',
+    icon: Library,
+  },
   { id: 'knowledge-base', href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
   { id: 'settings', href: '/settings', label: 'Settings', icon: Settings },
 ];

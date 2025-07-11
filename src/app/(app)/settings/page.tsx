@@ -25,6 +25,7 @@ import {
   LayoutGrid,
   History,
   KanbanSquare,
+  Hash,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -48,6 +49,13 @@ const settingsItems = [
     title: 'Modules',
     description: 'Enable or disable application modules.',
     href: '/settings/modules',
+    target: '_self',
+  },
+    {
+    icon: Hash,
+    title: 'Numbering Schemes',
+    description: 'Customize ID prefixes and suffixes.',
+    href: '/settings/numbering',
     target: '_self',
   },
   {

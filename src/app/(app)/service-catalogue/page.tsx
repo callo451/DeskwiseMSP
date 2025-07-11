@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import {
   Table,
@@ -28,8 +30,9 @@ import {
 } from '@/components/ui/table';
 import { serviceCatalogueItems } from '@/lib/placeholder-data';
 import type { ServiceCatalogueItem } from '@/lib/types';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ListFilter } from 'lucide-react';
 import Link from 'next/link';
+import { useMemo } from 'react';
 
 const ServiceItemRow = ({ item }: { item: ServiceCatalogueItem }) => {
   
@@ -72,7 +75,34 @@ const ServiceItemRow = ({ item }: { item: ServiceCatalogueItem }) => {
 };
 
 export default function ServiceCataloguePage() {
-  const filteredItems = serviceCatalogueItems;
+  const serviceCategories = useMemo(() => [...new Set(serviceCatalogueItems.map(item => item.category))], []);
+  const serviceTypes: Array<ServiceCatalogueItem['type']> = ['Fixed', 'Recurring', 'Hourly'];
+
+  const [categoryFilters, setCategoryFilters] = useState<string[]>([]);
+  const [typeFilters, setTypeFilters] = useState<string[]>([]);
+
+  const handleCategoryFilterChange = (category: string, checked: boolean) => {
+    setCategoryFilters(prev =>
+      checked ? [...prev, category] : prev.filter(c => c !== category)
+    );
+  };
+
+  const handleTypeFilterChange = (type: string, checked: boolean) => {
+    setTypeFilters(prev =>
+      checked ? [...prev, type] : prev.filter(t => t !== type)
+    );
+  };
+
+  const clearFilters = () => {
+    setCategoryFilters([]);
+    setTypeFilters([]);
+  };
+
+  const filteredItems = serviceCatalogueItems.filter(item => {
+    const categoryMatch = categoryFilters.length === 0 || categoryFilters.includes(item.category);
+    const typeMatch = typeFilters.length === 0 || typeFilters.includes(item.type);
+    return categoryMatch && typeMatch;
+  });
 
   return (
     <div className="space-y-6">
@@ -85,12 +115,51 @@ export default function ServiceCataloguePage() {
                 Manage your standardized service offerings.
               </CardDescription>
             </div>
-            <Link href="/service-catalogue/new">
-              <Button size="sm" className="gap-1">
-                <PlusCircle className="h-3.5 w-3.5" />
-                New Service
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 gap-1">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Filter
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {serviceCategories.map(cat => (
+                    <DropdownMenuCheckboxItem
+                      key={cat}
+                      checked={categoryFilters.includes(cat)}
+                      onCheckedChange={checked => handleCategoryFilterChange(cat, !!checked)}
+                    >
+                      {cat}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {serviceTypes.map(type => (
+                    <DropdownMenuCheckboxItem
+                      key={type}
+                      checked={typeFilters.includes(type)}
+                      onCheckedChange={checked => handleTypeFilterChange(type, !!checked)}
+                    >
+                      {type}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={clearFilters}>Clear Filters</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Link href="/service-catalogue/new">
+                <Button size="sm" className="gap-1">
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  New Service
+                </Button>
+              </Link>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

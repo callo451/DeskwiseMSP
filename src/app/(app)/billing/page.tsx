@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +12,15 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+} from '@/components/ui/dropdown-menu';
+import {
   Table,
   TableBody,
   TableCell,
@@ -20,7 +30,7 @@ import {
 } from '@/components/ui/table';
 import { contracts, billingPageStats } from '@/lib/placeholder-data';
 import type { Contract, DashboardStat } from '@/lib/types';
-import { PlusCircle, Activity, ArrowUpRight, ArrowDownRight, ChevronRight } from 'lucide-react';
+import { PlusCircle, Activity, ArrowUpRight, ArrowDownRight, ChevronRight, ListFilter } from 'lucide-react';
 import Link from 'next/link';
 
 const StatCard = ({ stat }: { stat: DashboardStat }) => {
@@ -99,6 +109,24 @@ const ContractRow = ({ contract }: { contract: Contract }) => {
 };
 
 export default function BillingPage() {
+  const contractStatuses: Array<Contract['status']> = ['Active', 'Expired', 'Pending'];
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  
+  const handleStatusFilterChange = (status: string, checked: boolean) => {
+    setStatusFilters(prev =>
+      checked ? [...prev, status] : prev.filter(s => s !== status)
+    );
+  };
+
+  const clearFilters = () => {
+    setStatusFilters([]);
+  };
+
+  const filteredContracts = contracts.filter(contract => {
+    const statusMatch = statusFilters.length === 0 || statusFilters.includes(contract.status);
+    return statusMatch;
+  });
+
   return (
     <div className="space-y-6">
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -113,10 +141,37 @@ export default function BillingPage() {
               <CardTitle>Contracts</CardTitle>
               <CardDescription>Manage recurring billing and service contracts.</CardDescription>
             </div>
-            <Button size="sm" className="gap-1">
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">New Contract</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 gap-1">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Filter
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {contractStatuses.map(status => (
+                    <DropdownMenuCheckboxItem
+                      key={status}
+                      checked={statusFilters.includes(status)}
+                      onCheckedChange={checked => handleStatusFilterChange(status, !!checked)}
+                    >
+                      {status}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={clearFilters}>Clear Filters</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button size="sm" className="gap-1">
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">New Contract</span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -134,7 +189,7 @@ export default function BillingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {contracts.map(contract => (
+              {filteredContracts.map(contract => (
                 <ContractRow key={contract.id} contract={contract} />
               ))}
             </TableBody>

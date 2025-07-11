@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import {
   Table,
@@ -28,7 +30,7 @@ import {
 } from '@/components/ui/table';
 import { quotes } from '@/lib/placeholder-data';
 import type { Quote } from '@/lib/types';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ListFilter } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 
@@ -91,7 +93,23 @@ const QuoteRow = ({ quote }: { quote: Quote }) => {
 };
 
 export default function QuotingPage() {
-  const filteredQuotes = quotes;
+  const quoteStatuses: Array<Quote['status']> = ['Draft', 'Sent', 'Accepted', 'Rejected'];
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  
+  const handleStatusFilterChange = (status: string, checked: boolean) => {
+    setStatusFilters(prev =>
+      checked ? [...prev, status] : prev.filter(s => s !== status)
+    );
+  };
+
+  const clearFilters = () => {
+    setStatusFilters([]);
+  };
+
+  const filteredQuotes = quotes.filter(quote => {
+    const statusMatch = statusFilters.length === 0 || statusFilters.includes(quote.status);
+    return statusMatch;
+  });
 
   return (
     <div className="space-y-6">
@@ -104,12 +122,39 @@ export default function QuotingPage() {
                 Create and manage quotes for your clients.
               </CardDescription>
             </div>
-            <Link href="/quoting/new">
-              <Button size="sm" className="gap-1">
-                <PlusCircle className="h-3.5 w-3.5" />
-                New Quote
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 gap-1">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Filter
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {quoteStatuses.map(status => (
+                    <DropdownMenuCheckboxItem
+                      key={status}
+                      checked={statusFilters.includes(status)}
+                      onCheckedChange={checked => handleStatusFilterChange(status, !!checked)}
+                    >
+                      {status}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={clearFilters}>Clear Filters</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Link href="/quoting/new">
+                <Button size="sm" className="gap-1">
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  New Quote
+                </Button>
+              </Link>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

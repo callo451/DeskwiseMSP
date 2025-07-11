@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -53,17 +53,18 @@ type ChangeRequestFormValues = z.infer<typeof changeRequestSchema>;
 
 export default function NewChangeRequestPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const form = useForm<ChangeRequestFormValues>({
     resolver: zodResolver(changeRequestSchema),
     defaultValues: {
-      title: '',
-      clientId: '',
+      title: searchParams.get('title') || '',
+      clientId: searchParams.get('clientId') || '',
       status: 'Pending Approval',
       riskLevel: 'Low',
       impact: 'Low',
-      description: '',
+      description: searchParams.get('description') || '',
       changePlan: '',
       rollbackPlan: '',
     },

@@ -67,6 +67,8 @@ import {
   FileText,
   PlusCircle,
   Lightbulb,
+  History,
+  Flame
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -389,6 +391,23 @@ export default function TicketDetailsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button><Mail className="mr-2 h-4 w-4" /> Reply</Button>
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild><Button variant="outline">Convert</Button></DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Convert Ticket To</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href={`/change-management/new?title=${encodeURIComponent(currentTicket.subject)}&description=${encodeURIComponent(currentTicket.description)}&clientId=${client?.id || ''}`}>
+                        <History className="mr-2 h-4 w-4" /> Change Request
+                    </Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                    <Link href={`/incidents/new?title=${encodeURIComponent(currentTicket.subject)}&description=${encodeURIComponent(currentTicket.description)}&clientId=${client?.id || ''}`}>
+                        <Flame className="mr-2 h-4 w-4" /> Incident
+                    </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button variant="outline" size="icon"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
               <DropdownMenuContent align="end">

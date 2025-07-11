@@ -44,48 +44,42 @@ import { ticketQueues } from '@/lib/placeholder-data';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import type { ModuleId } from '@/lib/types';
+import { Separator } from '../ui/separator';
 
 const menuItems = [
-  { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: Home },
-  { id: 'reports', href: '/reports', label: 'Reports', icon: BarChart3 },
-  { id: 'incidents', href: '/incidents', label: 'Incidents', icon: Flame },
+  { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: Home, group: 'Workspace' },
+  { id: 'reports', href: '/reports', label: 'Reports', icon: BarChart3, group: 'Workspace' },
   {
-    id: 'projects',
-    href: '/projects',
-    label: 'Projects',
-    icon: KanbanSquare,
-  },
-  {
-    id: 'quoting',
-    href: '/quoting',
-    label: 'Quoting',
-    icon: FileText
-  },
-  { id: 'tickets', 
+    id: 'tickets', 
     href: '/tickets', 
     label: 'Tickets', 
     icon: Ticket,
+    group: 'Workspace',
     subItems: ticketQueues.map(q => ({
       label: q,
       href: `/tickets?queue=${encodeURIComponent(q)}`
     }))
   },
-  { id: 'scheduling', href: '/scheduling', label: 'Scheduling', icon: Calendar },
-  { id: 'change-management', href: '/change-management', label: 'Change Management', icon: History },
-  { id: 'clients', href: '/clients', label: 'Clients', icon: Users },
-  { id: 'contacts', href: '/contacts', label: 'Contacts', icon: Contact },
-  { id: 'assets', href: '/assets', label: 'Assets', icon: HardDrive },
-  { id: 'inventory', href: '/inventory', label: 'Inventory', icon: Warehouse },
-  { id: 'billing', href: '/billing', label: 'Billing', icon: CreditCard },
-  {
-    id: 'service-catalogue',
-    href: '/service-catalogue',
-    label: 'Service Catalogue',
-    icon: Library,
-  },
-  { id: 'knowledge-base', href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
-  { id: 'settings', href: '/settings', label: 'Settings', icon: Settings },
+  { id: 'scheduling', href: '/scheduling', label: 'Scheduling', icon: Calendar, group: 'Workspace' },
+  { id: 'incidents', href: '/incidents', label: 'Incidents', icon: Flame, group: 'Workspace' },
+  { id: 'change-management', href: '/change-management', label: 'Change Management', icon: History, group: 'Workspace' },
+  
+  { id: 'clients', href: '/clients', label: 'Clients', icon: Users, group: 'Clients' },
+  { id: 'contacts', href: '/contacts', label: 'Contacts', icon: Contact, group: 'Clients' },
+  { id: 'projects', href: '/projects', label: 'Projects', icon: KanbanSquare, group: 'Clients' },
+
+  { id: 'quoting', href: '/quoting', label: 'Quoting', icon: FileText, group: 'Products & Services' },
+  { id: 'billing', href: '/billing', label: 'Billing', icon: CreditCard, group: 'Products & Services' },
+  { id: 'service-catalogue', href: '/service-catalogue', label: 'Service Catalogue', icon: Library, group: 'Products & Services' },
+  
+  { id: 'assets', href: '/assets', label: 'Assets', icon: HardDrive, group: 'Resources' },
+  { id: 'inventory', href: '/inventory', label: 'Inventory', icon: Warehouse, group: 'Resources' },
+  { id: 'knowledge-base', href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen, group: 'Resources' },
+
+  { id: 'settings', href: '/settings', label: 'Settings', icon: Settings, group: 'Admin' },
 ];
+
+const menuGroups = ['Workspace', 'Clients', 'Products & Services', 'Resources'];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -119,67 +113,72 @@ export function AppSidebar() {
       </SidebarHeader>
       
       <div className="flex-1 overflow-y-auto">
-        <SidebarMenu className="px-4">
-          {visibleMenuItems.map(item =>
-            item.subItems ? (
-              <Collapsible key={item.label} defaultOpen={pathname.startsWith('/tickets')} className="space-y-1">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <div className={cn("flex w-full items-center rounded-md p-2", isActive('/tickets') && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
-                      <Link href={item.href} className="flex-1 flex items-center gap-2 text-sm">
-                        <item.icon className="h-5 w-5" />
+        <SidebarMenu className="px-4 space-y-4">
+          {menuGroups.map(group => (
+            <div key={group}>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1">{group}</h3>
+              {visibleMenuItems.filter(item => item.group === group).map(item =>
+                item.subItems ? (
+                  <Collapsible key={item.label} defaultOpen={pathname.startsWith('/tickets')} className="space-y-1">
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <div className={cn("flex w-full items-center rounded-md p-2", isActive('/tickets') && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
+                          <Link href={item.href} className="flex-1 flex items-center gap-3 text-sm">
+                            <item.icon className="h-5 w-5" />
+                            <span>{item.label}</span>
+                          </Link>
+                          <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                        </div>
+                      </CollapsibleTrigger>
+                    </SidebarMenuItem>
+                    <CollapsibleContent>
+                        <SidebarMenuSub>
+                            {item.subItems.map(subItem => (
+                                <SidebarMenuSubItem key={subItem.label}>
+                                    <SidebarMenuSubButton asChild isActive={isActive(subItem.href)}>
+                                        <Link href={subItem.href}>{subItem.label}</Link>
+                                    </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                            ))}
+                        </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ) : (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.href)}
+                      className="justify-start"
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="h-5 w-5 mr-3" />
                         <span>{item.label}</span>
                       </Link>
-                      <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                    </div>
-                  </CollapsibleTrigger>
-                </SidebarMenuItem>
-                <CollapsibleContent>
-                    <SidebarMenuSub>
-                        {item.subItems.map(subItem => (
-                            <SidebarMenuSubItem key={subItem.label}>
-                                <SidebarMenuSubButton asChild isActive={isActive(subItem.href)}>
-                                    <Link href={subItem.href}>{subItem.label}</Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        ))}
-                    </SidebarMenuSub>
-                </CollapsibleContent>
-              </Collapsible>
-            ) : (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive(item.href)}
-                  className="justify-start"
-                >
-                  <Link href={item.href}>
-                    <item.icon className="h-5 w-5 mr-3" />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )
-          )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              )}
+            </div>
+          ))}
+            <Separator />
+             {visibleMenuItems.filter(item => item.group === 'Admin').map(item => (
+                 <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.href)}
+                      className="justify-start"
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="h-5 w-5 mr-3" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+             ))}
         </SidebarMenu>
       </div>
 
-      <SidebarFooter className="p-4 flex-col gap-4">
-        <Card className="bg-primary/10 border-primary/20">
-          <CardHeader className="p-4">
-            <CardTitle>Updates Available</CardTitle>
-            <CardDescription>
-              New AI features and performance improvements are ready.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <Button size="sm" className="w-full">
-              Update Now
-            </Button>
-          </CardContent>
-        </Card>
-
-        <div className="border-t pt-4">
+      <SidebarFooter className="p-4 border-t">
           <SidebarMenu>
             <SidebarMenuItem>
                 <div className="flex items-center w-full justify-between">
@@ -201,7 +200,6 @@ export function AppSidebar() {
                 </div>
             </SidebarMenuItem>
           </SidebarMenu>
-        </div>
       </SidebarFooter>
     </Sidebar>
   );

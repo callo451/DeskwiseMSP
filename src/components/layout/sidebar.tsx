@@ -121,15 +121,17 @@ export function AppSidebar() {
                 item.subItems ? (
                   <Collapsible key={item.label} defaultOpen={pathname.startsWith('/tickets')} className="space-y-1">
                     <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <div className={cn("flex w-full items-center rounded-md p-2", isActive('/tickets') && 'bg-sidebar-accent text-sidebar-accent-foreground')}>
-                          <Link href={item.href} className="flex-1 flex items-center gap-3 text-sm">
-                            <item.icon className="h-5 w-5" />
-                            <span>{item.label}</span>
-                          </Link>
-                          <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                        </div>
-                      </CollapsibleTrigger>
+                       <SidebarMenuButton asChild isActive={isActive(item.href)} className="justify-between group">
+                        <CollapsibleTrigger asChild>
+                          <>
+                            <Link href={item.href} className="flex-1 flex items-center gap-3">
+                              <item.icon className="h-5 w-5 mr-3" />
+                              <span>{item.label}</span>
+                            </Link>
+                            <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                          </>
+                        </CollapsibleTrigger>
+                      </SidebarMenuButton>
                     </SidebarMenuItem>
                     <CollapsibleContent>
                         <SidebarMenuSub>

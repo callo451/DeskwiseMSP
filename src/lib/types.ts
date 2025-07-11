@@ -390,3 +390,23 @@ export const ALL_MODULES: ModuleInfo[] = [
     { id: 'knowledge-base', label: 'Knowledge Base', description: 'Internal and public articles.', icon: BookOpen },
     { id: 'settings', label: 'Settings', description: 'Application and user settings.', icon: Settings },
 ];
+
+export type ChangeRequestStatusSetting = {
+  id: string;
+  name: string;
+  color: string;
+};
+
+export type ChangeRequestRiskSetting = {
+  id: string;
+  name: 'Low' | 'Medium' | 'High' | 'Critical';
+  description: string;
+  variant: 'outline' | 'secondary' | 'default' | 'destructive';
+};
+
+export type ChangeRequestImpactSetting = {
+  id: string;
+  name: 'Low' | 'Medium' | 'High';
+  description: string;
+  variant: 'outline' | 'secondary' | 'default';
+};

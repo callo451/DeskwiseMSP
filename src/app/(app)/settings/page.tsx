@@ -23,6 +23,7 @@ import {
   Warehouse,
   Building,
   LayoutGrid,
+  History,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -81,6 +82,13 @@ const settingsItems = [
     title: 'Inventory Management',
     description: 'Manage inventory categories, locations, and suppliers.',
     href: '/settings/inventory',
+    target: '_self',
+  },
+  {
+    icon: History,
+    title: 'Change Management',
+    description: 'Manage statuses, risk, and impact levels for changes.',
+    href: '/settings/change-management',
     target: '_self',
   },
   {

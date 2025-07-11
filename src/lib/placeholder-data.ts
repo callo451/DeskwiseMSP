@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting } from './types';
 import { subHours, addHours, addDays, format, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -1076,4 +1076,26 @@ export const changeRequests: ChangeRequest[] = [
     associatedAssets: ['AST-002'],
     associatedTickets: [],
   },
+];
+
+export const changeRequestStatusSettings: ChangeRequestStatusSetting[] = [
+  { id: 'chg-status-1', name: 'Pending Approval', color: '#f97316' },
+  { id: 'chg-status-2', name: 'Approved', color: '#3b82f6' },
+  { id: 'chg-status-3', name: 'In Progress', color: '#a855f7' },
+  { id: 'chg-status-4', name: 'Completed', color: '#22c55e' },
+  { id: 'chg-status-5', name: 'Rejected', color: '#ef4444' },
+  { id: 'chg-status-6', name: 'Cancelled', color: '#6b7280' },
+];
+
+export const changeRequestRiskSettings: ChangeRequestRiskSetting[] = [
+  { id: 'chg-risk-1', name: 'Low', description: 'No expected service impact.', variant: 'outline' },
+  { id: 'chg-risk-2', name: 'Medium', description: 'Minor service impact possible.', variant: 'secondary' },
+  { id: 'chg-risk-3', name: 'High', description: 'Service outage likely.', variant: 'default' },
+  { id: 'chg-risk-4', name: 'Critical', description: 'Guaranteed service outage.', variant: 'destructive' },
+];
+
+export const changeRequestImpactSettings: ChangeRequestImpactSetting[] = [
+  { id: 'chg-impact-1', name: 'Low', description: 'Affects a single user or device.', variant: 'outline' },
+  { id: 'chg-impact-2', name: 'Medium', description: 'Affects a department or group.', variant: 'secondary' },
+  { id: 'chg-impact-3', name: 'High', description: 'Affects the entire organization.', variant: 'default' },
 ];

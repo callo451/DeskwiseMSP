@@ -56,8 +56,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { tickets as allTickets, assets as allAssets, clients as allClients } from '@/lib/placeholder-data';
-import type { Ticket, Asset, Client, ReportFilter, FilterOperator } from '@/lib/types';
+import { tickets as allTickets, assets as allAssets, clients as allClients, changeRequests as allChangeRequests } from '@/lib/placeholder-data';
+import type { Ticket, Asset, Client, ReportFilter, FilterOperator, ChangeRequest } from '@/lib/types';
 import { generateReportConfig, type ReportConfig } from '@/ai/flows/report-generation';
 import { generateReportInsights } from '@/ai/flows/report-insights';
 import { useToast } from '@/hooks/use-toast';
@@ -66,7 +66,7 @@ import { addDays, format, isWithinInterval, parseISO } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
 type ReportData = Record<string, any>[];
-type ReportModule = 'Tickets' | 'Assets' | 'Clients';
+type ReportModule = 'Tickets' | 'Assets' | 'Clients' | 'Change Management';
 
 const MODULE_CONFIG = {
     Tickets: {
@@ -84,8 +84,14 @@ const MODULE_CONFIG = {
     Clients: {
         columns: ['id', 'name', 'industry', 'status', 'contacts', 'tickets'],
         groupable: ['industry', 'status'],
-        dateField: null, // No primary date field for clients in this dataset
+        dateField: null,
         data: allClients,
+    },
+    'Change Management': {
+        columns: ['id', 'title', 'client', 'status', 'riskLevel', 'impact', 'submittedBy', 'plannedStartDate'],
+        groupable: ['client', 'status', 'riskLevel', 'impact', 'submittedBy'],
+        dateField: 'plannedStartDate',
+        data: allChangeRequests,
     }
 }
 
@@ -332,6 +338,7 @@ export default function ReportsPage() {
                                     <SelectItem value="Tickets">Tickets</SelectItem>
                                     <SelectItem value="Assets">Assets</SelectItem>
                                     <SelectItem value="Clients">Clients</SelectItem>
+                                    <SelectItem value="Change Management">Change Management</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

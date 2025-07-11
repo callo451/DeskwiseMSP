@@ -99,6 +99,23 @@ export type Asset = {
   contractId?: string;
 };
 
+export type ChangeRequest = {
+  id: string;
+  title: string;
+  description: string;
+  status: 'Pending Approval' | 'Approved' | 'In Progress' | 'Completed' | 'Rejected' | 'Cancelled';
+  riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+  impact: 'Low' | 'Medium' | 'High';
+  submittedBy: string;
+  client: string;
+  plannedStartDate: string; // ISO Date string
+  plannedEndDate: string; // ISO Date string
+  changePlan: string; // Markdown content
+  rollbackPlan: string; // Markdown content
+  associatedAssets: string[]; // Array of Asset IDs
+  associatedTickets: string[]; // Array of Ticket IDs
+};
+
 export type KnowledgeBaseArticle = {
   id: string;
   title: string;
@@ -347,7 +364,7 @@ export type ScheduleItem = {
   notes?: string;
 };
 
-export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings';
+export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings' | 'change-management';
 
 export type ModuleInfo = {
   id: ModuleId;
@@ -357,13 +374,14 @@ export type ModuleInfo = {
 };
 
 // Define ALL_MODULES using the types
-import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar } from 'lucide-react';
+import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar, History } from 'lucide-react';
 
 export const ALL_MODULES: ModuleInfo[] = [
     { id: 'dashboard', label: 'Dashboard', description: 'Main overview dashboard.', icon: Home },
     { id: 'reports', label: 'Reports', description: 'Analytics and reporting.', icon: BarChart3 },
     { id: 'tickets', label: 'Tickets', description: 'Ticket management system.', icon: Ticket },
     { id: 'scheduling', label: 'Scheduling', description: 'Technician scheduling and calendar.', icon: Calendar },
+    { id: 'change-management', label: 'Change Management', description: 'Track and approve IT changes.', icon: History },
     { id: 'clients', label: 'Clients', description: 'Client and company management.', icon: Users },
     { id: 'contacts', label: 'Contacts', description: 'Contact management for clients.', icon: Contact },
     { id: 'assets', label: 'Assets', description: 'Asset tracking and management.', icon: HardDrive },

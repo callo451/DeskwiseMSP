@@ -28,6 +28,7 @@ import {
   BarChart3,
   Warehouse,
   Calendar,
+  History,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -53,6 +54,7 @@ const menuItems = [
     }))
   },
   { id: 'scheduling', href: '/scheduling', label: 'Scheduling', icon: Calendar },
+  { id: 'change-management', href: '/change-management', label: 'Change Management', icon: History },
   { id: 'clients', href: '/clients', label: 'Clients', icon: Users },
   { id: 'contacts', href: '/contacts', label: 'Contacts', icon: Contact },
   { id: 'assets', href: '/assets', label: 'Assets', icon: HardDrive },

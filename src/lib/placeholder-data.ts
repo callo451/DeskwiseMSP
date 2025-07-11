@@ -1,5 +1,5 @@
 
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest } from './types';
 import { subHours, addHours, addDays, format, formatISO } from 'date-fns';
 
 const now = new Date();
@@ -272,7 +272,7 @@ export const tickets: Ticket[] = [
     description: 'Users are reporting intermittent disconnections from the corporate VPN. The issue seems to have started this morning.',
     client: 'GlobalInnovate', 
     assignee: 'Bob', 
-    priority: 'High', 
+    priority: 'Closed', 
     status: 'Closed', 
     createdDate: '2024-05-17', 
     lastUpdate: '2d ago',
@@ -1024,5 +1024,56 @@ export const scheduleItems: ScheduleItem[] = [
     end: format(addDays(now, 2), 'yyyy-MM-dd') + ' 14:00',
     participants: ['John Doe', 'Prospective Client'],
     notes: 'Demo of Deskwise for a new lead.'
+  },
+];
+
+export const changeRequests: ChangeRequest[] = [
+  {
+    id: 'CHG-001',
+    title: 'Upgrade primary firewall firmware',
+    description: 'Firmware update for the main firewall to patch critical vulnerabilities.',
+    status: 'Pending Approval',
+    riskLevel: 'High',
+    impact: 'High',
+    submittedBy: 'Alice',
+    client: 'TechCorp',
+    plannedStartDate: formatISO(addDays(now, 7)),
+    plannedEndDate: formatISO(addDays(now, 7)),
+    changePlan: '1. Schedule maintenance window with client.\n2. Take backup of current firewall configuration.\n3. Upload new firmware.\n4. Reboot firewall.\n5. Test connectivity and rules.',
+    rollbackPlan: 'If the new firmware causes issues, reboot the firewall to the previous firmware version from the secondary partition. If that fails, restore the configuration from backup.',
+    associatedAssets: ['AST-003'],
+    associatedTickets: ['TKT-006'],
+  },
+  {
+    id: 'CHG-002',
+    title: 'Migrate SQL Database to new server',
+    description: 'Migrate the main SQL database from TC-SQL-DB to a new, more powerful server to improve performance.',
+    status: 'Approved',
+    riskLevel: 'Critical',
+    impact: 'High',
+    submittedBy: 'Bob',
+    client: 'TechCorp',
+    plannedStartDate: formatISO(addDays(now, 14)),
+    plannedEndDate: formatISO(addDays(now, 14)),
+    changePlan: 'Detailed migration plan attached.',
+    rollbackPlan: 'Keep old server online for 24 hours post-migration. Revert DNS records if necessary.',
+    associatedAssets: ['AST-005'],
+    associatedTickets: [],
+  },
+  {
+    id: 'CHG-003',
+    title: 'Deploy new accounting software',
+    description: 'Deploy new accounting software for the finance department.',
+    status: 'In Progress',
+    riskLevel: 'Medium',
+    impact: 'Medium',
+    submittedBy: 'Charlie',
+    client: 'GlobalInnovate',
+    plannedStartDate: formatISO(addDays(now, -1)),
+    plannedEndDate: formatISO(addDays(now, 1)),
+    changePlan: '1. Install software on all finance workstations.\n2. Configure user access.\n3. Provide initial training.',
+    rollbackPlan: 'Use system restore points created before installation. Uninstall software if major issues arise.',
+    associatedAssets: ['AST-002'],
+    associatedTickets: [],
   },
 ];

@@ -1,4 +1,4 @@
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting, MajorIncident, Project } from './types';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting, MajorIncident, Project, ProjectStatusSetting, ProjectTemplateSetting } from './types';
 import { subHours, addHours, addDays, format, formatISO, subMinutes, subDays } from 'date-fns';
 
 const now = new Date();
@@ -1206,4 +1206,18 @@ export const projectPageStats: DashboardStat[] = [
     { title: "Projects On Hold", value: "1", change: "0", changeType: "increase", description: "since last month" },
     { title: "Completed This Quarter", value: "3", change: "+2", changeType: "increase", description: "vs last quarter" },
     { title: "Total Budget Utilization", value: "65%", change: "-10%", changeType: "decrease", description: "across all projects" },
+];
+
+export const projectStatusSettings: ProjectStatusSetting[] = [
+    { id: 'proj-status-1', name: 'Not Started', color: '#6b7280' },
+    { id: 'proj-status-2', name: 'In Progress', color: '#3b82f6' },
+    { id: 'proj-status-3', name: 'On Hold', color: '#f97316' },
+    { id: 'proj-status-4', name: 'Completed', color: '#22c55e' },
+    { id: 'proj-status-5', name: 'Cancelled', color: '#ef4444' },
+];
+
+export const projectTemplateSettings: ProjectTemplateSetting[] = [
+    { id: 'proj-tpl-1', name: 'New Client Onboarding', description: 'Standard process for onboarding a new client.', taskCount: 15 },
+    { id: 'proj-tpl-2', name: 'O365 Migration', description: 'Template for migrating a client to Microsoft 365.', taskCount: 25 },
+    { id: 'proj-tpl-3', name: 'Security Audit', description: 'Standard security audit checklist and process.', taskCount: 40 },
 ];

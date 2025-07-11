@@ -374,12 +374,14 @@ export type ProjectMilestone = {
   isBillable: boolean;
 };
 
+export type ProjectStatus = 'Not Started' | 'In Progress' | 'On Hold' | 'Completed' | 'Cancelled';
+
 export type Project = {
   id: string;
   name: string;
   client: string;
   clientId: string;
-  status: 'Not Started' | 'In Progress' | 'On Hold' | 'Completed' | 'Cancelled';
+  status: ProjectStatus;
   progress: number; // Percentage
   budget: {
     total: number;
@@ -438,4 +440,17 @@ export type ChangeRequestImpactSetting = {
   name: 'Low' | 'Medium' | 'High';
   description: string;
   variant: 'outline' | 'secondary' | 'default';
+};
+
+export type ProjectStatusSetting = {
+    id: string;
+    name: ProjectStatus;
+    color: string;
+};
+
+export type ProjectTemplateSetting = {
+    id: string;
+    name: string;
+    description: string;
+    taskCount: number;
 };

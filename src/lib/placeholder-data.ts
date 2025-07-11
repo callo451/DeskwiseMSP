@@ -1160,10 +1160,12 @@ export const projects: Project[] = [
     startDate: formatISO(subDays(now, 14)),
     endDate: formatISO(addDays(now, 30)),
     tasks: [
-      { id: 'T1', name: 'Initial Kick-off Meeting', status: 'Done', assigneeId: 'USR-001', dueDate: formatISO(subDays(now, 13)) },
-      { id: 'T2', name: 'Deploy RMM Agents', status: 'In Progress', assigneeId: 'USR-002', dueDate: formatISO(addDays(now, 2)), dependsOn: ['T1'] },
-      { id: 'T3', name: 'Configure Network Firewall', status: 'To-Do', assigneeId: 'USR-003', dueDate: formatISO(addDays(now, 5)), dependsOn: ['T1'] },
-      { id: 'T4', name: 'Onboard Users to M365', status: 'To-Do', assigneeId: 'USR-004', dueDate: formatISO(addDays(now, 10)) },
+      { id: 'TSK-001', name: 'Initial Kick-off Meeting', status: 'Done', assigneeId: 'USR-001', dueDate: formatISO(subDays(now, 13)), priority: 'High' },
+      { id: 'TSK-002', name: 'Deploy RMM Agents to all workstations', status: 'In Progress', assigneeId: 'USR-002', dueDate: formatISO(addDays(now, 2)), dependsOn: ['TSK-001'], priority: 'High' },
+      { id: 'TSK-003', name: 'Configure Network Firewall', status: 'To-Do', assigneeId: 'USR-003', dueDate: formatISO(addDays(now, 5)), dependsOn: ['TSK-001'], priority: 'Medium' },
+      { id: 'TSK-004', name: 'Onboard Users to M365', status: 'To-Do', assigneeId: 'USR-004', dueDate: formatISO(addDays(now, 10)), priority: 'Medium' },
+      { id: 'TSK-005', name: 'Configure Backup Jobs', status: 'Blocked', assigneeId: 'USR-002', dueDate: formatISO(addDays(now, 7)), priority: 'High' },
+      { id: 'TSK-006', name: 'Finalize Documentation', status: 'To-Do', assigneeId: 'USR-001', dueDate: formatISO(addDays(now, 20)), priority: 'Low' },
     ],
     milestones: [
       { id: 'M1', name: 'Kick-off Completed', status: 'Completed', dueDate: formatISO(subDays(now, 13)), isBillable: true },

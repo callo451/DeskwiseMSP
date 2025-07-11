@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Card,
@@ -35,10 +35,23 @@ import {
   Circle,
   Clock,
   Link as LinkIcon,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { KanbanBoard } from '@/components/projects/kanban-board';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
 
 const DetailRow = ({
   label,
@@ -125,7 +138,10 @@ export default function ProjectDetailsPage() {
   const router = useRouter();
 
   const project = projects.find((p) => p.id === params.id);
-
+  
+  const [tasks, setTasks] = useState(project?.tasks || []);
+  const [assigneeFilter, setAssigneeFilter] = useState<string[]>([]);
+  
   if (!project) {
     return (
       <Card>
@@ -143,6 +159,20 @@ export default function ProjectDetailsPage() {
       </Card>
     );
   }
+  
+  const handleAssigneeFilterChange = (assigneeId: string, checked: boolean) => {
+    setAssigneeFilter(prev =>
+      checked ? [...prev, assigneeId] : prev.filter(id => id !== assigneeId)
+    );
+  };
+
+  const projectUsers = users.filter(user => 
+    project.tasks.some(task => task.assigneeId === user.id)
+  );
+
+  const filteredTasks = tasks.filter(task => 
+    assigneeFilter.length === 0 || assigneeFilter.includes(task.assigneeId)
+  );
 
   const getStatusVariant = (status: Project['status']) => {
     switch (status) {
@@ -224,32 +254,68 @@ export default function ProjectDetailsPage() {
           </Card>
         </div>
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ListTodo className="h-5 w-5" />Project Tasks</CardTitle>
-              <CardDescription>
-                All tasks associated with this project.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Task</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Assignee</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead><span className="sr-only">Actions</span></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {project.tasks.map((task) => (
-                    <TaskRow key={task.id} task={task} />
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="board">
+            <div className="flex justify-between items-center mb-4">
+               <TabsList>
+                  <TabsTrigger value="board"><LayoutGrid className="mr-2 h-4 w-4" />Board</TabsTrigger>
+                  <TabsTrigger value="list"><List className="mr-2 h-4 w-4" />List</TabsTrigger>
+                </TabsList>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">
+                        <UsersIcon className="mr-2 h-4 w-4" />
+                        Assignees ({assigneeFilter.length || 'All'})
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Filter by Assignee</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {projectUsers.map(user => (
+                        <DropdownMenuCheckboxItem
+                          key={user.id}
+                          checked={assigneeFilter.includes(user.id)}
+                          onCheckedChange={(checked) => handleAssigneeFilterChange(user.id, !!checked)}
+                        >
+                          {user.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setAssigneeFilter([])}>Clear Filters</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <TabsContent value="board">
+              <KanbanBoard tasks={filteredTasks} setTasks={setTasks} />
+            </TabsContent>
+            <TabsContent value="list">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><ListTodo className="h-5 w-5" />Project Tasks</CardTitle>
+                  <CardDescription>
+                    All tasks associated with this project.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Assignee</TableHead>
+                        <TableHead>Due Date</TableHead>
+                        <TableHead><span className="sr-only">Actions</span></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredTasks.map((task) => (
+                        <TaskRow key={task.id} task={task} />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

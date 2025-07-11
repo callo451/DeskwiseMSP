@@ -360,6 +360,7 @@ export type ProjectTask = {
   id: string;
   name: string;
   status: 'To-Do' | 'In Progress' | 'Done' | 'Blocked';
+  priority?: 'Low' | 'Medium' | 'High';
   assigneeId: string;
   dueDate: string; // ISO Date
   dependsOn?: string[]; // Array of task IDs

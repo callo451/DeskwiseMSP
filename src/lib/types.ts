@@ -1,4 +1,3 @@
-
 import type { LucideIcon } from "lucide-react";
 
 export type Client = {
@@ -116,6 +115,26 @@ export type ChangeRequest = {
   associatedTickets: string[]; // Array of Ticket IDs
 };
 
+export type MajorIncidentUpdate = {
+  id: string;
+  timestamp: string;
+  status: 'Investigating' | 'Identified' | 'Monitoring' | 'Resolved';
+  message: string;
+};
+
+export type MajorIncident = {
+  id: string;
+  title: string;
+  status: 'Investigating' | 'Identified' | 'Monitoring' | 'Resolved';
+  isPublished: boolean;
+  affectedServices: string[];
+  affectedClients: ('All' | string)[]; // Can be 'All' or a list of client IDs
+  updates: MajorIncidentUpdate[];
+  startedAt: string;
+  resolvedAt?: string;
+};
+
+
 export type KnowledgeBaseArticle = {
   id: string;
   title: string;
@@ -213,42 +232,14 @@ export type User = {
 };
 
 export type Permissions = {
-  tickets: {
-    create: boolean;
-    read: 'all' | 'assigned_only' | 'none';
-    update: boolean;
-    delete: boolean;
-  };
-  clients: {
-    create: boolean;
-    read: boolean;
-    update: boolean;
-    delete: boolean;
-  };
-  assets: {
-    create: boolean;
-    read: boolean;
-    update: boolean;
-    delete: boolean;
-  };
-  inventory: {
-    create: boolean;
-    read: boolean;
-    update: boolean;
-    delete: boolean;
-  };
-  knowledgeBase: {
-    create: boolean;
-    read: 'all' | 'group' | 'public_only';
-    update: boolean;
-    delete: boolean;
-  };
-  reports: {
-    view: boolean;
-  };
-  settings: {
-    adminAccess: boolean;
-  };
+  tickets: { create: boolean; read: 'all' | 'assigned_only' | 'none'; update: boolean; delete: boolean; };
+  incidents: { create: boolean; read: 'all' | 'none'; update: boolean; delete: boolean; manageMajor: boolean; };
+  clients: { create: boolean; read: boolean; update: boolean; delete: boolean; };
+  assets: { create: boolean; read: boolean; update: boolean; delete: boolean; };
+  inventory: { create: boolean; read: boolean; update: boolean; delete: boolean; };
+  knowledgeBase: { create: boolean; read: 'all' | 'group' | 'public_only'; update: boolean; delete: boolean; };
+  reports: { view: boolean; };
+  settings: { adminAccess: boolean; };
 };
 
 export type Role = {
@@ -364,7 +355,7 @@ export type ScheduleItem = {
   notes?: string;
 };
 
-export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings' | 'change-management';
+export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings' | 'change-management' | 'incidents';
 
 export type ModuleInfo = {
   id: ModuleId;
@@ -374,12 +365,13 @@ export type ModuleInfo = {
 };
 
 // Define ALL_MODULES using the types
-import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar, History } from 'lucide-react';
+import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar, History, Flame } from 'lucide-react';
 
 export const ALL_MODULES: ModuleInfo[] = [
     { id: 'dashboard', label: 'Dashboard', description: 'Main overview dashboard.', icon: Home },
     { id: 'reports', label: 'Reports', description: 'Analytics and reporting.', icon: BarChart3 },
     { id: 'tickets', label: 'Tickets', description: 'Ticket management system.', icon: Ticket },
+    { id: 'incidents', label: 'Incidents', description: 'Manage service disruptions.', icon: Flame },
     { id: 'scheduling', label: 'Scheduling', description: 'Technician scheduling and calendar.', icon: Calendar },
     { id: 'change-management', label: 'Change Management', description: 'Track and approve IT changes.', icon: History },
     { id: 'clients', label: 'Clients', description: 'Client and company management.', icon: Users },

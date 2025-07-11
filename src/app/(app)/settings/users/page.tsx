@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/form';
 import { users, roles, userGroups } from '@/lib/placeholder-data';
 import type { User, Role, UserGroup } from '@/lib/types';
-import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, Users2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, CheckCircle, XCircle, Users2, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -145,6 +145,15 @@ const RoleCard = ({ role }: { role: Role }) => {
                     <PermissionRow label="Read Access" value={role.permissions.tickets.read} />
                     <PermissionRow label="Update" value={role.permissions.tickets.update} />
                     <PermissionRow label="Delete" value={role.permissions.tickets.delete} />
+                </div>
+            </div>
+            <div>
+                <h4 className="font-semibold text-sm">Incidents</h4>
+                <div className="divide-y mt-2 border-t">
+                    <PermissionRow label="Create" value={role.permissions.incidents.create} />
+                    <PermissionRow label="Read Access" value={role.permissions.incidents.read} />
+                    <PermissionRow label="Update" value={role.permissions.incidents.update} />
+                    <PermissionRow label="Manage Major Incidents" value={role.permissions.incidents.manageMajor} />
                 </div>
             </div>
              <div>

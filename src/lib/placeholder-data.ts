@@ -1,6 +1,5 @@
-
-import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting } from './types';
-import { subHours, addHours, addDays, format, formatISO } from 'date-fns';
+import type { Client, Contact, Ticket, Asset, KnowledgeBaseArticle, DashboardStat, Script, TicketQueue, CsatResponse, TicketStatusSetting, TicketPrioritySetting, TicketQueueSetting, SlaPolicy, User, Role, AssetStatusSetting, AssetCategorySetting, AssetLocationSetting, InventoryItem, InventoryCategorySetting, InventoryLocationSetting, InventorySupplierSetting, Contract, CustomField, TimeLog, UserGroup, Permissions, ScheduleItem, ChangeRequest, ChangeRequestStatusSetting, ChangeRequestRiskSetting, ChangeRequestImpactSetting, MajorIncident } from './types';
+import { subHours, addHours, addDays, format, formatISO, subMinutes, subDays } from 'date-fns';
 
 const now = new Date();
 
@@ -722,6 +721,7 @@ export const users: User[] = [
 
 const adminPermissions: Permissions = {
   tickets: { create: true, read: 'all', update: true, delete: true },
+  incidents: { create: true, read: 'all', update: true, delete: true, manageMajor: true },
   clients: { create: true, read: true, update: true, delete: true },
   assets: { create: true, read: true, update: true, delete: true },
   inventory: { create: true, read: true, update: true, delete: true },
@@ -732,6 +732,7 @@ const adminPermissions: Permissions = {
 
 const technicianPermissions: Permissions = {
   tickets: { create: true, read: 'all', update: true, delete: false },
+  incidents: { create: true, read: 'all', update: true, delete: false, manageMajor: true },
   clients: { create: false, read: true, update: true, delete: false },
   assets: { create: true, read: true, update: true, delete: false },
   inventory: { create: true, read: true, update: true, delete: false },
@@ -742,6 +743,7 @@ const technicianPermissions: Permissions = {
 
 const readOnlyPermissions: Permissions = {
   tickets: { create: false, read: 'all', update: false, delete: false },
+  incidents: { create: false, read: 'all', update: false, delete: false, manageMajor: false },
   clients: { create: false, read: true, update: false, delete: false },
   assets: { create: false, read: true, update: false, delete: false },
   inventory: { create: false, read: true, update: false, delete: false },
@@ -1098,4 +1100,47 @@ export const changeRequestImpactSettings: ChangeRequestImpactSetting[] = [
   { id: 'chg-impact-1', name: 'Low', description: 'Affects a single user or device.', variant: 'outline' },
   { id: 'chg-impact-2', name: 'Medium', description: 'Affects a department or group.', variant: 'secondary' },
   { id: 'chg-impact-3', name: 'High', description: 'Affects the entire organization.', variant: 'default' },
+];
+
+export const majorIncidents: MajorIncident[] = [
+    {
+      id: 'MI-001',
+      title: 'Email Service Disruption for All Clients',
+      status: 'Investigating',
+      isPublished: true,
+      affectedServices: ['Email Hosting', 'Microsoft 365'],
+      affectedClients: ['All'],
+      startedAt: formatISO(subMinutes(now, 45)),
+      updates: [
+        { id: 'UPD-001', timestamp: formatISO(subMinutes(now, 40)), status: 'Investigating', message: 'We are aware of an issue affecting email services for all clients and are currently investigating. We will provide an update shortly.' },
+      ],
+    },
+    {
+      id: 'MI-002',
+      title: 'Network Outage at TechCorp HQ',
+      status: 'Identified',
+      isPublished: true,
+      affectedServices: ['Internet', 'VPN', 'Internal Network'],
+      affectedClients: ['CLI-001'],
+      startedAt: formatISO(subHours(now, 2)),
+      updates: [
+        { id: 'UPD-003', timestamp: formatISO(subMinutes(now, 65)), status: 'Identified', message: 'The issue has been identified as a failed core switch at the client\'s primary data closet. A technician is en route with a replacement.' },
+        { id: 'UPD-002', timestamp: formatISO(subMinutes(now, 110)), status: 'Investigating', message: 'We are investigating a full network outage at the TechCorp main office. All services are currently unavailable.' },
+      ],
+    },
+    {
+        id: 'MI-003',
+        title: 'Internal Tooling Latency',
+        status: 'Resolved',
+        isPublished: false,
+        affectedServices: ['Deskwise Application'],
+        affectedClients: [],
+        startedAt: formatISO(subDays(now, 1)),
+        resolvedAt: formatISO(subDays(now, 1)),
+        updates: [
+            { id: 'UPD-004', timestamp: formatISO(subDays(now, 1)), status: 'Resolved', message: 'The database performance issue has been resolved. All systems are operating normally.' },
+            { id: 'UPD-005', timestamp: formatISO(subDays(now, 1)), status: 'Monitoring', message: 'A fix has been implemented and we are monitoring the results.' },
+            { id: 'UPD-006', timestamp: formatISO(subDays(now, 1)), status: 'Identified', message: 'The issue has been identified as a slow query on our primary database. We are working on a fix.' },
+        ],
+    }
 ];

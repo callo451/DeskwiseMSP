@@ -29,6 +29,7 @@ import {
   Warehouse,
   Calendar,
   History,
+  Flame,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -44,6 +45,7 @@ import type { ModuleId } from '@/lib/types';
 const menuItems = [
   { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: Home },
   { id: 'reports', href: '/reports', label: 'Reports', icon: BarChart3 },
+  { id: 'incidents', href: '/incidents', label: 'Incidents', icon: Flame },
   { id: 'tickets', 
     href: '/tickets', 
     label: 'Tickets', 

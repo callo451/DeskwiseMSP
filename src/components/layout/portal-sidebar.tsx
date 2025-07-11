@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -15,6 +16,7 @@ import {
   Gem,
   LogOut,
   Sparkles,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -26,6 +28,7 @@ const menuItems = [
   { href: '/portal/tickets', label: 'My Tickets', icon: Ticket },
   { href: '/portal/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
   { href: '/portal/chat', label: 'AI Chat', icon: Sparkles },
+  { href: '/portal/status', label: 'System Status', icon: Shield },
 ];
 
 export function PortalSidebar() {

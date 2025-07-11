@@ -25,22 +25,28 @@ export function KanbanBoard({ tasks, setTasks }: KanbanBoardProps) {
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
+    // Do nothing if dropped outside a valid destination
     if (!destination) {
       return;
     }
 
+    // Do nothing if the item is dropped in the same place
     if (source.droppableId === destination.droppableId && source.index === destination.index) {
       return;
     }
 
-    const newTasks = Array.from(tasks);
-    const taskToMove = newTasks.find(t => t.id === draggableId);
+    setTasks(prevTasks => {
+        const newTasks = Array.from(prevTasks);
+        const movedTask = newTasks.find(t => t.id === draggableId);
 
-    if (taskToMove) {
-      taskToMove.status = destination.droppableId as TaskStatus;
-      // You might want to reorder the tasks array here as well if you care about index
-      setTasks(newTasks);
-    }
+        if (movedTask) {
+            // Update the status of the moved task
+            movedTask.status = destination.droppableId as TaskStatus;
+        }
+        
+        // Return the updated array to set the state
+        return newTasks;
+    });
   };
 
   const getColumnTasks = (status: TaskStatus) => {
@@ -50,7 +56,7 @@ export function KanbanBoard({ tasks, setTasks }: KanbanBoardProps) {
   };
 
   if (!isBrowser) {
-    return null; // Don't render on the server
+    return null; // Don't render on the server to avoid hydration errors with react-beautiful-dnd
   }
 
   return (

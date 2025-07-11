@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const DetailRow = ({ label, value, icon: Icon }: { label: string; value?: React.ReactNode, icon?: React.ElementType }) => {
   if (!value) return null;
@@ -65,6 +66,7 @@ const AssetRow = ({ asset }: { asset: Asset }) => (
 export default function ContractDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { toast } = useToast();
   
   const contract = contracts.find(c => c.id === params.id);
   const coveredAssets = contract ? allAssets.filter(a => a.contractId === contract.id) : [];
@@ -85,6 +87,13 @@ export default function ContractDetailsPage() {
     );
   }
   
+  const handleGenerateInvoice = () => {
+    toast({
+      title: "Invoice Generated (Simulated)",
+      description: `An invoice for ${contract.name} has been created.`,
+    });
+  };
+
   const getStatusVariant = (status: Contract['status']) => {
     switch (status) {
       case 'Active': return 'default';
@@ -110,7 +119,7 @@ export default function ContractDetailsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline">Edit Contract</Button>
-            <Button>Generate Invoice</Button>
+            <Button onClick={handleGenerateInvoice}>Generate Invoice</Button>
           </div>
         </div>
         

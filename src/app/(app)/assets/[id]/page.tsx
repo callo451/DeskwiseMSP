@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -78,6 +79,7 @@ import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/u
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const monitoringData = {
   cpu: [
@@ -187,6 +189,7 @@ const DetailRow = ({ label, value }: { label: string; value?: React.ReactNode })
 
 export default function AssetDetailsPage() {
   const params = useParams<{ id: string }>();
+  const { isInternalITMode } = useSidebar();
   const asset = assets.find(a => a.id === params.id);
   const associatedTickets = allTickets.filter(t => asset?.associatedTickets.includes(t.id));
   const client = asset ? clients.find(c => c.name === asset.client) : undefined;
@@ -347,10 +350,12 @@ export default function AssetDetailsPage() {
                 <CardTitle>Asset Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Client</span>
-                  <span className="font-medium">{asset.client}</span>
-                </div>
+                {!isInternalITMode && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Client</span>
+                    <span className="font-medium">{asset.client}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Type</span>
                   <span className="font-medium">{asset.type}</span>

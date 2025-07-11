@@ -30,6 +30,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const StatCard = ({ stat }: { stat: DashboardStat }) => {
   const isIncrease = stat.changeType === 'increase';
@@ -61,7 +62,7 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
   );
 };
 
-const ProjectRow = ({ project }: { project: Project }) => {
+const ProjectRow = ({ project, isInternalITMode }: { project: Project, isInternalITMode: boolean }) => {
   const getStatusVariant = (status: Project['status']) => {
     switch (status) {
       case 'In Progress':
@@ -86,7 +87,7 @@ const ProjectRow = ({ project }: { project: Project }) => {
         >
           {project.name}
         </Link>
-        <div className="text-sm text-muted-foreground">{project.client}</div>
+        {!isInternalITMode && <div className="text-sm text-muted-foreground">{project.client}</div>}
       </TableCell>
       <TableCell className="hidden sm:table-cell">
         <Badge variant={getStatusVariant(project.status)}>{project.status}</Badge>
@@ -112,6 +113,7 @@ const ProjectRow = ({ project }: { project: Project }) => {
 };
 
 export default function ProjectsPage() {
+  const { isInternalITMode } = useSidebar();
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -142,7 +144,7 @@ export default function ProjectsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Project / Client</TableHead>
+                <TableHead>Project {isInternalITMode ? '' : '/ Client'}</TableHead>
                 <TableHead className="hidden sm:table-cell">Status</TableHead>
                 <TableHead className="hidden md:table-cell">Progress</TableHead>
                 <TableHead className="hidden md:table-cell">End Date</TableHead>
@@ -153,7 +155,7 @@ export default function ProjectsPage() {
             </TableHeader>
             <TableBody>
               {projects.map((project) => (
-                <ProjectRow key={project.id} project={project} />
+                <ProjectRow key={project.id} project={project} isInternalITMode={isInternalITMode} />
               ))}
             </TableBody>
           </Table>

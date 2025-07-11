@@ -52,6 +52,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useSidebar } from '@/components/ui/sidebar';
 
 
 const DetailRow = ({
@@ -137,6 +138,7 @@ const MilestoneRow = ({ milestone }: { milestone: ProjectMilestone }) => (
 export default function ProjectDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { isInternalITMode } = useSidebar();
 
   const project = projects.find((p) => p.id === params.id);
   
@@ -203,15 +205,17 @@ export default function ProjectDetailsPage() {
             </h1>
             <Badge variant={getStatusVariant(project.status)}>{project.status}</Badge>
           </div>
-          <p className="text-muted-foreground ml-12">
-            For{' '}
-            <Link
-              href={`/clients/${project.clientId}`}
-              className="font-medium text-primary hover:underline"
-            >
-              {project.client}
-            </Link>
-          </p>
+          {!isInternalITMode && (
+            <p className="text-muted-foreground ml-12">
+              For{' '}
+              <Link
+                href={`/clients/${project.clientId}`}
+                className="font-medium text-primary hover:underline"
+              >
+                {project.client}
+              </Link>
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline">Edit Project</Button>
@@ -231,16 +235,18 @@ export default function ProjectDetailsPage() {
                 <DetailRow label="End Date" icon={Calendar} value={new Date(project.endDate).toLocaleDateString()} />
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget</CardTitle>
-            </CardHeader>
-             <CardContent className="divide-y divide-border -mt-2">
-                <DetailRow label="Total Budget" icon={DollarSign} value={formatCurrency(project.budget.total)} />
-                <DetailRow label="Budget Used" icon={DollarSign} value={formatCurrency(project.budget.used)} />
-                <DetailRow label="Remaining" icon={DollarSign} value={formatCurrency(project.budget.total - project.budget.used)} />
-            </CardContent>
-          </Card>
+          {!isInternalITMode && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Budget</CardTitle>
+              </CardHeader>
+               <CardContent className="divide-y divide-border -mt-2">
+                  <DetailRow label="Total Budget" icon={DollarSign} value={formatCurrency(project.budget.total)} />
+                  <DetailRow label="Budget Used" icon={DollarSign} value={formatCurrency(project.budget.used)} />
+                  <DetailRow label="Remaining" icon={DollarSign} value={formatCurrency(project.budget.total - project.budget.used)} />
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Flag className="h-5 w-5" />Milestones</CardTitle>

@@ -35,10 +35,11 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const changeRequestSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
-  clientId: z.string().min(1, 'Please select a client.'),
+  clientId: z.string().optional(),
   status: z.string().min(1, 'Please select a status.'),
   riskLevel: z.string().min(1, 'Please select a risk level.'),
   impact: z.string().min(1, 'Please select an impact level.'),
@@ -55,6 +56,7 @@ export default function NewChangeRequestPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { isInternalITMode } = useSidebar();
 
   const form = useForm<ChangeRequestFormValues>({
     resolver: zodResolver(changeRequestSchema),
@@ -175,13 +177,15 @@ export default function NewChangeRequestPage() {
                   <CardTitle>Properties</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <FormField control={form.control} name="clientId" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Client</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger></FormControl><SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select>
-                        <FormMessage />
-                      </FormItem>
-                  )} />
+                  {!isInternalITMode && (
+                    <FormField control={form.control} name="clientId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Client</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger></FormControl><SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select>
+                          <FormMessage />
+                        </FormItem>
+                    )} />
+                  )}
                    <FormField control={form.control} name="status" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status</FormLabel>

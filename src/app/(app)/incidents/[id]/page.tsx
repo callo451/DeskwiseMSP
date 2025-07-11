@@ -49,6 +49,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const DetailRow = ({ label, value, icon: Icon }: { label: string; value?: React.ReactNode, icon?: React.ElementType }) => (
   <div className="flex justify-between items-center py-3 text-sm">
@@ -117,6 +118,7 @@ export default function IncidentDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
+  const { isInternalITMode } = useSidebar();
 
   const originalIncident = majorIncidents.find(i => i.id === params.id);
   
@@ -268,42 +270,44 @@ export default function IncidentDetailsPage() {
                     </div>
                 )}
               </div>
-              <div>
-                <Label>Affected Clients</Label>
-                 {isEditing ? (
-                     <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" role="combobox" className="w-full justify-between h-auto min-h-10">
-                                <div className="flex gap-1 flex-wrap">
-                                    {affectedClients.length > 0 ? affectedClients.map(c => <Badge variant="outline" key={c.id}>{c.name}</Badge>) : "Select clients..."}
-                                </div>
-                            </Button>
-                        </PopoverTrigger>
-                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
-                                <CommandInput placeholder="Search clients..." />
-                                <CommandList>
-                                    <CommandEmpty>No clients found.</CommandEmpty>
-                                    <CommandGroup>
-                                         <CommandItem onSelect={() => setIncident({...incident, affectedClients: ['All']})}><CheckCircle className={cn("mr-2 h-4 w-4", incident.affectedClients.includes('All') ? "opacity-100" : "opacity-0")} />All Clients</CommandItem>
-                                        {allClients.map((client) => (
-                                            <CommandItem key={client.id} onSelect={() => {
-                                                const currentSelection = incident.affectedClients.filter(c => c !== 'All');
-                                                const newSelection = currentSelection.includes(client.id) ? currentSelection.filter(id => id !== client.id) : [...currentSelection, client.id];
-                                                setIncident({...incident, affectedClients: newSelection});
-                                            }}><CheckCircle className={cn("mr-2 h-4 w-4", incident.affectedClients.includes(client.id) ? "opacity-100" : "opacity-0")} />{client.name}</CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
-                ) : (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {affectedClients.map(c => <Badge key={c!.id} variant="outline">{c!.name}</Badge>)}
-                  </div>
-                )}
-              </div>
+              {!isInternalITMode && (
+                <div>
+                  <Label>Affected Clients</Label>
+                   {isEditing ? (
+                       <Popover>
+                          <PopoverTrigger asChild>
+                              <Button variant="outline" role="combobox" className="w-full justify-between h-auto min-h-10">
+                                  <div className="flex gap-1 flex-wrap">
+                                      {affectedClients.length > 0 ? affectedClients.map(c => <Badge variant="outline" key={c.id}>{c.name}</Badge>) : "Select clients..."}
+                                  </div>
+                              </Button>
+                          </PopoverTrigger>
+                           <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                              <Command>
+                                  <CommandInput placeholder="Search clients..." />
+                                  <CommandList>
+                                      <CommandEmpty>No clients found.</CommandEmpty>
+                                      <CommandGroup>
+                                           <CommandItem onSelect={() => setIncident({...incident, affectedClients: ['All']})}><CheckCircle className={cn("mr-2 h-4 w-4", incident.affectedClients.includes('All') ? "opacity-100" : "opacity-0")} />All Clients</CommandItem>
+                                          {allClients.map((client) => (
+                                              <CommandItem key={client.id} onSelect={() => {
+                                                  const currentSelection = incident.affectedClients.filter(c => c !== 'All');
+                                                  const newSelection = currentSelection.includes(client.id) ? currentSelection.filter(id => id !== client.id) : [...currentSelection, client.id];
+                                                  setIncident({...incident, affectedClients: newSelection});
+                                              }}><CheckCircle className={cn("mr-2 h-4 w-4", incident.affectedClients.includes(client.id) ? "opacity-100" : "opacity-0")} />{client.name}</CommandItem>
+                                          ))}
+                                      </CommandGroup>
+                                  </CommandList>
+                              </Command>
+                          </PopoverContent>
+                      </Popover>
+                  ) : (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {affectedClients.map(c => <Badge key={c!.id} variant="outline">{c!.name}</Badge>)}
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

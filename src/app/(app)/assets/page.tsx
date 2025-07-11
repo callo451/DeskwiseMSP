@@ -48,6 +48,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import Link from 'next/link';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const StatCard = ({ stat }: { stat: DashboardStat }) => {
   const isIncrease = stat.changeType === 'increase';
@@ -79,7 +80,7 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
   );
 };
 
-const AssetRow = ({ asset }: { asset: Asset }) => {
+const AssetRow = ({ asset, isInternalITMode }: { asset: Asset, isInternalITMode: boolean }) => {
   const getStatusVariant = (status: Asset['status']) => {
     switch (status) {
       case 'Online':
@@ -106,7 +107,7 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
           {asset.id}
         </div>
       </TableCell>
-      <TableCell className="hidden sm:table-cell">{asset.client}</TableCell>
+      {!isInternalITMode && <TableCell className="hidden sm:table-cell">{asset.client}</TableCell>}
       <TableCell className="hidden sm:table-cell">{asset.type}</TableCell>
       <TableCell className="hidden md:table-cell">
         <Badge
@@ -166,6 +167,7 @@ const AssetRow = ({ asset }: { asset: Asset }) => {
 };
 
 export default function AssetsPage() {
+  const { isInternalITMode } = useSidebar();
   const assetTypes: Array<Asset['type']> = ['Server', 'Workstation', 'Network', 'Printer'];
   const assetStatuses: Array<Asset['status']> = ['Online', 'Offline', 'Warning'];
   const assetSecurityStatuses: string[] = ['Secured', 'At Risk'];
@@ -304,7 +306,7 @@ export default function AssetsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name / ID</TableHead>
-                <TableHead className="hidden sm:table-cell">Client</TableHead>
+                {!isInternalITMode && <TableHead className="hidden sm:table-cell">Client</TableHead>}
                 <TableHead className="hidden sm:table-cell">Type</TableHead>
                 <TableHead className="hidden md:table-cell">Status</TableHead>
                 <TableHead className="hidden lg:table-cell">Security</TableHead>
@@ -316,7 +318,7 @@ export default function AssetsPage() {
             </TableHeader>
             <TableBody>
               {filteredAssets.map(asset => (
-                <AssetRow key={asset.id} asset={asset} />
+                <AssetRow key={asset.id} asset={asset} isInternalITMode={isInternalITMode} />
               ))}
             </TableBody>
           </Table>

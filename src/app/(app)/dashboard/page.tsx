@@ -29,6 +29,7 @@ import {
 } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import React from 'react';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const companyChartData = [
   { date: 'Mon', created: 12, resolved: 10 },
@@ -85,7 +86,7 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
   );
 };
 
-const CompanyTicketRow = ({ ticket }: { ticket: Ticket }) => {
+const CompanyTicketRow = ({ ticket, isInternalITMode }: { ticket: Ticket, isInternalITMode: boolean }) => {
   const getStatusVariant = (status: Ticket['status']) => {
     switch (status) {
       case 'Open':
@@ -117,9 +118,7 @@ const CompanyTicketRow = ({ ticket }: { ticket: Ticket }) => {
     <TableRow>
       <TableCell>
         <div className="font-medium">{ticket.id}</div>
-        <div className="hidden text-sm text-muted-foreground md:inline">
-          {ticket.client}
-        </div>
+        {!isInternalITMode && <div className="hidden text-sm text-muted-foreground md:inline">{ticket.client}</div>}
       </TableCell>
       <TableCell>
         <div className="font-medium">{ticket.subject}</div>
@@ -136,7 +135,7 @@ const CompanyTicketRow = ({ ticket }: { ticket: Ticket }) => {
   );
 };
 
-const MyTicketRow = ({ ticket }: { ticket: Ticket }) => {
+const MyTicketRow = ({ ticket, isInternalITMode }: { ticket: Ticket, isInternalITMode: boolean }) => {
     const getPriorityVariant = (priority: Ticket['priority']) => {
         switch (priority) {
         case 'Critical': return 'destructive';
@@ -149,7 +148,7 @@ const MyTicketRow = ({ ticket }: { ticket: Ticket }) => {
         <TableRow>
             <TableCell>
                 <Link href={`/tickets/${ticket.id}`} className="font-medium text-primary hover:underline">{ticket.id}</Link>
-                <div className="text-sm text-muted-foreground">{ticket.client}</div>
+                {!isInternalITMode && <div className="text-sm text-muted-foreground">{ticket.client}</div>}
             </TableCell>
             <TableCell>{ticket.subject}</TableCell>
             <TableCell>
@@ -173,6 +172,7 @@ const ActivityIcon = ({ type }: { type: string }) => {
 };
 
 export default function DashboardPage() {
+  const { isInternalITMode } = useSidebar();
   const recentCompanyTickets = tickets.slice(0, 5);
   // Assuming the logged-in user is 'Alice' for the personal dashboard
   const myOpenTickets = tickets.filter(t => t.assignee === 'Alice' && t.status !== 'Resolved' && t.status !== 'Closed');
@@ -208,7 +208,7 @@ export default function DashboardPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>ID / Client</TableHead>
+                                    <TableHead>ID {isInternalITMode ? '' : '/ Client'}</TableHead>
                                     <TableHead>Subject</TableHead>
                                     <TableHead>Priority</TableHead>
                                     <TableHead className="text-right">Last Update</TableHead>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
                             </TableHeader>
                             <TableBody>
                                 {myOpenTickets.length > 0 ? (
-                                    myOpenTickets.map(ticket => <MyTicketRow key={ticket.id} ticket={ticket} />)
+                                    myOpenTickets.map(ticket => <MyTicketRow key={ticket.id} ticket={ticket} isInternalITMode={isInternalITMode}/>)
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={4} className="h-24 text-center">You have no open tickets. Great job!</TableCell>
@@ -312,7 +312,7 @@ export default function DashboardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID / Client</TableHead>
+                      <TableHead>ID {isInternalITMode ? '' : '/ Client'}</TableHead>
                       <TableHead>Subject</TableHead>
                       <TableHead className="hidden sm:table-cell">Assignee</TableHead>
                       <TableHead className="hidden sm:table-cell">Priority</TableHead>
@@ -322,7 +322,7 @@ export default function DashboardPage() {
                   </TableHeader>
                   <TableBody>
                     {recentCompanyTickets.map(ticket => (
-                      <CompanyTicketRow key={ticket.id} ticket={ticket} />
+                      <CompanyTicketRow key={ticket.id} ticket={ticket} isInternalITMode={isInternalITMode} />
                     ))}
                   </TableBody>
                 </Table>

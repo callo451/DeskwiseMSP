@@ -23,8 +23,10 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { clients } from '@/lib/placeholder-data';
+import { useSidebar } from '@/components/ui/sidebar';
 
 export default function NewProjectPage() {
+  const { isInternalITMode } = useSidebar();
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -54,19 +56,21 @@ export default function NewProjectPage() {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="space-y-2">
-                <Label htmlFor="client">Client</Label>
-                <Select>
-                  <SelectTrigger id="client">
-                    <SelectValue placeholder="Select a client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+               {!isInternalITMode && (
+                  <div className="space-y-2">
+                    <Label htmlFor="client">Client</Label>
+                    <Select>
+                      <SelectTrigger id="client">
+                        <SelectValue placeholder="Select a client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients.map(c => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               <div className="space-y-2">
                 <Label htmlFor="template">Project Template (Optional)</Label>
                 <Select>

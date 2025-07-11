@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ChevronLeft } from 'lucide-react';
 import { majorIncidents, clients } from '@/lib/placeholder-data';
 import { Textarea } from '@/components/ui/textarea';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const incidentSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters.'),
@@ -43,6 +44,7 @@ export default function NewIncidentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { isInternalITMode } = useSidebar();
 
   const form = useForm<IncidentFormValues>({
     resolver: zodResolver(incidentSchema),
@@ -106,16 +108,18 @@ export default function NewIncidentPage() {
                       <FormMessage />
                     </FormItem>
                 )} />
-                <FormField control={form.control} name="clientId" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Affected Client (Optional)</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="All Clients" /></SelectTrigger></FormControl><SelectContent>
-                        <SelectItem value="all">All Clients</SelectItem>
-                        {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                      </SelectContent></Select>
-                      <FormMessage />
-                    </FormItem>
-                )} />
+                {!isInternalITMode && (
+                  <FormField control={form.control} name="clientId" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Affected Client (Optional)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="All Clients" /></SelectTrigger></FormControl><SelectContent>
+                          <SelectItem value="all">All Clients</SelectItem>
+                          {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        </SelectContent></Select>
+                        <FormMessage />
+                      </FormItem>
+                  )} />
+                )}
               </div>
               <FormField
                 control={form.control}

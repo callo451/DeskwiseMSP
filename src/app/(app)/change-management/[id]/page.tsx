@@ -19,6 +19,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const DetailRow = ({ label, value, icon: Icon }: { label: string; value?: React.ReactNode, icon?: React.ElementType }) => {
   if (!value) return null;
@@ -54,6 +55,7 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => (
 export default function ChangeRequestDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { isInternalITMode } = useSidebar();
 
   const change = changeRequests.find(c => c.id === params.id);
   
@@ -65,7 +67,7 @@ export default function ChangeRequestDetailsPage() {
           <CardDescription>The requested change could not be found.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" /> Go Back</Button>
+          <Button onClick={() => router.back()}><ChevronLeft className="mr-2 h-4 w-4" /> Go Back</Button>
         </CardContent>
       </Card>
     );
@@ -130,7 +132,7 @@ export default function ChangeRequestDetailsPage() {
                 <CardHeader><CardTitle>Details</CardTitle></CardHeader>
                 <CardContent className="divide-y divide-border -mt-2">
                     <DetailRow label="Status" icon={Activity} value={<Badge variant={getStatusVariant(change.status)}>{change.status}</Badge>} />
-                    <DetailRow label="Client" icon={User} value={<Link href={`/clients/${client?.id}`} className="font-medium text-primary hover:underline">{client?.name}</Link>} />
+                    {!isInternalITMode && <DetailRow label="Client" icon={User} value={<Link href={`/clients/${client?.id}`} className="font-medium text-primary hover:underline">{client?.name}</Link>} />}
                     <DetailRow label="Risk Level" icon={AlertTriangle} value={<Badge variant={getRiskVariant(change.riskLevel)}>{change.riskLevel}</Badge>} />
                     <DetailRow label="Impact" icon={Shield} value={<Badge variant={getImpactVariant(change.impact)}>{change.impact}</Badge>} />
                     <DetailRow label="Planned Start" icon={Calendar} value={format(new Date(change.plannedStartDate), 'PPpp')} />

@@ -41,8 +41,9 @@ import {
   ArrowDownRight,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useSidebar } from '@/components/ui/sidebar';
 
-const TicketRow = ({ ticket }: { ticket: Ticket }) => {
+const TicketRow = ({ ticket, isInternalITMode }: { ticket: Ticket, isInternalITMode: boolean }) => {
   const getStatusVariant = (status: Ticket['status']) => {
     switch (status) {
       case 'Open':
@@ -84,9 +85,11 @@ const TicketRow = ({ ticket }: { ticket: Ticket }) => {
         <Link href={`/tickets/${ticket.id}`} className="font-medium hover:underline">
             {ticket.subject}
         </Link>
-        <div className="hidden text-sm text-muted-foreground md:inline ml-2">
-          - {ticket.client}
-        </div>
+        {!isInternalITMode && (
+          <div className="hidden text-sm text-muted-foreground md:inline ml-2">
+            - {ticket.client}
+          </div>
+        )}
       </TableCell>
       <TableCell className="hidden sm:table-cell">{ticket.queue}</TableCell>
       <TableCell className="hidden sm:table-cell">{ticket.assignee}</TableCell>
@@ -167,6 +170,7 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
 
 export default function TicketsPage() {
   const searchParams = useSearchParams();
+  const { isInternalITMode } = useSidebar();
   const ticketStatuses = ['Open', 'In Progress', 'On Hold', 'Resolved', 'Closed'];
   const ticketPriorities = ['Low', 'Medium', 'High', 'Critical'];
   const queues = ticketQueues;
@@ -308,7 +312,7 @@ export default function TicketsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Subject / Client</TableHead>
+                <TableHead>Subject {isInternalITMode ? '' : '/ Client'}</TableHead>
                 <TableHead className="hidden sm:table-cell">Queue</TableHead>
                 <TableHead className="hidden sm:table-cell">Assignee</TableHead>
                 <TableHead className="hidden sm:table-cell">Priority</TableHead>
@@ -321,7 +325,7 @@ export default function TicketsPage() {
             </TableHeader>
             <TableBody>
               {filteredTickets.map(ticket => (
-                <TicketRow key={ticket.id} ticket={ticket} />
+                <TicketRow key={ticket.id} ticket={ticket} isInternalITMode={isInternalITMode} />
               ))}
             </TableBody>
           </Table>

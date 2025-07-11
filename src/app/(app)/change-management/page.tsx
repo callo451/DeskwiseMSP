@@ -32,8 +32,9 @@ import type { ChangeRequest } from '@/lib/types';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { useSidebar } from '@/components/ui/sidebar';
 
-const ChangeRequestRow = ({ change }: { change: ChangeRequest }) => {
+const ChangeRequestRow = ({ change, isInternalITMode }: { change: ChangeRequest, isInternalITMode: boolean }) => {
   const getStatusVariant = (status: ChangeRequest['status']) => {
     switch (status) {
       case 'Pending Approval': return 'secondary';
@@ -66,9 +67,11 @@ const ChangeRequestRow = ({ change }: { change: ChangeRequest }) => {
         <Link href={`/change-management/${change.id}`} className="font-medium hover:underline">
           {change.title}
         </Link>
-        <div className="hidden text-sm text-muted-foreground md:inline ml-2">
-          - {change.client}
-        </div>
+        {!isInternalITMode && (
+          <div className="hidden text-sm text-muted-foreground md:inline ml-2">
+            - {change.client}
+          </div>
+        )}
       </TableCell>
       <TableCell className="hidden sm:table-cell">
         <Badge variant={getStatusVariant(change.status)}>{change.status}</Badge>
@@ -100,6 +103,7 @@ const ChangeRequestRow = ({ change }: { change: ChangeRequest }) => {
 };
 
 export default function ChangeManagementPage() {
+  const { isInternalITMode } = useSidebar();
   // Add filtering logic here in the future
   const filteredChanges = changeRequests;
 
@@ -127,7 +131,7 @@ export default function ChangeManagementPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Title / Client</TableHead>
+                <TableHead>Title {isInternalITMode ? '' : '/ Client'}</TableHead>
                 <TableHead className="hidden sm:table-cell">Status</TableHead>
                 <TableHead className="hidden sm:table-cell">Risk</TableHead>
                 <TableHead className="hidden md:table-cell">Submitted By</TableHead>
@@ -137,7 +141,7 @@ export default function ChangeManagementPage() {
             </TableHeader>
             <TableBody>
               {filteredChanges.map(change => (
-                <ChangeRequestRow key={change.id} change={change} />
+                <ChangeRequestRow key={change.id} change={change} isInternalITMode={isInternalITMode} />
               ))}
             </TableBody>
           </Table>

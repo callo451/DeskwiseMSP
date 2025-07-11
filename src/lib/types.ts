@@ -403,28 +403,30 @@ export type ModuleInfo = {
   label: string;
   description: string;
   icon: LucideIcon;
+  type: 'Core' | 'MSP';
 };
 
 // Define ALL_MODULES using the types
 import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar, History, Flame, KanbanSquare, Library, FileText } from 'lucide-react';
 
 export const ALL_MODULES: ModuleInfo[] = [
-    { id: 'dashboard', label: 'Dashboard', description: 'Main overview dashboard.', icon: Home },
-    { id: 'reports', label: 'Reports', description: 'Analytics and reporting.', icon: BarChart3 },
-    { id: 'tickets', label: 'Tickets', description: 'Ticket management system.', icon: Ticket },
-    { id: 'incidents', label: 'Incidents', description: 'Manage service disruptions.', icon: Flame },
-    { id: 'projects', label: 'Projects', description: 'Manage client projects and tasks.', icon: KanbanSquare },
-    { id: 'quoting', label: 'Quoting', description: 'Create and manage sales quotes.', icon: FileText },
-    { id: 'scheduling', label: 'Scheduling', description: 'Technician scheduling and calendar.', icon: Calendar },
-    { id: 'change-management', label: 'Change Management', description: 'Track and approve IT changes.', icon: History },
-    { id: 'clients', label: 'Clients', description: 'Client and company management.', icon: Users },
-    { id: 'contacts', label: 'Contacts', description: 'Contact management for clients.', icon: Contact },
-    { id: 'assets', label: 'Assets', description: 'Asset tracking and management.', icon: HardDrive },
-    { id: 'inventory', label: 'Inventory', description: 'Inventory and stock management.', icon: Warehouse },
-    { id: 'billing', label: 'Billing', description: 'Contracts and recurring billing.', icon: CreditCard },
-    { id: 'service-catalogue', label: 'Service Catalogue', description: 'Manage service offerings.', icon: Library },
-    { id: 'knowledge-base', label: 'Knowledge Base', description: 'Internal and public articles.', icon: BookOpen },
-    { id: 'settings', label: 'Settings', description: 'Application and user settings.', icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', description: 'Main overview dashboard.', icon: Home, type: 'Core' },
+    { id: 'reports', label: 'Reports', description: 'Analytics and reporting.', icon: BarChart3, type: 'Core' },
+    { id: 'tickets', label: 'Tickets', description: 'Ticket management system.', icon: Ticket, type: 'Core' },
+    { id: 'incidents', label: 'Incidents', description: 'Manage service disruptions.', icon: Flame, type: 'Core' },
+    { id: 'projects', label: 'Projects', description: 'Manage client projects and tasks.', icon: KanbanSquare, type: 'Core' },
+    { id: 'scheduling', label: 'Scheduling', description: 'Technician scheduling and calendar.', icon: Calendar, type: 'Core' },
+    { id: 'change-management', label: 'Change Management', description: 'Track and approve IT changes.', icon: History, type: 'Core' },
+    { id: 'assets', label: 'Assets', description: 'Asset tracking and management.', icon: HardDrive, type: 'Core' },
+    { id: 'inventory', label: 'Inventory', description: 'Inventory and stock management.', icon: Warehouse, type: 'Core' },
+    { id: 'knowledge-base', label: 'Knowledge Base', description: 'Internal and public articles.', icon: BookOpen, type: 'Core' },
+    { id: 'settings', label: 'Settings', description: 'Application and user settings.', icon: Settings, type: 'Core' },
+    // MSP-specific modules
+    { id: 'clients', label: 'Clients', description: 'Client and company management.', icon: Users, type: 'MSP' },
+    { id: 'contacts', label: 'Contacts', description: 'Contact management for clients.', icon: Contact, type: 'MSP' },
+    { id: 'quoting', label: 'Quoting', description: 'Create and manage sales quotes.', icon: FileText, type: 'MSP' },
+    { id: 'billing', label: 'Billing', description: 'Contracts and recurring billing.', icon: CreditCard, type: 'MSP' },
+    { id: 'service-catalogue', label: 'Service Catalogue', description: 'Manage service offerings.', icon: Library, type: 'MSP' },
 ];
 
 export type ChangeRequestStatusSetting = {

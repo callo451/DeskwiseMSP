@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React from 'react';
 import {
   Card,
   CardContent,
@@ -13,14 +13,13 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ALL_MODULES, type ModuleId } from '@/lib/types';
-import { LayoutGrid } from 'lucide-react';
+import { ALL_MODULES, type ModuleId, type ModuleInfo } from '@/lib/types';
 import { useSidebar } from '@/components/ui/sidebar';
 
 
 export default function ModulesSettingsPage() {
   const { toast } = useToast();
-  const { enabledModules, setEnabledModules } = useSidebar();
+  const { enabledModules, setEnabledModules, isInternalITMode } = useSidebar();
 
   const handleToggle = (moduleId: ModuleId) => {
     setEnabledModules(prev => ({
@@ -41,6 +40,10 @@ export default function ModulesSettingsPage() {
   if (!enabledModules) {
     return null; // Or a loading state
   }
+
+  const visibleModules = ALL_MODULES.filter(module => 
+    isInternalITMode ? module.type === 'Core' : true
+  );
   
   return (
     <div className="space-y-6">
@@ -59,7 +62,7 @@ export default function ModulesSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-             {ALL_MODULES.map((module) => (
+             {visibleModules.map((module) => (
                 <div key={module.id} className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                     <Label htmlFor={`module-${module.id}`} className="text-base flex items-center gap-2">

@@ -47,6 +47,8 @@ type SidebarContext = {
   toggleSidebar: () => void
   enabledModules: EnabledModules | null;
   setEnabledModules: React.Dispatch<React.SetStateAction<EnabledModules>>;
+  isInternalITMode: boolean;
+  setIsInternalITMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -83,6 +85,7 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
     const [enabledModules, setEnabledModules] = React.useState<EnabledModules>(initialModulesState);
+    const [isInternalITMode, setIsInternalITMode] = React.useState(false);
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
@@ -141,8 +144,10 @@ const SidebarProvider = React.forwardRef<
         toggleSidebar,
         enabledModules,
         setEnabledModules,
+        isInternalITMode,
+        setIsInternalITMode,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, enabledModules, setEnabledModules]
+      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, enabledModules, setEnabledModules, isInternalITMode, setIsInternalITMode]
     )
 
     return (

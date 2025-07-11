@@ -37,11 +37,9 @@ import {
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '../ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ticketQueues } from '@/lib/placeholder-data';
-import { cn } from '@/lib/utils';
 import React from 'react';
 import type { ModuleId } from '@/lib/types';
 import { Separator } from '../ui/separator';
@@ -63,19 +61,19 @@ const menuItems = [
   { id: 'scheduling', href: '/scheduling', label: 'Scheduling', icon: Calendar, group: 'Workspace' },
   { id: 'incidents', href: '/incidents', label: 'Incidents', icon: Flame, group: 'Workspace' },
   { id: 'change-management', href: '/change-management', label: 'Change Management', icon: History, group: 'Workspace' },
+  { id: 'projects', href: '/projects', label: 'Projects', icon: KanbanSquare, group: 'Workspace' },
+  { id: 'knowledge-base', href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen, group: 'Workspace' },
   
   { id: 'clients', href: '/clients', label: 'Clients', icon: Users, group: 'Clients' },
   { id: 'contacts', href: '/contacts', label: 'Contacts', icon: Contact, group: 'Clients' },
-  { id: 'projects', href: '/projects', label: 'Projects', icon: KanbanSquare, group: 'Clients' },
-
+  
   { id: 'quoting', href: '/quoting', label: 'Quoting', icon: FileText, group: 'Products & Services' },
   { id: 'billing', href: '/billing', label: 'Billing', icon: CreditCard, group: 'Products & Services' },
   { id: 'service-catalogue', href: '/service-catalogue', label: 'Service Catalogue', icon: Library, group: 'Products & Services' },
   
   { id: 'assets', href: '/assets', label: 'Assets', icon: HardDrive, group: 'Resources' },
   { id: 'inventory', href: '/inventory', label: 'Inventory', icon: Warehouse, group: 'Resources' },
-  { id: 'knowledge-base', href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen, group: 'Resources' },
-
+  
   { id: 'settings', href: '/settings', label: 'Settings', icon: Settings, group: 'Admin' },
 ];
 
@@ -84,7 +82,7 @@ const menuGroups = ['Workspace', 'Clients', 'Products & Services', 'Resources'];
 export function AppSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { enabledModules } = useSidebar();
+  const { enabledModules, isInternalITMode } = useSidebar();
 
   const isActive = (href: string) => {
     const queueParam = searchParams.get('queue');
@@ -97,11 +95,14 @@ export function AppSidebar() {
     if (href === '/dashboard') {
       return pathname === href;
     }
-    // Updated to handle /reports and other top-level items correctly
     return pathname.startsWith(href) && (href !== '/dashboard' && href !== '/tickets');
   };
   
   const visibleMenuItems = menuItems.filter(item => enabledModules && enabledModules[item.id as ModuleId]);
+
+  const visibleGroups = isInternalITMode
+    ? menuGroups.filter(g => g === 'Workspace' || g === 'Resources')
+    : menuGroups;
 
   return (
     <Sidebar className="border-r bg-background/80 backdrop-blur-xl">
@@ -114,7 +115,7 @@ export function AppSidebar() {
       
       <div className="flex-1 overflow-y-auto">
         <SidebarMenu className="px-4 space-y-4">
-          {menuGroups.map(group => (
+          {visibleGroups.map(group => (
             <div key={group}>
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1">{group}</h3>
               {visibleMenuItems.filter(item => item.group === group).map(item =>
@@ -122,13 +123,15 @@ export function AppSidebar() {
                   <Collapsible key={item.label} defaultOpen={pathname.startsWith('/tickets')} className="space-y-1">
                     <SidebarMenuItem>
                        <CollapsibleTrigger asChild>
-                         <SidebarMenuButton isActive={isActive(item.href)} className="justify-between group w-full">
-                            <div className="flex items-center gap-3">
-                                <item.icon className="h-5 w-5 mr-3" />
-                                <span>{item.label}</span>
-                            </div>
-                            <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                          </SidebarMenuButton>
+                          <div className="group/menu-item relative">
+                            <SidebarMenuButton isActive={isActive(item.href)} className="justify-between w-full">
+                                <div className="flex items-center gap-3">
+                                    <item.icon className="h-5 w-5" />
+                                    <span>{item.label}</span>
+                                </div>
+                                <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                            </SidebarMenuButton>
+                          </div>
                       </CollapsibleTrigger>
                     </SidebarMenuItem>
                     <CollapsibleContent>

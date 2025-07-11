@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,6 +26,9 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { ChevronLeft, Globe } from 'lucide-react';
 import Link from 'next/link';
+import { useSidebar } from '@/components/ui/sidebar';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const companySettingsSchema = z.object({
   companyName: z.string().min(1, "Company name is required."),
@@ -35,6 +39,8 @@ type CompanySettingsFormValues = z.infer<typeof companySettingsSchema>;
 
 export default function CompanySettingsPage() {
   const { toast } = useToast();
+  const { isInternalITMode, setIsInternalITMode } = useSidebar();
+
   const form = useForm<CompanySettingsFormValues>({
     resolver: zodResolver(companySettingsSchema),
     // Pre-populate with existing data for a real implementation
@@ -112,6 +118,23 @@ export default function CompanySettingsPage() {
                     </FormItem>
                   )}
                 />
+            </CardContent>
+            <CardHeader>
+              <CardTitle>Application Mode</CardTitle>
+              <CardDescription>
+                Switch between MSP and Internal IT modes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+               <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="internal-it-mode" className="text-base">Enable Internal IT Mode</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Hide MSP features like Clients, Billing, and Quoting for a focused ITSM experience.
+                    </p>
+                  </div>
+                  <Switch id="internal-it-mode" checked={isInternalITMode} onCheckedChange={setIsInternalITMode} />
+                </div>
             </CardContent>
             <CardFooter className="border-t px-6 py-4">
               <Button type="submit">Save Changes</Button>

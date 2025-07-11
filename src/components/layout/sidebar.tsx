@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -10,6 +11,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import {
   Home,
@@ -36,11 +38,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ticketQueues } from '@/lib/placeholder-data';
 import { cn } from '@/lib/utils';
 import React from 'react';
+import type { ModuleId } from '@/lib/types';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/tickets', 
+  { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: Home },
+  { id: 'reports', href: '/reports', label: 'Reports', icon: BarChart3 },
+  { id: 'tickets', 
+    href: '/tickets', 
     label: 'Tickets', 
     icon: Ticket,
     subItems: ticketQueues.map(q => ({
@@ -48,19 +52,20 @@ const menuItems = [
       href: `/tickets?queue=${encodeURIComponent(q)}`
     }))
   },
-  { href: '/scheduling', label: 'Scheduling', icon: Calendar },
-  { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/contacts', label: 'Contacts', icon: Contact },
-  { href: '/assets', label: 'Assets', icon: HardDrive },
-  { href: '/inventory', label: 'Inventory', icon: Warehouse },
-  { href: '/billing', label: 'Billing', icon: CreditCard },
-  { href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { id: 'scheduling', href: '/scheduling', label: 'Scheduling', icon: Calendar },
+  { id: 'clients', href: '/clients', label: 'Clients', icon: Users },
+  { id: 'contacts', href: '/contacts', label: 'Contacts', icon: Contact },
+  { id: 'assets', href: '/assets', label: 'Assets', icon: HardDrive },
+  { id: 'inventory', href: '/inventory', label: 'Inventory', icon: Warehouse },
+  { id: 'billing', href: '/billing', label: 'Billing', icon: CreditCard },
+  { id: 'knowledge-base', href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen },
+  { id: 'settings', href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { enabledModules } = useSidebar();
 
   const isActive = (href: string) => {
     const queueParam = searchParams.get('queue');
@@ -76,6 +81,8 @@ export function AppSidebar() {
     // Updated to handle /reports and other top-level items correctly
     return pathname.startsWith(href) && (href !== '/dashboard' && href !== '/tickets');
   };
+  
+  const visibleMenuItems = menuItems.filter(item => enabledModules && enabledModules[item.id as ModuleId]);
 
   return (
     <Sidebar className="border-r bg-background/80 backdrop-blur-xl">
@@ -88,7 +95,7 @@ export function AppSidebar() {
       
       <div className="flex-1 overflow-y-auto">
         <SidebarMenu className="px-4">
-          {menuItems.map(item =>
+          {visibleMenuItems.map(item =>
             item.subItems ? (
               <Collapsible key={item.label} defaultOpen={pathname.startsWith('/tickets')} className="space-y-1">
                 <SidebarMenuItem>

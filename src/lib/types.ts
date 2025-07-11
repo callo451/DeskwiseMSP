@@ -1,4 +1,6 @@
 
+import type { LucideIcon } from "lucide-react";
+
 export type Client = {
   id: string;
   name: string;
@@ -344,3 +346,29 @@ export type ScheduleItem = {
   ticketId?: string;
   notes?: string;
 };
+
+export type ModuleId = 'dashboard' | 'reports' | 'tickets' | 'scheduling' | 'clients' | 'contacts' | 'assets' | 'inventory' | 'billing' | 'knowledge-base' | 'settings';
+
+export type ModuleInfo = {
+  id: ModuleId;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+// Define ALL_MODULES using the types
+import { Home, Users, Contact, Ticket, HardDrive, CreditCard, BookOpen, Settings, BarChart3, Warehouse, Calendar } from 'lucide-react';
+
+export const ALL_MODULES: ModuleInfo[] = [
+    { id: 'dashboard', label: 'Dashboard', description: 'Main overview dashboard.', icon: Home },
+    { id: 'reports', label: 'Reports', description: 'Analytics and reporting.', icon: BarChart3 },
+    { id: 'tickets', label: 'Tickets', description: 'Ticket management system.', icon: Ticket },
+    { id: 'scheduling', label: 'Scheduling', description: 'Technician scheduling and calendar.', icon: Calendar },
+    { id: 'clients', label: 'Clients', description: 'Client and company management.', icon: Users },
+    { id: 'contacts', label: 'Contacts', description: 'Contact management for clients.', icon: Contact },
+    { id: 'assets', label: 'Assets', description: 'Asset tracking and management.', icon: HardDrive },
+    { id: 'inventory', label: 'Inventory', description: 'Inventory and stock management.', icon: Warehouse },
+    { id: 'billing', label: 'Billing', description: 'Contracts and recurring billing.', icon: CreditCard },
+    { id: 'knowledge-base', label: 'Knowledge Base', description: 'Internal and public articles.', icon: BookOpen },
+    { id: 'settings', label: 'Settings', description: 'Application and user settings.', icon: Settings },
+];

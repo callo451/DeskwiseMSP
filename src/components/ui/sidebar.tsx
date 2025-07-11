@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -18,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { ModuleId, ALL_MODULES } from "@/lib/types"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -25,6 +27,15 @@ const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+
+// Define a type for the enabled modules state
+type EnabledModules = Record<ModuleId, boolean>;
+
+const initialModulesState: EnabledModules = ALL_MODULES.reduce((acc, module) => {
+  acc[module.id] = true; // Enable all modules by default
+  return acc;
+}, {} as EnabledModules);
+
 
 type SidebarContext = {
   state: "expanded" | "collapsed"
@@ -34,6 +45,8 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  enabledModules: EnabledModules | null;
+  setEnabledModules: React.Dispatch<React.SetStateAction<EnabledModules>>;
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -69,6 +82,7 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
+    const [enabledModules, setEnabledModules] = React.useState<EnabledModules>(initialModulesState);
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
@@ -125,8 +139,10 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        enabledModules,
+        setEnabledModules,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, enabledModules, setEnabledModules]
     )
 
     return (

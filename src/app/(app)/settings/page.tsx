@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -21,6 +22,7 @@ import {
   HardDrive,
   Warehouse,
   Building,
+  LayoutGrid,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,6 +39,13 @@ const settingsItems = [
     title: 'Users & Permissions',
     description: 'Manage user accounts, roles, and single sign-on.',
     href: '/settings/users',
+    target: '_self',
+  },
+  {
+    icon: LayoutGrid,
+    title: 'Modules',
+    description: 'Enable or disable application modules.',
+    href: '/settings/modules',
     target: '_self',
   },
   {

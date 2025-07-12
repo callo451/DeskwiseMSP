@@ -1,5 +1,6 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Ticket, Zap, Users, BarChart3, Shield, BookOpen, CreditCard, History, Flame, Gem, KanbanSquare, Library, FileText, Warehouse, Calendar, Contact, Settings } from 'lucide-react';
+import { Ticket, Zap, Users, BarChart3, Shield, BookOpen, CreditCard, History, Flame, Gem, KanbanSquare, Library, FileText, Warehouse, Calendar, Contact, Settings, HardDrive } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';

@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle, Zap, Shield, BarChart3, Users, Ticket, Quote } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { CheckCircle, Zap, Shield, BarChart3, Users, Ticket, Quote as QuoteIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -104,7 +104,7 @@ export default function HomePage() {
             {testimonials.map((testimonial) => (
               <Card key={testimonial.name} className="flex flex-col">
                 <CardContent className="pt-6 flex-1">
-                  <Quote className="h-8 w-8 text-primary/50 mb-4" />
+                  <QuoteIcon className="h-8 w-8 text-primary/50 mb-4" />
                   <p className="text-muted-foreground">"{testimonial.quote}"</p>
                 </CardContent>
                 <CardFooter>

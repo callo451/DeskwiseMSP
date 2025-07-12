@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { clients } from '@/lib/placeholder-data';
+import { clients, projectTemplateSettings } from '@/lib/placeholder-data';
 import { useSidebar } from '@/components/ui/sidebar';
 
 export default function NewProjectPage() {
@@ -78,9 +78,9 @@ export default function NewProjectPage() {
                     <SelectValue placeholder="Start from a template" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="onboarding">New Client Onboarding</SelectItem>
-                    <SelectItem value="migration">O365 Migration</SelectItem>
-                    <SelectItem value="audit">Security Audit</SelectItem>
+                    {projectTemplateSettings.map(template => (
+                      <SelectItem key={template.id} value={template.id}>{template.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

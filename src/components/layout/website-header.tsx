@@ -13,7 +13,7 @@ const navLinks = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/security', label: 'Security' },
-  // Add other links like Blog, Docs, etc. here
+  { href: '/about', label: 'About' }
 ];
 
 export function WebsiteHeader() {
@@ -33,11 +33,14 @@ export function WebsiteHeader() {
               key={link.label}
               href={link.href}
               className={cn(
-                'text-sm font-medium transition-colors hover:text-primary',
+                'text-sm font-medium transition-colors hover:text-primary relative group',
                 pathname === link.href ? 'text-primary' : 'text-muted-foreground'
               )}
             >
               {link.label}
+              <div className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full ${
+                pathname === link.href ? 'w-full' : ''
+              }`}></div>
             </Link>
           ))}
         </nav>

@@ -1227,6 +1227,10 @@ export const projectTemplateSettings: ProjectTemplateSetting[] = [
     { id: 'proj-tpl-1', name: 'New Client Onboarding', description: 'Standard process for onboarding a new client.', taskCount: 15 },
     { id: 'proj-tpl-2', name: 'O365 Migration', description: 'Template for migrating a client to Microsoft 365.', taskCount: 25 },
     { id: 'proj-tpl-3', name: 'Security Audit', description: 'Standard security audit checklist and process.', taskCount: 40 },
+    { id: 'proj-tpl-4', name: 'Network Infrastructure Upgrade', description: 'Plan for upgrading routers, switches, and firewalls.', taskCount: 30 },
+    { id: 'proj-tpl-5', name: 'New Server Deployment', description: 'Checklist for deploying a new physical or virtual server.', taskCount: 22 },
+    { id: 'proj-tpl-6', name: 'Workstation Refresh Cycle', description: 'Process for replacing a batch of user workstations.', taskCount: 18 },
+    { id: 'proj-tpl-7', name: 'Backup & Disaster Recovery Setup', description: 'Configure and test new backup solutions.', taskCount: 28 },
 ];
 
 export const serviceCatalogueItems: ServiceCatalogueItem[] = [

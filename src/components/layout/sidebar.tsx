@@ -46,7 +46,6 @@ import { Separator } from '../ui/separator';
 
 const menuItems = [
   { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: Home, group: 'Workspace' },
-  { id: 'reports', href: '/reports', label: 'Reports', icon: BarChart3, group: 'Workspace' },
   {
     id: 'tickets', 
     href: '/tickets', 
@@ -63,6 +62,7 @@ const menuItems = [
   { id: 'change-management', href: '/change-management', label: 'Change Management', icon: History, group: 'Workspace' },
   { id: 'projects', href: '/projects', label: 'Projects', icon: KanbanSquare, group: 'Workspace' },
   { id: 'knowledge-base', href: '/knowledge-base', label: 'Knowledge Base', icon: BookOpen, group: 'Workspace' },
+  { id: 'reports', href: '/reports', label: 'Reports', icon: BarChart3, group: 'Workspace' },
   
   { id: 'clients', href: '/clients', label: 'Clients', icon: Users, group: 'Clients' },
   { id: 'contacts', href: '/contacts', label: 'Contacts', icon: Contact, group: 'Clients' },

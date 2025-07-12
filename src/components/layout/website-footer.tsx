@@ -6,6 +6,7 @@ const footerLinks = {
   Product: [
     { label: 'Features', href: '/features' },
     { label: 'Pricing', href: '/pricing' },
+    { label: 'Security', href: '/security' },
     { label: 'Login', href: '/login' },
     { label: 'Sign Up', href: '/signup' },
   ],
@@ -33,7 +34,7 @@ export function WebsiteFooter() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-semibold text-xl mb-2">
               <Gem className="h-7 w-7 text-primary" />
-              <span className="font-headline">ServiceFlow</span>
+              <span className="font-headline">Deskwise</span>
             </Link>
             <p className="text-sm text-muted-foreground">The AI-Powered Service Platform</p>
           </div>
@@ -53,7 +54,7 @@ export function WebsiteFooter() {
           ))}
         </div>
         <div className="mt-12 border-t pt-6 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} ServiceFlow AI. All rights reserved.
+          &copy; {new Date().getFullYear()} Deskwise AI. All rights reserved.
         </div>
       </div>
     </footer>

@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Deskwise',
-  description: 'The AI-powered PSA for Managed Service Providers.',
+  description: 'The AI-powered service platform for MSPs and IT teams.',
 };
 
 export default function RootLayout({

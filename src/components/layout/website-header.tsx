@@ -12,6 +12,7 @@ import { ThemeToggle } from '../theme-toggle';
 const navLinks = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Pricing' },
+  { href: '/security', label: 'Security' },
   // Add other links like Blog, Docs, etc. here
 ];
 
@@ -24,7 +25,7 @@ export function WebsiteHeader() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 font-semibold text-xl">
           <Gem className="h-7 w-7 text-primary" />
-          <span className="font-headline">ServiceFlow</span>
+          <span className="font-headline">Deskwise</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (

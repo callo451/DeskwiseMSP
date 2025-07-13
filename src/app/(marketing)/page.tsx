@@ -2,12 +2,56 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { CheckCircle, Zap, Shield, BarChart3, Users, Ticket, Quote as QuoteIcon, ArrowRight, Play, Star, Award, TrendingUp, Clock, Brain, Sparkles, Workflow, Globe, Lock, Lightbulb, Users2, Target, Gauge } from 'lucide-react';
+import { CheckCircle, Zap, Shield, BarChart3, Users, Ticket, Quote as QuoteIcon, ArrowRight, Play, Star, Award, TrendingUp, Clock, Brain, Sparkles, Workflow, Globe, Lock, Lightbulb, Users2, Target, Gauge, MousePointer } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Register ScrollTrigger plugin
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+// Helper function for section transitions
+const createSectionTransition = (section: Element, options = {}) => {
+  const defaults = {
+    y: 50,
+    opacity: 0,
+    duration: 1,
+    ease: 'power3.out',
+    stagger: 0.1,
+    start: 'top 80%',
+  };
+  
+  const settings = { ...defaults, ...options };
+  
+  // Find elements to animate
+  const title = section.querySelector('h2, h3');
+  const paragraph = section.querySelector('p');
+  const items = section.querySelectorAll('.animate-item, .card, .grid > div');
+  const buttons = section.querySelectorAll('a, button, .button');
+  
+  // Create timeline
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: section,
+      start: settings.start,
+      toggleActions: 'play none none none',
+    }
+  });
+  
+  // Add animations
+  if (title) tl.from(title, { y: settings.y, opacity: 0, duration: settings.duration }, 0);
+  if (paragraph) tl.from(paragraph, { y: settings.y, opacity: 0, duration: settings.duration }, 0.2);
+  if (items.length) tl.from(items, { y: settings.y, opacity: 0, duration: settings.duration, stagger: settings.stagger }, 0.3);
+  if (buttons.length) tl.from(buttons, { y: settings.y, opacity: 0, duration: settings.duration, stagger: settings.stagger }, 0.5);
+  
+  return tl;
+};
 
 const stats = [
   { value: '500+', label: 'Companies Trust Us', icon: Users2 },
@@ -75,102 +119,530 @@ const integrations = [
 
 function AnimatedCounter({ value, suffix = '' }: { value: string; suffix?: string }) {
   const [count, setCount] = useState(0);
+  const counterRef = useRef<HTMLSpanElement>(null);
   const numericValue = parseInt(value.replace(/[^0-9]/g, ''));
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (count < numericValue) {
-        setCount(prev => Math.min(prev + Math.ceil(numericValue / 50), numericValue));
-      }
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [count, numericValue]);
+    if (counterRef.current) {
+      gsap.to(counterRef.current, {
+        innerHTML: numericValue,
+        duration: 2,
+        snap: { innerHTML: 1 },
+        ease: "power2.out"
+      });
+    }
+  }, [numericValue]);
 
   return (
-    <span>
-      {value.includes('.') ? value : `${count}${value.replace(/[0-9]/g, '')}${suffix}`}
+    <span ref={counterRef}>
+      0
     </span>
   );
 }
 
 export default function HomePage() {
+  // References for GSAP animations
+  const heroRef = useRef<HTMLElement>(null);
+  const cursorFollowerRef = useRef<HTMLDivElement>(null);
+  const heroContentRef = useRef<HTMLDivElement>(null);
+  const heroDashboardRef = useRef<HTMLDivElement>(null);
+  const chartBarsRef = useRef<(HTMLDivElement | null)[]>([]);
+  
+  // Initialize GSAP animations
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+    
+    // Create a timeline for hero animations
+    const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    
+    // Stagger in the hero elements
+    heroTl
+      .from('.hero-badge', { opacity: 0, y: 20, duration: 0.8 })
+      .from('.hero-title-line', { opacity: 0, y: 30, stagger: 0.2, duration: 0.8 }, "-=0.4")
+      .from('.hero-description', { opacity: 0, y: 20, duration: 0.8 }, "-=0.4")
+      .from('.hero-buttons > *', { opacity: 0, y: 20, stagger: 0.15, duration: 0.6 }, "-=0.4")
+      .from('.dashboard-container', { opacity: 0, scale: 0.9, duration: 1 }, "-=0.8")
+      .from('.dashboard-glow', { opacity: 0, scale: 1.1, duration: 1 }, "-=1")
+      .from('.notification-popup', { opacity: 0, x: 30, duration: 0.6 }, "-=0.6")
+      .from('.chart-popup', { opacity: 0, y: 30, duration: 0.6 }, "-=0.4")
+      .from('.stat-item', { opacity: 0, y: 20, stagger: 0.1, duration: 0.8 }, "-=0.6")
+      .from('.scroll-indicator', { opacity: 0, y: -20, duration: 0.8 }, "-=0.4");
+    
+    // Animate chart bars
+    const chartBars = document.querySelectorAll('.chart-bar');
+    gsap.set(chartBars, { height: '10%' });
+    gsap.to(chartBars, {
+      height: () => `${Math.random() * 70 + 30}%`,
+      duration: 1.5,
+      stagger: 0.1,
+      ease: 'elastic.out(1, 0.3)',
+      delay: 1.5
+    });
+    
+    // Animate floating elements
+    document.querySelectorAll('.floating-element').forEach((el) => {
+      gsap.to(el, {
+        y: `${Math.random() * 40 - 20}`,
+        x: `${Math.random() * 40 - 20}`,
+        duration: Math.random() * 5 + 5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+    });
+    
+    // Create particles effect
+    const particlesContainer = document.getElementById('particles-bg');
+    if (particlesContainer) {
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'absolute rounded-full bg-primary/10';
+        particle.style.width = `${Math.random() * 6 + 2}px`;
+        particle.style.height = particle.style.width;
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particlesContainer.appendChild(particle);
+        
+        gsap.to(particle, {
+          y: `${Math.random() * 100 - 50}`,
+          x: `${Math.random() * 100 - 50}`,
+          opacity: Math.random() * 0.5 + 0.1,
+          duration: Math.random() * 20 + 10,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        });
+      }
+    }
+    
+    // Interactive cursor follower
+    const cursorFollower = document.getElementById('cursor-follower');
+    const cursorArea = document.querySelector('.hero-cursor-area');
+    
+    if (cursorFollower && cursorArea) {
+      cursorArea.addEventListener('mousemove', (e) => {
+        const mouseEvent = e as MouseEvent;
+        const rect = cursorArea.getBoundingClientRect();
+        const x = mouseEvent.clientX - rect.left;
+        const y = mouseEvent.clientY - rect.top;
+        
+        gsap.to(cursorFollower, {
+          x: x - 24,
+          y: y - 24,
+          opacity: 1,
+          scale: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+      
+      cursorArea.addEventListener('mouseenter', () => {
+        gsap.to(cursorFollower, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.3
+        });
+      });
+      
+      cursorArea.addEventListener('mouseleave', () => {
+        gsap.to(cursorFollower, {
+          opacity: 0,
+          scale: 0.5,
+          duration: 0.3
+        });
+      });
+    }
+    
+    // Button hover effects
+    document.querySelectorAll('.hero-button-primary').forEach((button) => {
+      button.addEventListener('mouseenter', () => {
+        gsap.to(button.querySelector('.group-hover\\:opacity-100'), {
+          opacity: 1,
+          duration: 0.3
+        });
+      });
+      
+      button.addEventListener('mouseleave', () => {
+        gsap.to(button.querySelector('.group-hover\\:opacity-100'), {
+          opacity: 0,
+          duration: 0.3
+        });
+      });
+    });
+    
+    // Section transitions with ScrollTrigger
+    // Trust Section transition
+    const trustSection = document.querySelector('section.bg-muted\\/30');
+    if (trustSection) {
+      gsap.from(trustSection, {
+        scrollTrigger: {
+          trigger: trustSection,
+          start: 'top 80%',
+          toggleActions: 'play none none none'
+        },
+        y: 50,
+        opacity: 0,
+        duration: 1
+      });
+      
+      gsap.from(trustSection.querySelectorAll('div > div'), {
+        scrollTrigger: {
+          trigger: trustSection,
+          start: 'top 80%',
+          toggleActions: 'play none none none'
+        },
+        y: 30,
+        opacity: 0,
+        stagger: 0.1,
+        duration: 0.8,
+        delay: 0.3
+      });
+    }
+    
+    // Core Features Section transition
+    const featuresSection = document.querySelector('section.py-24:not(.bg-gradient-to-br):not(.bg-gradient-to-r)');
+    if (featuresSection) {
+      const featureCards = featuresSection.querySelectorAll('.card');
+      
+      gsap.from(featuresSection.querySelector('h2'), {
+        scrollTrigger: {
+          trigger: featuresSection,
+          start: 'top 75%',
+          toggleActions: 'play none none none'
+        },
+        y: 50,
+        opacity: 0,
+        duration: 0.8
+      });
+      
+      gsap.from(featuresSection.querySelector('p'), {
+        scrollTrigger: {
+          trigger: featuresSection,
+          start: 'top 75%',
+          toggleActions: 'play none none none'
+        },
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
+        delay: 0.2
+      });
+      
+      gsap.from(featureCards, {
+        scrollTrigger: {
+          trigger: featureCards[0],
+          start: 'top 80%',
+          toggleActions: 'play none none none'
+        },
+        y: 50,
+        opacity: 0,
+        stagger: 0.15,
+        duration: 0.8,
+        delay: 0.3
+      });
+    }
+    
+    // Feature Spotlight Section transitions
+    const spotlightSection = document.querySelector('.bg-gradient-to-br.from-muted\\/30');
+    if (spotlightSection) {
+      const spotlightItems = spotlightSection.querySelectorAll('.grid.lg\\:grid-cols-2');
+      
+      spotlightItems.forEach((item, index) => {
+        const direction = index % 2 === 0 ? -50 : 50;
+        const content = item.querySelector('.space-y-6');
+        const image = item.querySelector('.relative:not(.space-y-6)');
+        
+        if (content) {
+          gsap.from(content, {
+            scrollTrigger: {
+              trigger: item,
+              start: 'top 70%',
+              toggleActions: 'play none none none'
+            },
+            x: -direction,
+            opacity: 0,
+            duration: 1
+          });
+        }
+        
+        if (image) {
+          gsap.from(image, {
+            scrollTrigger: {
+              trigger: item,
+              start: 'top 70%',
+              toggleActions: 'play none none none'
+            },
+            x: direction,
+            opacity: 0,
+            duration: 1,
+            delay: 0.2
+          });
+        }
+      });
+    }
+    
+    // Social Proof Section transition
+    const socialProofSection = document.querySelector('.bg-gradient-to-r.from-primary\\/5');
+    if (socialProofSection) {
+      const testimonialCards = socialProofSection.querySelectorAll('.card');
+      
+      createSectionTransition(socialProofSection, {
+        start: 'top 75%',
+        stagger: 0.15
+      });
+      
+      // Add a special animation for the stars
+      gsap.from(socialProofSection.querySelectorAll('.star'), {
+        scrollTrigger: {
+          trigger: socialProofSection,
+          start: 'top 75%',
+          toggleActions: 'play none none none'
+        },
+        scale: 0,
+        opacity: 0,
+        stagger: 0.05,
+        duration: 0.5,
+        ease: 'back.out(1.7)',
+        delay: 0.5
+      });
+    }
+    
+    // ROI Section transition with reveal effect
+    const roiSection = document.querySelector('section.py-24:last-of-type');
+    if (roiSection) {
+      const gradientBg = roiSection.querySelector('.bg-gradient-to-br');
+      
+      if (gradientBg) {
+        // Create a reveal effect
+        gsap.fromTo(gradientBg, 
+          { clipPath: 'inset(100% 0 0 0)' },
+          {
+            scrollTrigger: {
+              trigger: roiSection,
+              start: 'top 70%',
+              toggleActions: 'play none none none'
+            },
+            clipPath: 'inset(0% 0 0 0)',
+            duration: 1.2,
+            ease: 'power4.out'
+          }
+        );
+        
+        // Animate the content inside
+        const contentElements = gradientBg.querySelectorAll('h2, p, .grid, .flex');
+        gsap.from(contentElements, {
+          scrollTrigger: {
+            trigger: roiSection,
+            start: 'top 70%',
+            toggleActions: 'play none none none'
+          },
+          y: 50,
+          opacity: 0,
+          stagger: 0.2,
+          duration: 0.8,
+          delay: 0.5
+        });
+      }
+    }
+    
+    // Add a scroll-triggered parallax effect to the background elements
+    gsap.to('.floating-element', {
+      scrollTrigger: {
+        trigger: '#hero-section',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1
+      },
+      y: (i, el) => (parseFloat(el.style.top) - 50) * 0.5,
+      ease: 'none'
+    });
+    
+    // Clean up animations
+    return () => {
+      heroTl.kill();
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+  
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-          <div 
-            className="absolute inset-0 opacity-40" 
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-            }}
-          />
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden" id="hero-section">
+        {/* Animated Background with Particles */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+          <div className="particles-container absolute inset-0 opacity-40" id="particles-bg" />
         </div>
         
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="flex justify-center mb-6">
-            <Badge variant="outline" className="border-primary/50 text-primary bg-primary/5 px-4 py-2 text-sm font-medium animate-pulse">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Now with Advanced AI Capabilities
-            </Badge>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold font-headline mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight">
-            Service Desk
-            <br />
-            <span className="text-foreground">Reimagined</span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-8 leading-relaxed">
-            The only platform that combines <span className="text-primary font-semibold">AI-powered automation</span> with comprehensive PSA & ITSM capabilities. Transform how your team delivers exceptional service.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-            <SignedOut>
-              <SignUpButton>
-                <Button size="lg" className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                  Start Free Trial
-                  <ArrowRight className="w-5 h-5 ml-2" />
+        {/* Floating Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(8)].map((_, i) => (
+            <div 
+              key={i} 
+              className={`absolute rounded-full bg-gradient-to-br from-primary/20 to-accent/10 blur-xl floating-element`}
+              id={`floating-element-${i}`}
+              style={{
+                width: `${Math.random() * 200 + 100}px`,
+                height: `${Math.random() * 200 + 100}px`,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                opacity: Math.random() * 0.5 + 0.1
+              }}
+            />
+          ))}
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="text-left hero-content">
+              <div className="mb-6 hero-badge">
+                <Badge 
+                  variant="outline" 
+                  className="border-primary/50 text-primary bg-primary/5 px-4 py-2 text-sm font-medium inline-flex items-center"
+                  id="hero-badge"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Now with Advanced AI Capabilities
+                </Badge>
+              </div>
+              
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold font-headline mb-6 hero-title">
+                <span className="block hero-title-line bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">Service Desk</span>
+                <span className="block text-foreground hero-title-line">Reimagined</span>
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mb-8 leading-relaxed hero-description">
+                The only platform that combines <span className="text-primary font-semibold">AI-powered automation</span> with comprehensive PSA & ITSM capabilities. Transform how your team delivers exceptional service.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 mb-8 hero-buttons">
+                <SignedOut>
+                  <SignUpButton>
+                    <Button 
+                      size="lg" 
+                      className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 hero-button-primary relative overflow-hidden group"
+                    >
+                      <span className="relative z-10 flex items-center">
+                        Start Free Trial
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    </Button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <Button 
+                    asChild 
+                    size="lg" 
+                    className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 hero-button-primary relative overflow-hidden group"
+                  >
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      <span className="relative z-10 flex items-center">
+                        Go to Dashboard
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    </Link>
+                  </Button>
+                </SignedIn>
+                <Button 
+                  asChild 
+                  variant="outline" 
+                  size="lg" 
+                  className="text-lg px-8 py-6 border-2 hover:bg-primary/5 hero-button-secondary group"
+                >
+                  <Link href="#demo" className="flex items-center gap-2">
+                    <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    Watch Demo
+                  </Link>
                 </Button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <Button asChild size="lg" className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  Go to Dashboard
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </Button>
-            </SignedIn>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6 border-2 hover:bg-primary/5">
-              <Link href="#demo" className="flex items-center gap-2">
-                <Play className="w-5 h-5" />
-                Watch Demo
-              </Link>
-            </Button>
+              </div>
+              
+              {/* Interactive Mouse Cursor Follower */}
+              <div className="hidden md:block relative h-12 w-full cursor-pointer hero-cursor-area">
+                <div className="absolute top-0 left-0 flex items-center text-sm text-muted-foreground">
+                  <MousePointer className="w-4 h-4 mr-2" />
+                  <span>Move your cursor here</span>
+                </div>
+                <div className="cursor-follower absolute hidden md:block w-12 h-12 rounded-full bg-primary/20 pointer-events-none" id="cursor-follower"></div>
+              </div>
+            </div>
+            
+            {/* Right Content - Animated Dashboard Preview */}
+            <div className="relative hero-dashboard">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl transform rotate-6 dashboard-glow"></div>
+              <div className="relative bg-background border-2 border-primary/10 rounded-2xl p-2 shadow-2xl dashboard-container overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-8 bg-muted/30 rounded-t-xl flex items-center px-4 dashboard-header">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500/70"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/70"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500/70"></div>
+                  </div>
+                </div>
+                <div className="pt-8 dashboard-content">
+                  <Image 
+                    src="https://placehold.co/600x400/3498db/ecf0f1.png" 
+                    width={600} 
+                    height={400} 
+                    alt="AI-Powered Dashboard" 
+                    className="rounded-xl dashboard-image" 
+                    data-ai-hint="AI dashboard with charts and automation"
+                  />
+                  
+                  {/* Animated Notification */}
+                  <div className="absolute top-16 right-4 bg-background border border-primary/20 rounded-lg p-3 shadow-lg notification-popup">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <CheckCircle className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Ticket #4872 resolved</p>
+                        <p className="text-xs text-muted-foreground">AI assistant handled password reset</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Animated Chart */}
+                  <div className="absolute bottom-8 left-4 bg-background border border-primary/20 rounded-lg p-3 shadow-lg chart-popup w-48">
+                    <p className="text-xs font-medium mb-2">Resolution Time</p>
+                    <div className="h-8 bg-muted/30 rounded-md overflow-hidden flex items-end">
+                      {[...Array(7)].map((_, i) => (
+                        <div 
+                          key={i} 
+                          className="chart-bar bg-primary/80 w-full" 
+                          style={{ height: '10%' }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           
           {/* Trust Indicators */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto mt-16 stats-grid">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center">
+              <div key={index} className="text-center stat-item">
                 <div className="flex justify-center mb-2">
-                  <stat.icon className="w-8 h-8 text-primary" />
+                  <div className="p-3 rounded-full bg-primary/10 stat-icon-container">
+                    <stat.icon className="w-8 h-8 text-primary stat-icon" />
+                  </div>
                 </div>
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-1 stat-value">
                   <AnimatedCounter value={stat.value} />
+                  <span className="stat-suffix">{stat.value.replace(/[0-9]/g, '')}</span>
                 </div>
-                <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+                <div className="text-sm text-muted-foreground font-medium stat-label">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
         
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 scroll-indicator">
           <div className="w-6 h-10 border-2 border-primary/30 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-primary/60 rounded-full mt-2 animate-pulse"></div>
+            <div className="w-1 h-3 bg-primary/60 rounded-full mt-2 scroll-dot"></div>
           </div>
         </div>
       </section>

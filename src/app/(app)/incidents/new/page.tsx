@@ -27,7 +27,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ChevronLeft } from 'lucide-react';
-import { majorIncidents, clients } from '@/lib/placeholder-data';
+import { clients } from '@/lib/placeholder-data';
 import { Textarea } from '@/components/ui/textarea';
 import { useSidebar } from '@/components/ui/sidebar';
 
@@ -56,13 +56,47 @@ export default function NewIncidentPage() {
     },
   });
 
-  const onSubmit = (data: IncidentFormValues) => {
-    console.log(data); // In a real app, you'd save this
-    toast({
-      title: 'Incident Declared',
-      description: `Incident "${data.title}" has been created successfully.`,
-    });
-    router.push('/incidents');
+  const onSubmit = async (data: IncidentFormValues) => {
+    try {
+      const incidentData = {
+        title: data.title,
+        status: data.status,
+        affectedServices: [],
+        affectedClients: data.clientId ? [data.clientId] : ['All'],
+        isPublished: false,
+        startedAt: new Date().toISOString(),
+        initialUpdate: {
+          message: data.initialUpdate,
+        },
+        createdBy: 'current-user', // TODO: Get from auth context
+      };
+
+      const response = await fetch('/api/incidents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(incidentData),
+      });
+
+      if (response.ok) {
+        const createdIncident = await response.json();
+        toast({
+          title: 'Incident Declared',
+          description: `Incident "${data.title}" has been created successfully.`,
+        });
+        router.push(`/incidents/${createdIncident.id}`);
+      } else {
+        throw new Error('Failed to create incident');
+      }
+    } catch (error) {
+      console.error('Error creating incident:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create incident. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (

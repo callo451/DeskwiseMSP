@@ -26,8 +26,19 @@ import {
   History,
   KanbanSquare,
   Hash,
+  User,
 } from 'lucide-react';
 import Link from 'next/link';
+
+const personalSettingsItems = [
+  {
+    icon: User,
+    title: 'Profile & Account',
+    description: 'Manage your personal profile, password, and account settings.',
+    href: '/user-profile',
+    target: '_self',
+  },
+];
 
 const settingsItems = [
   {
@@ -154,6 +165,43 @@ export default function SettingsPage() {
         </p>
       </div>
       <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Personal Settings</CardTitle>
+            <CardDescription>
+              Manage your personal account and profile settings.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="divide-y divide-border">
+              {personalSettingsItems.map(item => (
+                <Link
+                  href={item.href}
+                  key={item.title}
+                  className="block hover:bg-secondary/50 -mx-6 px-6 py-4"
+                  target={item.target}
+                  rel={
+                    item.target === '_blank' ? 'noopener noreferrer' : undefined
+                  }
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <item.icon className="h-6 w-6 text-primary" />
+                      <div>
+                        <h3 className="font-semibold">{item.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        
         <Card>
           <CardHeader>
             <CardTitle>System Configuration</CardTitle>

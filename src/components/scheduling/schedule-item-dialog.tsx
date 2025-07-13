@@ -24,8 +24,8 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { users, clients, tickets } from '@/lib/placeholder-data';
-import type { ScheduleItem, User } from '@/lib/types';
+import { users, clients } from '@/lib/placeholder-data';
+import type { ScheduleItem, User, Ticket } from '@/lib/types';
 import { format, parse } from 'date-fns';
 import { Ticket as TicketIcon, Edit, X, Save, Calendar, User as UserIcon, Building, Clock, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -55,11 +55,38 @@ const DetailRow = ({ label, value, icon: Icon, isEditing, children, className }:
 export function ScheduleItemDialog({ item, isOpen, onClose, onSave }: ScheduleItemDialogProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState(item);
+  const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [loadingTicket, setLoadingTicket] = useState(false);
 
   useEffect(() => {
     setEditedItem(item);
     setIsEditing(false); // Reset edit mode when item changes
+    
+    // Fetch ticket data if ticketId exists
+    if (item.ticketId) {
+      fetchTicketData(item.ticketId);
+    } else {
+      setTicket(null);
+    }
   }, [item]);
+
+  const fetchTicketData = async (ticketId: string) => {
+    try {
+      setLoadingTicket(true);
+      const response = await fetch(`/api/tickets/${ticketId}`);
+      if (response.ok) {
+        const ticketData = await response.json();
+        setTicket(ticketData);
+      } else {
+        setTicket(null);
+      }
+    } catch (error) {
+      console.error('Error fetching ticket:', error);
+      setTicket(null);
+    } finally {
+      setLoadingTicket(false);
+    }
+  };
 
   const handleSave = () => {
     onSave(editedItem);
@@ -73,7 +100,6 @@ export function ScheduleItemDialog({ item, isOpen, onClose, onSave }: ScheduleIt
 
   const technician = users.find(u => u.id === item.technicianId);
   const client = item.clientId ? clients.find(c => c.id === item.clientId) : null;
-  const ticket = item.ticketId ? tickets.find(t => t.id === item.ticketId) : null;
 
   const startDateTime = parse(item.start, 'yyyy-MM-dd HH:mm', new Date());
   const endDateTime = parse(item.end, 'yyyy-MM-dd HH:mm', new Date());
@@ -156,7 +182,19 @@ export function ScheduleItemDialog({ item, isOpen, onClose, onSave }: ScheduleIt
 
         <DialogFooter className="sm:justify-between pt-4">
             <div className="flex gap-2">
-                 {ticket && <Button variant="outline" size="sm" asChild><Link href={`/tickets/${ticket.id}`}><TicketIcon className="mr-2 h-4 w-4" /> Go to Ticket</Link></Button>}
+                 {loadingTicket ? (
+                   <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
+                 ) : ticket ? (
+                   <Button variant="outline" size="sm" asChild>
+                     <Link href={`/tickets/${ticket.id}`}>
+                       <TicketIcon className="mr-2 h-4 w-4" /> Go to Ticket
+                     </Link>
+                   </Button>
+                 ) : item.ticketId ? (
+                   <Button variant="outline" size="sm" disabled>
+                     <TicketIcon className="mr-2 h-4 w-4" /> Ticket Not Found
+                   </Button>
+                 ) : null}
             </div>
             <div className="flex gap-2">
                 {isEditing ? (

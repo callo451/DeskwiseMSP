@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { changeRequests, assets as allAssets, tickets as allTickets, clients as allClients } from '@/lib/placeholder-data';
+import { assets as allAssets, tickets as allTickets, clients as allClients } from '@/lib/placeholder-data';
 import type { Asset, ChangeRequest, Ticket } from '@/lib/types';
 import { ChevronLeft, User, FileText, Activity, AlertTriangle, Shield, Calendar, HardDrive, Ticket as TicketIcon, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -56,9 +56,45 @@ export default function ChangeRequestDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { isInternalITMode } = useSidebar();
+  const [change, setChange] = useState<ChangeRequest | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const change = changeRequests.find(c => c.id === params.id);
-  
+  useEffect(() => {
+    fetchChange();
+  }, [params.id]);
+
+  const fetchChange = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/change-requests/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setChange(data);
+      } else if (response.status === 404) {
+        setChange(null);
+      } else {
+        console.error('Failed to fetch change request');
+      }
+    } catch (error) {
+      console.error('Error fetching change request:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            <span>Loading change request...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!change) {
     return (
       <Card>

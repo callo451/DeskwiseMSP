@@ -29,7 +29,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { ChevronLeft, Sparkles, Bot, Users } from 'lucide-react';
 import { generateKbArticle } from '@/ai/flows/knowledge-base-article-generation';
-import { knowledgeBaseArticles, userGroups } from '@/lib/placeholder-data';
+import { userGroups } from '@/lib/placeholder-data';
 import { MarkdownEditor } from '@/components/ui/markdown-editor';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -101,13 +101,50 @@ export default function NewKnowledgeBaseArticlePage() {
     }
   };
 
-  const onSubmit = (data: ArticleFormValues) => {
-    console.log(data); // In a real app, you'd save this
-    toast({
-      title: 'Article Saved!',
-      description: `Article "${data.title}" has been saved successfully.`,
-    });
-    router.push('/knowledge-base');
+  const onSubmit = async (data: ArticleFormValues) => {
+    try {
+      const articleData = {
+        title: data.title,
+        content: data.content,
+        category: data.category,
+        type: data.type,
+        author: 'current-user', // TODO: Get from auth context
+        visibleTo: data.visibleTo,
+        tags: [], // TODO: Add tags support in form
+        lastUpdated: new Date().toISOString(),
+      };
+
+      const response = await fetch('/api/knowledge-base', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(articleData),
+      });
+
+      if (response.ok) {
+        const createdArticle = await response.json();
+        toast({
+          title: 'Article Created',
+          description: `Article "${data.title}" has been created successfully.`,
+        });
+        router.push(`/knowledge-base/${createdArticle.id}`);
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.error || 'Failed to create article',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error creating article:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create article',
+        variant: 'destructive',
+      });
+    }
   };
   
   const selectedGroups = userGroups.filter(group => form.watch('visibleTo').includes(group.id));

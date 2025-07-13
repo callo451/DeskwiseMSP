@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:clerk.com)"
     ],
     "deny": []
   }

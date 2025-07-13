@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { majorIncidents } from '@/lib/placeholder-data';
 import type { MajorIncident } from '@/lib/types';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { CheckCircle, Info, Flame } from 'lucide-react';
@@ -91,9 +90,46 @@ const IncidentCard = ({ incident }: { incident: MajorIncident }) => {
 }
 
 export default function ClientStatusPage() {
-    const publishedIncidents = majorIncidents.filter(i => i.isPublished);
-    const ongoingIncidents = publishedIncidents.filter(i => i.status !== 'Resolved');
-    const resolvedIncidents = publishedIncidents.filter(i => i.status === 'Resolved').slice(0, 3); // show last 3
+    const [incidents, setIncidents] = useState<MajorIncident[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchPublicIncidents();
+    }, []);
+
+    const fetchPublicIncidents = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/incidents/public');
+            if (response.ok) {
+                const data = await response.json();
+                setIncidents(data);
+            } else {
+                console.error('Failed to fetch public incidents');
+            }
+        } catch (error) {
+            console.error('Error fetching public incidents:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const ongoingIncidents = incidents.filter(i => i.status !== 'Resolved');
+    const resolvedIncidents = incidents.filter(i => i.status === 'Resolved').slice(0, 3); // show last 3
+
+    if (loading) {
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-bold font-headline">System Status</h1>
+                    <p className="text-muted-foreground">Live updates on service availability and major incidents.</p>
+                </div>
+                <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

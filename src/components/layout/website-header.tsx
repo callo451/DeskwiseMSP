@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '../theme-toggle';
+import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 
 const navLinks = [
   { href: '/features', label: 'Features' },
@@ -46,12 +47,26 @@ export function WebsiteHeader() {
         </nav>
         <div className="hidden md:flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" asChild>
-            <Link href="/login">Log in</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/signup">Get Started</Link>
-          </Button>
+          <SignedOut>
+            <SignInButton>
+              <Button variant="ghost">Log in</Button>
+            </SignInButton>
+            <SignUpButton>
+              <Button>Get Started</Button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <Button asChild variant="outline">
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+            <UserButton 
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8"
+                }
+              }}
+            />
+          </SignedIn>
         </div>
         <div className="md:hidden">
           <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -73,12 +88,28 @@ export function WebsiteHeader() {
               </Link>
             ))}
             <div className="border-t pt-4 flex flex-col gap-2">
-              <Button variant="outline" asChild>
-                <Link href="/login">Log in</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/signup">Get Started</Link>
-              </Button>
+              <SignedOut>
+                <SignInButton>
+                  <Button variant="outline">Log in</Button>
+                </SignInButton>
+                <SignUpButton>
+                  <Button>Get Started</Button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <Button asChild variant="outline">
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+                <div className="flex items-center justify-center py-2">
+                  <UserButton 
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-8 h-8"
+                      }
+                    }}
+                  />
+                </div>
+              </SignedIn>
               <div className="mx-auto pt-2">
                 <ThemeToggle />
               </div>

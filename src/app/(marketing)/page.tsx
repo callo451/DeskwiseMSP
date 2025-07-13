@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
+import { SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs';
 
 const stats = [
   { value: '500+', label: 'Companies Trust Us', icon: Users2 },
@@ -126,12 +127,22 @@ export default function HomePage() {
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-            <Button asChild size="lg" className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300">
-              <Link href="/signup" className="flex items-center gap-2">
-                Start Free Trial
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </Button>
+            <SignedOut>
+              <SignUpButton>
+                <Button size="lg" className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                  Start Free Trial
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <Button asChild size="lg" className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  Go to Dashboard
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </Button>
+            </SignedIn>
             <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6 border-2 hover:bg-primary/5">
               <Link href="#demo" className="flex items-center gap-2">
                 <Play className="w-5 h-5" />
@@ -393,12 +404,22 @@ export default function HomePage() {
               </div>
               
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button asChild size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6">
-                  <Link href="/signup" className="flex items-center gap-2">
-                    Start Your 14-Day Free Trial
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                </Button>
+                <SignedOut>
+                  <SignUpButton>
+                    <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6">
+                      Start Your 14-Day Free Trial
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <Button asChild size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6">
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      Go to Dashboard
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
+                  </Button>
+                </SignedIn>
                 <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6">
                   <Link href="/demo" className="flex items-center gap-2">
                     Book a Demo

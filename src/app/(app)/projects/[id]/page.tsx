@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Card,
@@ -21,7 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { projects, users } from '@/lib/placeholder-data';
+import { users } from '@/lib/placeholder-data';
 import type { Project, ProjectTask, ProjectMilestone } from '@/lib/types';
 import {
   ChevronLeft,
@@ -139,12 +139,76 @@ export default function ProjectDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { isInternalITMode } = useSidebar();
-
-  const project = projects.find((p) => p.id === params.id);
-  
-  const [tasks, setTasks] = useState(project?.tasks || []);
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState<ProjectTask[]>([]);
   const [assigneeFilter, setAssigneeFilter] = useState<string[]>([]);
-  
+
+  useEffect(() => {
+    fetchProject();
+  }, [params.id]);
+
+  const fetchProject = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/projects/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProject(data);
+        setTasks(data.tasks || []);
+      } else if (response.status === 404) {
+        setProject(null);
+      } else {
+        console.error('Failed to fetch project');
+      }
+    } catch (error) {
+      console.error('Error fetching project:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateTaskStatus = async (taskId: string, newStatus: ProjectTask['status']) => {
+    try {
+      const response = await fetch(`/api/projects/${params.id}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          updatedBy: 'current-user' // TODO: Get from auth context
+        }),
+      });
+
+      if (response.ok) {
+        const updatedTask = await response.json();
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? updatedTask : task
+        ));
+        // Refresh project to get updated progress
+        await fetchProject();
+      } else {
+        console.error('Failed to update task status');
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            <span>Loading project...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!project) {
     return (
       <Card>

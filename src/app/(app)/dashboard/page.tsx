@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { dashboardStats, personalDashboardStats, myRecentActivity, myWeeklyTimeLogs, tickets } from '@/lib/placeholder-data';
+import { dashboardStats, personalDashboardStats, myRecentActivity, myWeeklyTimeLogs } from '@/lib/placeholder-data';
 import type { DashboardStat, Ticket } from '@/lib/types';
 import { ArrowUpRight, ArrowDownRight, Activity, MessageSquare, Clock, UserPlus, Reply, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
@@ -173,9 +174,73 @@ const ActivityIcon = ({ type }: { type: string }) => {
 
 export default function DashboardPage() {
   const { isInternalITMode } = useSidebar();
-  const recentCompanyTickets = tickets.slice(0, 5);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [personalStats, setPersonalStats] = useState<DashboardStat[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   // Assuming the logged-in user is 'Alice' for the personal dashboard
-  const myOpenTickets = tickets.filter(t => t.assignee === 'Alice' && t.status !== 'Resolved' && t.status !== 'Closed');
+  const currentUser = 'Alice';
+  const recentCompanyTickets = tickets.slice(0, 5);
+  const myOpenTickets = tickets.filter(t => t.assignee === currentUser && t.status !== 'Resolved' && t.status !== 'Closed');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ticketsResponse, statsResponse, personalStatsResponse] = await Promise.all([
+          fetch('/api/tickets'),
+          fetch('/api/tickets/stats'),
+          fetch(`/api/tickets/personal-stats?assignee=${currentUser}`)
+        ]);
+
+        if (ticketsResponse.ok) {
+          const ticketsData = await ticketsResponse.json();
+          setTickets(ticketsData);
+        }
+
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          setStats(statsData);
+        }
+
+        if (personalStatsResponse.ok) {
+          const personalStatsData = await personalStatsResponse.json();
+          setPersonalStats(personalStatsData);
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [currentUser]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map(i => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -193,7 +258,9 @@ export default function DashboardPage() {
         </TabsList>
         <TabsContent value="personal" className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {personalDashboardStats.map(stat => (
+              {personalStats.length > 0 ? personalStats.map(stat => (
+                <StatCard key={stat.title} stat={stat} />
+              )) : personalDashboardStats.map(stat => (
                 <StatCard key={stat.title} stat={stat} />
               ))}
             </div>
@@ -270,7 +337,9 @@ export default function DashboardPage() {
         </TabsContent>
         <TabsContent value="company" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {dashboardStats.map(stat => (
+            {stats.length > 0 ? stats.map(stat => (
+              <StatCard key={stat.title} stat={stat} />
+            )) : dashboardStats.map(stat => (
               <StatCard key={stat.title} stat={stat} />
             ))}
           </div>

@@ -346,6 +346,15 @@ export type CustomField = {
   required: boolean;
 };
 
+export type RecurrencePattern = {
+  type: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval: number; // Every X days/weeks/months/years
+  daysOfWeek?: number[]; // 0-6 (Sunday-Saturday) for weekly recurrence
+  dayOfMonth?: number; // 1-31 for monthly recurrence
+  endDate?: string; // When recurrence ends
+  occurrences?: number; // Number of occurrences (alternative to endDate)
+};
+
 export type ScheduleItem = {
   id: string;
   title: string;
@@ -357,6 +366,22 @@ export type ScheduleItem = {
   participants?: string[];
   ticketId?: string;
   notes?: string;
+  location?: string;
+  isRecurring?: boolean;
+  recurrencePattern?: RecurrencePattern;
+  parentRecurrenceId?: string; // Links to the parent recurring series
+  recurrenceInstanceDate?: string; // For individual instances of recurring items
+  status?: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  estimatedDuration?: number; // in minutes
+  actualDuration?: number; // in minutes
+  travelTime?: number; // in minutes
+  requiredSkills?: string[];
+  equipment?: string[];
+  reminders?: {
+    type: 'email' | 'sms' | 'notification';
+    minutesBefore: number;
+  }[];
 };
 
 export type ProjectTask = {

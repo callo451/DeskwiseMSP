@@ -72,13 +72,55 @@ export default function NewChangeRequestPage() {
     },
   });
 
-  const onSubmit = (data: ChangeRequestFormValues) => {
-    console.log(data); // In a real app, you'd save this
-    toast({
-      title: 'Change Request Submitted',
-      description: `Change request "${data.title}" has been created successfully.`,
-    });
-    router.push('/change-management');
+  const onSubmit = async (data: ChangeRequestFormValues) => {
+    try {
+      const changeRequestData = {
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        riskLevel: data.riskLevel,
+        impact: data.impact,
+        submittedBy: 'current-user', // TODO: Get from auth context
+        client: data.clientId || 'Internal',
+        plannedStartDate: data.plannedStartDate.toISOString(),
+        plannedEndDate: data.plannedEndDate.toISOString(),
+        changePlan: data.changePlan,
+        rollbackPlan: data.rollbackPlan,
+        associatedAssets: [],
+        associatedTickets: [],
+      };
+
+      const response = await fetch('/api/change-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(changeRequestData),
+      });
+
+      if (response.ok) {
+        const createdChange = await response.json();
+        toast({
+          title: 'Change Request Submitted',
+          description: `Change request "${data.title}" has been created successfully.`,
+        });
+        router.push(`/change-management/${createdChange.id}`);
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.error || 'Failed to create change request',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error creating change request:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create change request',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (

@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { assets as allAssets, clients, tickets, knowledgeBaseArticles } from '@/lib/placeholder-data';
+import { assets as allAssets, clients, knowledgeBaseArticles } from '@/lib/placeholder-data';
 import type { Asset, Ticket, Client, KnowledgeBaseArticle, TimeLog } from '@/lib/types';
 import {
   AlertDialog,
@@ -234,11 +234,8 @@ export default function TicketDetailsPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const ticket = tickets.find(t => t.id === params.id);
-  const client = ticket ? clients.find(c => c.name === ticket.client) : undefined;
-  const associatedAssets = ticket ? allAssets.filter(a => ticket.associatedAssets?.includes(a.id)) : [];
-  
-  const [currentTicket, setCurrentTicket] = useState(ticket);
+  const [currentTicket, setCurrentTicket] = useState<Ticket | null>(null);
+  const [loading, setLoading] = useState(true);
   const [analysisResult, setAnalysisResult] = useState<AnalyzeTicketOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
@@ -250,6 +247,9 @@ export default function TicketDetailsPage() {
   const [suggestedArticles, setSuggestedArticles] = useState<ProactiveKbSearchOutput>([]);
   const [isKbLoading, setIsKbLoading] = useState(true);
 
+  const client = currentTicket ? clients.find(c => c.name === currentTicket.client) : undefined;
+  const associatedAssets = currentTicket ? allAssets.filter(a => currentTicket.associatedAssets?.includes(a.id)) : [];
+
   const ticketContext = useMemo(() => {
     if (!currentTicket) return '';
     const activityLog = currentTicket.activity.map(a => `${a.user}: ${a.activity}`).join('\n');
@@ -257,12 +257,32 @@ export default function TicketDetailsPage() {
   }, [currentTicket]);
 
   useEffect(() => {
-    if (!ticket) return;
+    async function fetchTicket() {
+      try {
+        const response = await fetch(`/api/tickets/${params.id}`);
+        if (response.ok) {
+          const ticketData = await response.json();
+          setCurrentTicket(ticketData);
+        } else {
+          console.error('Ticket not found');
+        }
+      } catch (error) {
+        console.error('Error fetching ticket:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTicket();
+  }, [params.id]);
+
+  useEffect(() => {
+    if (!currentTicket) return;
 
     async function fetchKbArticles() {
       setIsKbLoading(true);
       try {
-        const results = await findRelevantArticles({ subject: ticket.subject, description: ticket.description });
+        const results = await findRelevantArticles({ subject: currentTicket.subject, description: currentTicket.description });
         setSuggestedArticles(results);
       } catch (error) {
         console.error("Proactive KB search failed:", error);
@@ -272,7 +292,50 @@ export default function TicketDetailsPage() {
       }
     }
     fetchKbArticles();
-  }, [ticket, toast]);
+  }, [currentTicket, toast]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-8 w-1/3 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="space-y-6">
+            {[1, 2, 3].map(i => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(j => (
+                      <div key={j} className="h-4 bg-gray-200 rounded"></div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="lg:col-span-2">
+            <Card className="animate-pulse">
+              <CardHeader>
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="h-16 bg-gray-200 rounded"></div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentTicket) {
     return (

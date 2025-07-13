@@ -26,6 +26,7 @@ import { usePathname } from 'next/navigation';
 import { AIAssistant } from '../ai/ai-assistant';
 import React from 'react';
 import { ThemeToggle } from '../theme-toggle';
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 
 function BreadcrumbResponsive() {
   const pathname = usePathname();
@@ -78,37 +79,30 @@ export function Header() {
         />
       </div>
       <ThemeToggle />
-      <AIAssistant />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
-            <Image
-              src="https://placehold.co/36x36.png"
-              width={36}
-              height={36}
-              alt="Avatar"
-              className="overflow-hidden rounded-full"
-              data-ai-hint="user avatar"
-            />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <Link href="/">Logout</Link>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <SignedIn>
+        <AIAssistant />
+        <UserButton 
+          appearance={{
+            elements: {
+              avatarBox: "w-9 h-9"
+            }
+          }}
+        />
+      </SignedIn>
+      <SignedOut>
+        <div className="flex gap-2">
+          <SignInButton>
+            <Button variant="outline" size="sm">
+              Sign In
+            </Button>
+          </SignInButton>
+          <SignUpButton>
+            <Button size="sm">
+              Sign Up
+            </Button>
+          </SignUpButton>
+        </div>
+      </SignedOut>
     </header>
   );
 }

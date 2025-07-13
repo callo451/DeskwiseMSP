@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -12,6 +12,7 @@ import {
   ChevronRight,
   PlusCircle,
   Users,
+  BarChart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,7 +28,7 @@ import {
   parse,
   startOfToday,
 } from 'date-fns';
-import { scheduleItems, users } from '@/lib/placeholder-data';
+import { users } from '@/lib/placeholder-data';
 import type { ScheduleItem, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -42,6 +43,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { ScheduleItemDialog } from '@/components/scheduling/schedule-item-dialog';
+import { AppointmentCreationDialog } from '@/components/scheduling/appointment-creation-dialog';
+import { WorkloadAnalysisPanel } from '@/components/scheduling/workload-analysis-panel';
 
 const colStartClasses = [
   '',
@@ -66,6 +69,10 @@ export default function SchedulingPage() {
   );
 
   const [selectedItem, setSelectedItem] = React.useState<ScheduleItem | null>(null);
+  const [scheduleItems, setScheduleItems] = React.useState<ScheduleItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [showAppointmentDialog, setShowAppointmentDialog] = React.useState(false);
+  const [showWorkloadPanel, setShowWorkloadPanel] = React.useState(false);
 
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
@@ -85,6 +92,33 @@ export default function SchedulingPage() {
   const technicians = users.filter(u => u.role === 'Technician' || u.role === 'Administrator');
   const [visibleTechnicians, setVisibleTechnicians] = React.useState<string[]>(technicians.map(t => t.id));
 
+  // Fetch schedule items when component mounts or when selected day changes
+  useEffect(() => {
+    fetchScheduleItems();
+  }, [selectedDay, visibleTechnicians]);
+
+  const fetchScheduleItems = async () => {
+    try {
+      setLoading(true);
+      const dateStr = format(selectedDay, 'yyyy-MM-dd');
+      const technicianIdsParam = visibleTechnicians.join(',');
+      
+      const response = await fetch(`/api/schedule/by-date?date=${dateStr}&technicianIds=${technicianIdsParam}`);
+      if (response.ok) {
+        const data = await response.json();
+        setScheduleItems(data);
+      } else {
+        console.error('Failed to fetch schedule items');
+        setScheduleItems([]);
+      }
+    } catch (error) {
+      console.error('Error fetching schedule items:', error);
+      setScheduleItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const meetingsForDay = scheduleItems.filter((item) =>
     isSameDay(parse(item.start, 'yyyy-MM-dd HH:mm', new Date()), selectedDay) && visibleTechnicians.includes(item.technicianId)
   );
@@ -97,11 +131,33 @@ export default function SchedulingPage() {
     setSelectedItem(null);
   };
   
-  const handleItemSave = (updatedItem: ScheduleItem) => {
-    // Here you would typically make an API call to save the changes.
-    // For this demo, we'll just log it and close the dialog.
-    console.log("Saving item:", updatedItem);
-    setSelectedItem(null);
+  const handleItemSave = async (updatedItem: ScheduleItem) => {
+    try {
+      const response = await fetch(`/api/schedule/${updatedItem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedItem),
+      });
+
+      if (response.ok) {
+        // Refresh the schedule items to show the update
+        await fetchScheduleItems();
+        setSelectedItem(null);
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to save schedule item:', errorData);
+        // You could show an error toast here
+      }
+    } catch (error) {
+      console.error('Error saving schedule item:', error);
+    }
+  };
+
+  const handleAppointmentSuccess = () => {
+    fetchScheduleItems();
+    setShowAppointmentDialog(false);
   };
 
   return (
@@ -140,7 +196,11 @@ export default function SchedulingPage() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button>
+            <Button variant="outline" onClick={() => setShowWorkloadPanel(true)}>
+              <BarChart className="mr-2 h-4 w-4" />
+              Workload Analysis
+            </Button>
+            <Button onClick={() => setShowAppointmentDialog(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               New Appointment
             </Button>
@@ -231,7 +291,20 @@ export default function SchedulingPage() {
                   </time>
                 </h2>
                 <ol className="mt-4 space-y-1 text-sm leading-6 text-muted-foreground">
-                  {meetingsForDay.length > 0 ? (
+                  {loading ? (
+                    <div className="space-y-2">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="flex items-center p-2 rounded-xl">
+                          <div className="w-2 h-10 bg-gray-200 rounded-full mr-4 animate-pulse"></div>
+                          <div className="flex-auto space-y-2">
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
+                          </div>
+                          <div className="w-16 h-6 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : meetingsForDay.length > 0 ? (
                     meetingsForDay.sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime()).map((meeting) => (
                       <Meeting meeting={meeting} key={meeting.id} onClick={() => handleItemClick(meeting)} />
                     ))
@@ -252,6 +325,19 @@ export default function SchedulingPage() {
           onSave={handleItemSave}
         />
       )}
+      
+      <AppointmentCreationDialog
+        open={showAppointmentDialog}
+        onOpenChange={setShowAppointmentDialog}
+        onSuccess={handleAppointmentSuccess}
+        initialDate={format(selectedDay, 'yyyy-MM-dd')}
+        initialTime="09:00"
+      />
+      
+      <WorkloadAnalysisPanel
+        open={showWorkloadPanel}
+        onOpenChange={setShowWorkloadPanel}
+      />
     </>
   );
 }

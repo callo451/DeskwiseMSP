@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,13 +27,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { majorIncidents } from '@/lib/placeholder-data';
 import type { MajorIncident } from '@/lib/types';
 import { MoreHorizontal, PlusCircle, Flame, Siren } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
-const IncidentRow = ({ incident }: { incident: MajorIncident }) => {
+const IncidentRow = ({ incident, onDelete }: { incident: MajorIncident; onDelete: (id: string) => void }) => {
   const getStatusVariant = (status: MajorIncident['status']) => {
     switch (status) {
       case 'Investigating': return 'secondary';
@@ -79,7 +78,12 @@ const IncidentRow = ({ incident }: { incident: MajorIncident }) => {
             <DropdownMenuItem asChild><Link href={`/incidents/${incident.id}`}>View Details</Link></DropdownMenuItem>
             <DropdownMenuItem>Publish Update</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => onDelete(incident.id)}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
@@ -88,6 +92,47 @@ const IncidentRow = ({ incident }: { incident: MajorIncident }) => {
 };
 
 export default function IncidentsPage() {
+  const [incidents, setIncidents] = useState<MajorIncident[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchIncidents();
+  }, []);
+
+  const fetchIncidents = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/incidents');
+      if (response.ok) {
+        const data = await response.json();
+        setIncidents(data);
+      } else {
+        console.error('Failed to fetch incidents');
+      }
+    } catch (error) {
+      console.error('Error fetching incidents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this incident?')) return;
+
+    try {
+      const response = await fetch(`/api/incidents/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setIncidents(prev => prev.filter(incident => incident.id !== id));
+      } else {
+        console.error('Failed to delete incident');
+      }
+    } catch (error) {
+      console.error('Error deleting incident:', error);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -121,9 +166,26 @@ export default function IncidentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {majorIncidents.map(incident => (
-                <IncidentRow key={incident.id} incident={incident} />
-              ))}
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span>Loading incidents...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : incidents.length > 0 ? (
+                incidents.map(incident => (
+                  <IncidentRow key={incident.id} incident={incident} onDelete={handleDelete} />
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No incidents found. Create your first incident to get started.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

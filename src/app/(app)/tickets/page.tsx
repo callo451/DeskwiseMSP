@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { tickets, ticketPageStats, ticketQueues } from '@/lib/placeholder-data';
+import { ticketQueues } from '@/lib/placeholder-data';
 import type { Ticket, DashboardStat } from '@/lib/types';
 import {
   File,
@@ -178,6 +178,9 @@ export default function TicketsPage() {
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [priorityFilters, setPriorityFilters] = useState<string[]>([]);
   const [queueFilters, setQueueFilters] = useState<string[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     const queueParam = searchParams.get('queue');
@@ -185,6 +188,51 @@ export default function TicketsPage() {
       setQueueFilters([queueParam]);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    fetchTickets();
+    fetchStats();
+  }, [statusFilters, priorityFilters, queueFilters]);
+
+  const fetchTickets = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      if (statusFilters.length > 0) {
+        params.append('status', statusFilters.join(','));
+      }
+      
+      if (priorityFilters.length > 0) {
+        params.append('priority', priorityFilters.join(','));
+      }
+      
+      if (queueFilters.length > 0) {
+        params.append('queue', queueFilters.join(','));
+      }
+
+      const response = await fetch(`/api/tickets?${params.toString()}`);
+      if (response.ok) {
+        const ticketsData = await response.json();
+        setTickets(ticketsData);
+      }
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/tickets/stats');
+      if (response.ok) {
+        const statsData = await response.json();
+        setStats(statsData);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const handleStatusFilterChange = (status: string, checked: boolean) => {
     setStatusFilters(prev =>
@@ -210,18 +258,41 @@ export default function TicketsPage() {
     setQueueFilters([]);
   };
 
-  const filteredTickets = tickets.filter(ticket => {
-    const statusMatch = statusFilters.length === 0 || statusFilters.includes(ticket.status);
-    const priorityMatch =
-      priorityFilters.length === 0 || priorityFilters.includes(ticket.priority);
-    const queueMatch = queueFilters.length === 0 || queueFilters.includes(ticket.queue);
-    return statusMatch && priorityMatch && queueMatch;
-  });
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-12 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {ticketPageStats.map(stat => (
+        {stats.map(stat => (
           <StatCard key={stat.title} stat={stat} />
         ))}
       </div>
@@ -324,9 +395,17 @@ export default function TicketsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTickets.map(ticket => (
-                <TicketRow key={ticket.id} ticket={ticket} isInternalITMode={isInternalITMode} />
-              ))}
+              {tickets.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    No tickets found. <Link href="/tickets/new" className="text-primary hover:underline">Create your first ticket</Link>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                tickets.map(ticket => (
+                  <TicketRow key={ticket.id} ticket={ticket} isInternalITMode={isInternalITMode} />
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

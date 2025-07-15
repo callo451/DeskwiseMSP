@@ -7,7 +7,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect, useRef } from 'react';
-import { SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { useAuth } from '@workos-inc/authkit-nextjs/components';
+import { getSignInUrl } from '@workos-inc/authkit-nextjs';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -141,6 +142,13 @@ function AnimatedCounter({ value, suffix = '' }: { value: string; suffix?: strin
 }
 
 export default function HomePage() {
+  const { user } = useAuth();
+  
+  const handleSignIn = async () => {
+    const signInUrl = await getSignInUrl({ redirectUri: process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI });
+    window.location.href = signInUrl;
+  };
+  
   // References for GSAP animations
   const heroRef = useRef<HTMLElement>(null);
   const cursorFollowerRef = useRef<HTMLDivElement>(null);
@@ -516,21 +524,19 @@ export default function HomePage() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-8 hero-buttons">
-                <SignedOut>
-                  <SignUpButton>
-                    <Button 
-                      size="lg" 
-                      className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 hero-button-primary relative overflow-hidden group"
-                    >
-                      <span className="relative z-10 flex items-center">
-                        Start Free Trial
-                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                      <span className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                    </Button>
-                  </SignUpButton>
-                </SignedOut>
-                <SignedIn>
+                {!user ? (
+                  <Button 
+                    size="lg" 
+                    className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 hero-button-primary relative overflow-hidden group"
+                    onClick={handleSignIn}
+                  >
+                    <span className="relative z-10 flex items-center">
+                      Start Free Trial
+                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    <span className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  </Button>
+                ) : (
                   <Button 
                     asChild 
                     size="lg" 
@@ -544,7 +550,7 @@ export default function HomePage() {
                       <span className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                     </Link>
                   </Button>
-                </SignedIn>
+                )}
                 <Button 
                   asChild 
                   variant="outline" 
@@ -876,22 +882,24 @@ export default function HomePage() {
               </div>
               
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <SignedOut>
-                  <SignUpButton>
-                    <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6">
-                      Start Your 14-Day Free Trial
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
-                  </SignUpButton>
-                </SignedOut>
-                <SignedIn>
+                {!user ? (
+                  <Button 
+                    size="lg" 
+                    variant="secondary" 
+                    className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6"
+                    onClick={handleSignIn}
+                  >
+                    Start Your 14-Day Free Trial
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                ) : (
                   <Button asChild size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6">
                     <Link href="/dashboard" className="flex items-center gap-2">
                       Go to Dashboard
                       <ArrowRight className="w-5 h-5" />
                     </Link>
                   </Button>
-                </SignedIn>
+                )}
                 <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6">
                   <Link href="/demo" className="flex items-center gap-2">
                     Book a Demo

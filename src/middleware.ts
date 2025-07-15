@@ -1,6 +1,24 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
+import { authkitMiddleware } from '@workos-inc/authkit-nextjs'
 
-export default clerkMiddleware()
+export default authkitMiddleware({
+  middlewareAuth: {
+    enabled: true,
+    unauthenticatedPaths: [
+      '/', 
+      '/features', 
+      '/pricing', 
+      '/security', 
+      '/about',
+      '/login',
+      '/signup',
+      '/portal/status',
+      '/auth/signin',
+      '/auth/callback',
+      '/auth/signout',
+      '/auth/setup'
+    ],
+  },
+})
 
 export const config = {
   matcher: [

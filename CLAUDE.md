@@ -26,7 +26,7 @@ This is a Next.js 15 application for **Deskwise**, an AI-powered Professional Se
 - **UI Components**: Radix UI primitives with custom components
 - **Styling**: Tailwind CSS with custom design system
 - **Database**: MongoDB Atlas with Node.js driver
-- **Authentication**: Planned Firebase Auth (not yet implemented)
+- **Authentication**: WorkOS AuthKit for enterprise authentication
 - **Deployment**: Firebase App Hosting
 
 ### Project Structure
@@ -94,7 +94,7 @@ The platform supports both **MSP mode** (multi-tenant) and **Internal IT mode** 
 - **Connection String**: Configured in `.env.local` environment file
 - **Placeholder Data**: Currently uses placeholder data (`src/lib/placeholder-data.ts`) for development
 - **Database Integration**: Ready for production data migration from placeholder to MongoDB collections
-- **Authentication**: Firebase Auth integration planned but not yet implemented
+- **Authentication**: WorkOS AuthKit integrated for enterprise-grade authentication
 
 ### Development Notes
 
@@ -124,6 +124,10 @@ The platform supports both **MSP mode** (multi-tenant) and **Internal IT mode** 
 
 Required environment variables (in `.env.local`):
 - `MONGODB_URI`: MongoDB Atlas connection string for database access
+- `WORKOS_API_KEY`: WorkOS API key for authentication
+- `WORKOS_CLIENT_ID`: WorkOS client ID for your application
+- `WORKOS_COOKIE_PASSWORD`: 32-character random string for cookie encryption
+- `WORKOS_REDIRECT_URI`: Authentication callback URL (e.g., http://localhost:9002/auth/callback)
 
 ## Database Usage
 
@@ -263,6 +267,148 @@ const collection = db.collection('tickets')
   - Hierarchical category tree with article counts and filtering
 - **Database Schema**: Complete article lifecycle with versioning, categories, tags, and analytics
 
+### **Clients Module** ✅ **Complete**
+- **Database Collection**: `deskwise.clients`
+- **Service Layer**: `src/lib/services/clients.ts` with comprehensive client management
+- **API Routes**: 
+  - Basic: `/api/clients`, `/api/clients/[id]`, `/api/clients/stats`
+  - Advanced: Search, filtering by status, and client metrics
+- **Features**:
+  - **Client Management**: Full CRUD operations with organization-scoped access
+  - **Client Statistics**: Real-time dashboard metrics (total, active, onboarding, inactive)
+  - **Contact Management**: Primary contact information and relationship tracking
+  - **Counter Management**: Automatic tracking of associated tickets and contacts
+  - **Search Functionality**: Find clients by name or industry with MongoDB regex
+  - **Status Management**: Active, Inactive, and Onboarding status tracking
+  - **Client Metrics**: Associated data counts (tickets, assets, contacts, contracts)
+  - **Multi-tenant Security**: Complete organization-based data isolation
+- **Components Updated**: 
+  - Clients list page with real-time data, statistics dashboard, and delete functionality
+  - Client detail view with live data loading and associated entity placeholders
+  - Interactive client management with loading states and error handling
+- **Database Schema**: Complete client lifecycle tracking with contact info, status, and audit trails
+
+### **Quoting Module** ✅ **Complete**
+- **Database Collections**: `deskwise.quotes`, `deskwise.service_catalogue`
+- **Service Layer**: `src/lib/services/quotes.ts` with comprehensive quote and service catalogue management
+- **API Routes**: 
+  - Basic: `/api/quotes`, `/api/quotes/[id]`, `/api/quotes/stats`
+  - Service Catalogue: `/api/service-catalogue`, `/api/service-catalogue/[id]`, `/api/service-catalogue/seed`
+  - Advanced: Filtering by status, client, search functionality
+- **Features**:
+  - **Quote Management**: Full CRUD operations with organization-scoped access
+  - **Quote Statistics**: Real-time dashboard metrics (total, draft, sent, accepted, rejected quotes)
+  - **Conversion Tracking**: Quote conversion rates and acceptance analytics
+  - **Line Item Management**: Dynamic quote line items with quantity and pricing
+  - **Service Catalogue**: Comprehensive service offerings management (Fixed, Recurring, Hourly)
+  - **Client Integration**: Seamless integration with clients module for quote-client relationships
+  - **Status Workflow**: Draft → Sent → Accepted/Rejected status management
+  - **Financial Tracking**: Total quote values, accepted values, and average quote metrics
+  - **Multi-tenant Security**: Complete organization-based data isolation
+  - **Service Seeding**: Default service catalogue for new organizations
+- **Components Updated**: 
+  - Quoting list page with real-time data, statistics dashboard, filtering, and delete functionality
+  - New quote creation form with client integration, service catalogue, and dynamic line items
+  - Live statistics dashboard with conversion metrics and financial tracking
+- **Database Schema**: Complete quote lifecycle tracking with line items, service catalogue, and audit trails
+
+### **Billing Module** ✅ **Complete**
+- **Database Collections**: `deskwise.contracts`, `deskwise.time_logs`, `deskwise.sla_policies`, `deskwise.invoices`
+- **Service Layer**: `src/lib/services/billing.ts` with comprehensive billing, contract, and invoice management
+- **API Routes**: 
+  - Basic: `/api/billing`, `/api/billing/[id]`, `/api/billing/stats`
+  - Time Logs: `/api/billing/[id]/time-logs` with GET and POST for billable hours tracking
+  - Invoices: `/api/billing/[id]/invoices` with GET and POST for automated invoice generation
+  - SLA Policies: `/api/sla-policies` with comprehensive SLA target management
+- **Features**:
+  - **Contract Management**: Full CRUD operations with recurring billing and service definitions
+  - **Monthly Recurring Revenue (MRR)**: Automatic MRR calculation from contract services
+  - **Time Logging**: Billable hours tracking with technician, category, and work description
+  - **Invoice Generation**: Automated invoice creation from contract services and billing periods
+  - **SLA Policy Management**: Service level agreements with response/resolution time targets
+  - **Contract Statistics**: Real-time dashboard metrics (MRR, active contracts, renewals, ARR)
+  - **Client Integration**: Seamless contract-client relationships with quote-to-contract conversion
+  - **Service Management**: Dynamic contract services with quantity, rate, and total calculations
+  - **Multi-tenant Security**: Complete organization-based data isolation for all billing data
+  - **Audit Trail**: Complete contract lifecycle tracking with creation and modification history
+- **Components Created**: 
+  - `ContractFormDialog`: Comprehensive contract creation/editing with services, terms, and client selection
+  - `TimeLogFormDialog`: Billable hours logging with category, description, and billable status
+  - `SLAPolicyFormDialog`: SLA policy creation with priority-based response targets
+  - `QuoteToContractDialog`: Convert accepted quotes directly into service contracts
+  - `InvoiceManagement`: Invoice generation, viewing, and billing period management
+- **Components Updated**: 
+  - Billing list page with real-time contract data, statistics dashboard, filtering, and delete functionality
+  - Contract detail page with live data, time logs, invoice management, and contract editing
+  - Full integration with clients module for contract-client relationships
+- **Database Schema**: Complete billing lifecycle with contracts, time logs, SLA policies, invoices, and audit trails
+
+### **Service Catalogue Module** ✅ **Complete**
+- **Database Collection**: `deskwise.service_catalogue`
+- **Service Layer**: `src/lib/services/service-catalogue.ts` with comprehensive service management and analytics
+- **API Routes**: 
+  - Basic: `/api/service-catalogue`, `/api/service-catalogue/[id]`, `/api/service-catalogue/stats`
+  - Management: `/api/service-catalogue/categories`, `/api/service-catalogue/tags`, `/api/service-catalogue/[id]/restore`
+  - Seeding: `/api/service-catalogue/seed` with default service catalogue
+- **Features**:
+  - **Service Management**: Full CRUD operations with soft delete and restore functionality
+  - **Advanced Service Types**: Fixed, Recurring, and Hourly services with specific configurations
+  - **Enhanced Metadata**: Tags, billing frequency, minimum hours, setup fees, and popularity tracking
+  - **Category Management**: Dynamic category creation and organization with usage statistics
+  - **Popularity Analytics**: Service usage tracking from quotes and contracts for recommendations
+  - **Service Statistics**: Comprehensive analytics including revenue potential, usage patterns, and category breakdowns
+  - **Search and Filtering**: Full-text search across names, descriptions, categories, and tags
+  - **Multi-tenant Security**: Complete organization-based data isolation
+  - **Integration Ready**: Seamless integration with quotes and billing modules
+- **Components Created**: 
+  - `ServiceForm`: Comprehensive service creation/editing with conditional fields based on service type
+  - `ServiceStatsDashboard`: Analytics dashboard with charts, popular services, and category insights
+  - Enhanced service list with filtering, popularity display, and tag management
+- **Components Updated**: 
+  - Service Catalogue list page with real-time data, advanced filtering, seeding capability, and delete/restore functionality
+  - New service creation page with full form integration and validation
+  - Complete replacement of placeholder data with MongoDB-powered functionality
+- **Integration Features**:
+  - **Quote Integration**: Service popularity tracking when used in quotes
+  - **Billing Integration**: Service usage analytics from contract creation
+  - **Service Selection**: Optimized service selection for quotes and contracts
+- **Database Schema**: Complete service lifecycle with tags, popularity metrics, billing configurations, and audit trails
+
+### **Inventory Management Module** ✅ **Complete**
+- **Database Collections**: `deskwise.inventory`, `deskwise.stock_movements`, `deskwise.purchase_orders`
+- **Service Layer**: `src/lib/services/inventory.ts` with comprehensive inventory and stock management
+- **API Routes**: 
+  - Basic: `/api/inventory`, `/api/inventory/[id]`, `/api/inventory/stats`
+  - Management: `/api/inventory/[id]/restore`, `/api/inventory/[id]/adjust`, `/api/inventory/[id]/deploy`
+  - Tracking: `/api/inventory/movements`, `/api/inventory/low-stock`, `/api/inventory/out-of-stock`
+  - Analytics: `/api/inventory/categories`, `/api/inventory/locations`
+  - Deployment: `/api/inventory/[id]/deploy-asset` (asset creation integration)
+- **Features**:
+  - **Inventory Management**: Full CRUD operations with soft delete and restore capabilities
+  - **Stock Tracking**: Real-time quantity tracking with automatic movement logging
+  - **Reorder Management**: Low stock alerts and reorder point monitoring
+  - **Purchase Tracking**: Purchase order integration with vendor and cost tracking
+  - **Deployment Workflow**: Deploy inventory items as assets with automatic asset creation
+  - **Serial Number Tracking**: Individual item tracking for high-value equipment
+  - **Warranty Management**: Warranty information tracking with expiration alerts
+  - **Multi-Location Support**: Location-based inventory organization and tracking
+  - **Category Analytics**: Category-based statistics and stock analysis
+  - **Owner Management**: MSP vs client-owned inventory differentiation
+  - **Cost Tracking**: Unit cost and total value calculations with financial analytics
+  - **Stock Movements**: Comprehensive audit trail for all inventory changes
+- **Components Created**: 
+  - `InventoryForm`: Comprehensive inventory creation/editing with all tracking fields
+  - `InventoryStatsDashboard`: Analytics dashboard with charts, alerts, and stock metrics
+  - Inventory list page with real-time API integration, filtering, and stock alerts
+  - Inventory detail page with stock adjustment, deployment, and notes management
+  - New inventory creation page with form integration
+- **Integration Features**:
+  - **Asset Integration**: Seamless deployment of inventory items as trackable assets
+  - **Purchase Order Management**: Future purchase order workflow foundation
+  - **Supplier Tracking**: Supplier information and SKU cross-referencing
+- **Multi-Tenant Features**: Complete organization-scoped data isolation and security
+- **Database Schema**: Comprehensive inventory lifecycle with stock movements, purchase tracking, and deployment history
+
 ## Database Collections
 
 ### **Core Collections**
@@ -278,6 +424,18 @@ const collection = db.collection('tickets')
 - `articles`: Knowledge base articles with content, metadata, and access control
 - `categories`: Hierarchical category structure for article organization
 - `tags`: Tag system for article classification and search
+- `assets`: IT assets with comprehensive tracking and monitoring data
+- `asset_maintenance`: Asset maintenance records and scheduling
+- `inventory`: Inventory items with stock tracking, purchase info, and deployment history
+- `stock_movements`: Stock movement audit trail for inventory changes
+- `purchase_orders`: Purchase order management for inventory procurement
+- `clients`: Client organizations with contact info, status, and relationship tracking
+- `quotes`: Sales quotes with line items, status tracking, and client relationships
+- `service_catalogue`: Service offerings with pricing, categorization, tags, and popularity tracking
+- `contracts`: Service contracts with recurring billing, client relationships, and MRR tracking
+- `time_logs`: Billable hours tracking with technician, contract, and work categorization
+- `sla_policies`: Service level agreements with priority-based response and resolution targets
+- `invoices`: Generated invoices from contracts with billing periods and line items
 
 ### **Collection Structure**
 All collections include:
@@ -330,6 +488,33 @@ All collections include:
 - `GET/POST /api/knowledge-base/tags` - Tag management and creation
 - `GET /api/knowledge-base/stats` - Knowledge base statistics and analytics
 
+### **Clients API**
+- `GET/POST /api/clients` - List and create clients
+- `GET/PUT/DELETE /api/clients/[id]` - Individual client operations
+- `GET /api/clients/stats` - Client statistics and analytics
+
+### **Quoting API**
+- `GET/POST /api/quotes` - List and create quotes with filtering (status, client)
+- `GET/PUT/DELETE /api/quotes/[id]` - Individual quote operations
+- `GET /api/quotes/stats` - Quote statistics and conversion metrics
+
+### **Service Catalogue API**
+- `GET/POST /api/service-catalogue` - List and create service catalogue items with filtering (category, type, search)
+- `GET/PUT/DELETE /api/service-catalogue/[id]` - Individual service operations
+- `GET /api/service-catalogue/stats` - Service catalogue statistics and analytics
+- `GET /api/service-catalogue/categories` - List service categories
+- `GET /api/service-catalogue/tags` - List service tags
+- `POST /api/service-catalogue/[id]/restore` - Restore deleted service
+- `POST /api/service-catalogue/seed` - Seed default services for organization
+
+### **Billing API**
+- `GET/POST /api/billing` - List and create contracts with filtering (status, client)
+- `GET/PUT/DELETE /api/billing/[id]` - Individual contract operations
+- `GET /api/billing/stats` - Contract statistics and MRR analytics
+- `GET/POST /api/billing/[id]/time-logs` - Time log management for billable hours
+- `GET/POST /api/billing/[id]/invoices` - Invoice generation and retrieval
+- `GET/POST /api/sla-policies` - SLA policy management with response targets
+
 ## Multi-Tenancy Implementation ✅ **COMPLETE**
 
 All implemented modules now feature **comprehensive multi-tenancy** for B2B SaaS deployment:
@@ -362,38 +547,47 @@ All collections include:
 - ✅ **Change Management**: Organization-scoped change requests and approval workflows
 - ✅ **Projects**: Organization-scoped project, task, and milestone management
 - ✅ **Knowledge Base**: Organization-scoped articles, categories, and tags
+- ✅ **Clients**: Organization-scoped client management with contact tracking
+- ✅ **Quoting**: Organization-scoped quote management with service catalogue integration
+- ✅ **Billing**: Organization-scoped contract management with MRR tracking, time logs, and invoice generation
+- ✅ **Service Catalogue**: Organization-scoped service management with popularity tracking and analytics
 
 ## Authentication Implementation ✅ **COMPLETE**
 
-### **Clerk Integration**
-- **Middleware**: `middleware.ts` with `clerkMiddleware()` for App Router
-- **Provider**: `ClerkProvider` wrapping entire application in root layout
-- **UI Components**: Sign in/out buttons and UserButton in header
-- **Route Protection**: App routes protected with Clerk authentication
+### **WorkOS Integration**
+- **Middleware**: `middleware.ts` with `authkitMiddleware()` for App Router
+- **Provider**: `AuthKitProvider` wrapping entire application in root layout
+- **UI Components**: Custom authentication components using WorkOS hooks
+- **Route Protection**: App routes protected with WorkOS authentication
+- **Auth Routes**: `/auth/callback`, `/auth/signin`, `/auth/signout`
 
 ### **Multi-Tenant Authentication**
-- **Organization Context**: React context for organization management
-- **API Authentication**: All API routes extract `orgId` from Clerk user context
-- **User Context**: Helper functions for authentication in both client and server components
+- **Session Management**: WorkOS session claims for organization context
+- **API Authentication**: All API routes extract `orgId` from WorkOS user context
+- **User Context**: Helper functions for authentication using WorkOS utilities
 
 ### **Security Features**
-- **Authenticated API Access**: All API endpoints require valid Clerk authentication
-- **Organization Isolation**: User can only access data from their organization
-- **Route Protection**: Unauthenticated users redirected to sign-in
+- **Enterprise Authentication**: WorkOS provides enterprise-grade security
+- **Organization Management**: Built-in multi-tenant organization support
+- **SSO Support**: Single Sign-On integration for enterprise customers
+- **Route Protection**: Unauthenticated users redirected to WorkOS sign-in
 
 ### **Environment Configuration**
 Required environment variables in `.env.local`:
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
-CLERK_SECRET_KEY=your_secret_key
+WORKOS_API_KEY=your_workos_api_key
+WORKOS_CLIENT_ID=your_workos_client_id
+WORKOS_COOKIE_PASSWORD=your_32_char_random_string
+WORKOS_REDIRECT_URI=http://localhost:9002/auth/callback
 ```
 
 ## Next Steps and Implementation Status
 
 ### **✅ Recently Completed**
-- **Clerk Authentication**: Full integration with Next.js App Router including middleware, providers, and UI components
-- **API Route Integration**: All API routes now extract `orgId` from Clerk authentication context
+- **WorkOS Authentication**: Full integration with Next.js App Router including middleware, providers, and UI components
+- **API Route Integration**: All API routes now extract `orgId` from WorkOS authentication context
 - **Multi-Tenant Security**: Complete authentication-based data isolation implementation
+- **Enterprise Migration**: Successfully migrated from Clerk to WorkOS for enterprise-grade authentication
 
 ### **🔄 In Progress**
 - **Database Optimization**: Creating compound indexes for multi-tenant query optimization
@@ -404,8 +598,8 @@ CLERK_SECRET_KEY=your_secret_key
    - Optimize aggregation pipelines for multi-tenant queries
    - Test query performance across organizations
 
-2. **Clerk Organization Management** (Medium Priority)
-   - Configure Clerk organizations for true multi-tenancy
+2. **WorkOS Organization Management** (Medium Priority)
+   - Configure WorkOS organizations for true multi-tenancy
    - Implement organization switching UI
    - Add organization member management
 
@@ -422,8 +616,8 @@ CLERK_SECRET_KEY=your_secret_key
 - **Service Layer Refactoring**: All 6 core modules now enforce organization boundaries
 - **Database Schema Enhancement**: Added `orgId` to all collection documents
 - **API Security Foundation**: Established pattern for organization-scoped API access
-- **Clerk Authentication**: Complete integration with Next.js App Router for secure authentication
-- **Authentication-Based Multi-Tenancy**: API routes now properly extract user organization context
+- **WorkOS Authentication**: Complete integration with Next.js App Router for enterprise-grade authentication
+- **Authentication-Based Multi-Tenancy**: API routes now properly extract user organization context from WorkOS
 - **Route Protection**: All app routes protected with authentication middleware
 
 This is a comprehensive PSA platform with **enterprise-grade multi-tenancy** and **complete authentication integration** now implemented. The platform is ready for B2B SaaS deployment with secure, organization-isolated access to all core modules.

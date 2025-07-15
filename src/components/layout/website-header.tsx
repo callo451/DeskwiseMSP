@@ -2,13 +2,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Gem, Menu, X } from 'lucide-react';
+import { Gem, Menu, X, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '../theme-toggle';
-import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { useAuth } from '@workos-inc/authkit-nextjs/components';
+import { getSignInUrl } from '@workos-inc/authkit-nextjs';
 
 const navLinks = [
   { href: '/features', label: 'Features' },
@@ -20,6 +21,16 @@ const navLinks = [
 export function WebsiteHeader() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, loading } = useAuth();
+
+  const handleSignIn = async () => {
+    const signInUrl = await getSignInUrl({ redirectUri: process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI });
+    window.location.href = signInUrl;
+  };
+
+  const handleSignOut = async () => {
+    window.location.href = '/auth/signout';
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
@@ -47,26 +58,29 @@ export function WebsiteHeader() {
         </nav>
         <div className="hidden md:flex items-center gap-2">
           <ThemeToggle />
-          <SignedOut>
-            <SignInButton>
-              <Button variant="ghost">Log in</Button>
-            </SignInButton>
-            <SignUpButton>
-              <Button>Get Started</Button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <Button asChild variant="outline">
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
-            <UserButton 
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8"
-                }
-              }}
-            />
-          </SignedIn>
+          {!loading && (
+            <>
+              {!user ? (
+                <>
+                  <Button variant="ghost" onClick={handleSignIn}>
+                    Log in
+                  </Button>
+                  <Button onClick={handleSignIn}>
+                    Get Started
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild variant="outline">
+                    <Link href="/dashboard">Dashboard</Link>
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={handleSignOut}>
+                    <User className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </>
+          )}
         </div>
         <div className="md:hidden">
           <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -88,28 +102,29 @@ export function WebsiteHeader() {
               </Link>
             ))}
             <div className="border-t pt-4 flex flex-col gap-2">
-              <SignedOut>
-                <SignInButton>
-                  <Button variant="outline">Log in</Button>
-                </SignInButton>
-                <SignUpButton>
-                  <Button>Get Started</Button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <Button asChild variant="outline">
-                  <Link href="/dashboard">Dashboard</Link>
-                </Button>
-                <div className="flex items-center justify-center py-2">
-                  <UserButton 
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-8 h-8"
-                      }
-                    }}
-                  />
-                </div>
-              </SignedIn>
+              {!loading && (
+                <>
+                  {!user ? (
+                    <>
+                      <Button variant="outline" onClick={handleSignIn}>
+                        Log in
+                      </Button>
+                      <Button onClick={handleSignIn}>
+                        Get Started
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button asChild variant="outline">
+                        <Link href="/dashboard">Dashboard</Link>
+                      </Button>
+                      <Button variant="outline" onClick={handleSignOut}>
+                        Sign Out
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
               <div className="mx-auto pt-2">
                 <ThemeToggle />
               </div>

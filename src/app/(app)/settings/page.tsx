@@ -51,7 +51,7 @@ const settingsItems = [
   {
     icon: Users,
     title: 'Users & Permissions',
-    description: 'Manage user accounts, roles, and single sign-on.',
+    description: 'Manage users, roles, permissions, and enterprise identity through WorkOS.',
     href: '/settings/users',
     target: '_self',
   },

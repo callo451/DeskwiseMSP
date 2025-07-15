@@ -2,8 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
-import { ClerkProvider } from '@clerk/nextjs';
-import { OrganizationProvider } from '@/contexts/organization-context';
+import { AuthKitProvider } from '@workos-inc/authkit-nextjs/components';
 
 export const metadata: Metadata = {
   title: 'Deskwise',
@@ -16,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <AuthKitProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,13 +29,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <OrganizationProvider>
-              {children}
-              <Toaster />
-            </OrganizationProvider>
+            {children}
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>
-    </ClerkProvider>
+    </AuthKitProvider>
   );
 }

@@ -25,10 +25,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { clients, clientPageStats } from '@/lib/placeholder-data';
 import type { Client, DashboardStat } from '@/lib/types';
-import { MoreHorizontal, PlusCircle, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import type { ClientStats } from '@/lib/services/clients';
+import { MoreHorizontal, PlusCircle, Activity, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { NewClientDialog } from '@/components/clients/new-client-dialog';
 
 const StatCard = ({ stat }: { stat: DashboardStat }) => {
   const isIncrease = stat.changeType === 'increase';
@@ -61,7 +63,7 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
 };
 
 
-const ClientRow = ({ client }: { client: Client }) => {
+const ClientRow = ({ client, onDelete }: { client: Client; onDelete: (id: string) => void }) => {
   const getStatusVariant = (status: Client['status']) => {
     switch (status) {
       case 'Active':
@@ -101,7 +103,12 @@ const ClientRow = ({ client }: { client: Client }) => {
             <DropdownMenuItem asChild><Link href={`/clients/${client.id}`}>View Details</Link></DropdownMenuItem>
             <DropdownMenuItem>Edit</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => onDelete(client.id)}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
@@ -110,10 +117,141 @@ const ClientRow = ({ client }: { client: Client }) => {
 };
 
 export default function ClientsPage() {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [stats, setStats] = useState<ClientStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showNewClientDialog, setShowNewClientDialog] = useState(false);
+
+  const fetchClients = async () => {
+    try {
+      const response = await fetch('/api/clients');
+      if (!response.ok) {
+        throw new Error('Failed to fetch clients');
+      }
+      const clientsData = await response.json();
+      setClients(clientsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch clients');
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/clients/stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch client stats');
+      }
+      const statsData = await response.json();
+      setStats(statsData);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchClients(), fetchStats()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  const handleDelete = async (clientId: string) => {
+    if (!confirm('Are you sure you want to delete this client?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/clients/${clientId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete client');
+      }
+
+      // Refresh the clients list
+      await Promise.all([fetchClients(), fetchStats()]);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete client');
+    }
+  };
+
+  const handleClientCreated = async () => {
+    // Refresh the clients list and stats after successful creation
+    await Promise.all([fetchClients(), fetchStats()]);
+  };
+
+  // Convert stats to dashboard stats format
+  const getDashboardStats = (): DashboardStat[] => {
+    if (!stats) return [];
+    
+    return [
+      {
+        title: "Total Clients",
+        value: stats.totalClients.toString(),
+        change: "",
+        changeType: "increase" as const,
+        description: "all clients"
+      },
+      {
+        title: "Active Clients",
+        value: stats.activeClients.toString(),
+        change: "",
+        changeType: "increase" as const,
+        description: "currently active"
+      },
+      {
+        title: "Onboarding",
+        value: stats.onboardingClients.toString(),
+        change: "",
+        changeType: "increase" as const,
+        description: "in progress"
+      },
+      {
+        title: "Total Tickets",
+        value: stats.totalTickets.toString(),
+        change: "",
+        changeType: "increase" as const,
+        description: "across all clients"
+      }
+    ];
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <p>Error loading clients: {error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="mt-4"
+              >
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {clientPageStats.map(stat => (
+        {getDashboardStats().map(stat => (
           <StatCard key={stat.title} stat={stat} />
         ))}
       </div>
@@ -124,7 +262,11 @@ export default function ClientsPage() {
               <CardTitle>Clients</CardTitle>
               <CardDescription>Manage your client organizations.</CardDescription>
             </div>
-            <Button size="sm" className="gap-1">
+            <Button 
+              size="sm" 
+              className="gap-1"
+              onClick={() => setShowNewClientDialog(true)}
+            >
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">New Client</span>
             </Button>
@@ -144,13 +286,28 @@ export default function ClientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clients.map(client => (
-                <ClientRow key={client.id} client={client} />
-              ))}
+              {clients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    No clients found. Create your first client to get started.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                clients.map(client => (
+                  <ClientRow key={client.id} client={client} onDelete={handleDelete} />
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      {/* New Client Dialog */}
+      <NewClientDialog
+        open={showNewClientDialog}
+        onOpenChange={setShowNewClientDialog}
+        onSuccess={handleClientCreated}
+      />
     </div>
   );
 }

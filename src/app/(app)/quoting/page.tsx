@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,13 +28,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { quotes } from '@/lib/placeholder-data';
 import type { Quote } from '@/lib/types';
-import { MoreHorizontal, PlusCircle, ListFilter } from 'lucide-react';
+import type { QuoteStats } from '@/lib/services/quotes';
+import { MoreHorizontal, PlusCircle, ListFilter, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 
-const QuoteRow = ({ quote }: { quote: Quote }) => {
+const QuoteRow = ({ quote, onDelete }: { quote: Quote; onDelete: (id: string) => void }) => {
   const getStatusVariant = (status: Quote['status']) => {
     switch (status) {
       case 'Draft': return 'secondary';
@@ -84,7 +84,12 @@ const QuoteRow = ({ quote }: { quote: Quote }) => {
             <DropdownMenuItem>View Details</DropdownMenuItem>
             <DropdownMenuItem>Download PDF</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => onDelete(quote.id)}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
@@ -95,6 +100,10 @@ const QuoteRow = ({ quote }: { quote: Quote }) => {
 export default function QuotingPage() {
   const quoteStatuses: Array<Quote['status']> = ['Draft', 'Sent', 'Accepted', 'Rejected'];
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [stats, setStats] = useState<QuoteStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const handleStatusFilterChange = (status: string, checked: boolean) => {
     setStatusFilters(prev =>
@@ -102,17 +111,153 @@ export default function QuotingPage() {
     );
   };
 
+  const fetchQuotes = async () => {
+    try {
+      const statusParam = statusFilters.length > 0 ? `?status=${statusFilters.join(',')}` : '';
+      const response = await fetch(`/api/quotes${statusParam}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch quotes');
+      }
+      const quotesData = await response.json();
+      setQuotes(quotesData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch quotes');
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/quotes/stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch quote stats');
+      }
+      const statsData = await response.json();
+      setStats(statsData);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchQuotes(), fetchStats()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      fetchQuotes();
+    }
+  }, [statusFilters]);
+
+  const handleDelete = async (quoteId: string) => {
+    if (!confirm('Are you sure you want to delete this quote?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/quotes/${quoteId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete quote');
+      }
+
+      // Refresh the quotes list
+      await Promise.all([fetchQuotes(), fetchStats()]);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete quote');
+    }
+  };
+
   const clearFilters = () => {
     setStatusFilters([]);
   };
 
-  const filteredQuotes = quotes.filter(quote => {
-    const statusMatch = statusFilters.length === 0 || statusFilters.includes(quote.status);
-    return statusMatch;
-  });
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <p>Error loading quotes: {error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="mt-4"
+              >
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Quotes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalQuotes}</div>
+              <p className="text-xs text-muted-foreground">
+                ${stats.totalValue.toLocaleString()} total value
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Accepted</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.acceptedQuotes}</div>
+              <p className="text-xs text-muted-foreground">
+                ${stats.acceptedValue.toLocaleString()} value
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.conversionRate.toFixed(1)}%</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.sentQuotes} sent quotes
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg. Quote Value</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${stats.avgQuoteValue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                across all quotes
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4">
@@ -171,9 +316,17 @@ export default function QuotingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredQuotes.map(quote => (
-                <QuoteRow key={quote.id} quote={quote} />
-              ))}
+              {quotes.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No quotes found. Create your first quote to get started.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                quotes.map(quote => (
+                  <QuoteRow key={quote.id} quote={quote} onDelete={handleDelete} />
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

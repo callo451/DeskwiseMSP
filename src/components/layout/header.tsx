@@ -26,7 +26,8 @@ import { usePathname } from 'next/navigation';
 import { AIAssistant } from '../ai/ai-assistant';
 import React from 'react';
 import { ThemeToggle } from '../theme-toggle';
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import { useAuth } from '@workos-inc/authkit-nextjs/components';
+import { getSignInUrl } from '@workos-inc/authkit-nextjs';
 
 function BreadcrumbResponsive() {
   const pathname = usePathname();
@@ -66,6 +67,17 @@ function BreadcrumbResponsive() {
 }
 
 export function Header() {
+  const { user, loading } = useAuth();
+
+  const handleSignIn = async () => {
+    const signInUrl = await getSignInUrl({ redirectUri: process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI });
+    window.location.href = signInUrl;
+  };
+
+  const handleSignOut = async () => {
+    window.location.href = '/auth/signout';
+  };
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
        <SidebarTrigger className="sm:hidden" />
@@ -79,30 +91,49 @@ export function Header() {
         />
       </div>
       <ThemeToggle />
-      <SignedIn>
-        <AIAssistant />
-        <UserButton 
-          appearance={{
-            elements: {
-              avatarBox: "w-9 h-9"
-            }
-          }}
-        />
-      </SignedIn>
-      <SignedOut>
-        <div className="flex gap-2">
-          <SignInButton>
-            <Button variant="outline" size="sm">
-              Sign In
-            </Button>
-          </SignInButton>
-          <SignUpButton>
-            <Button size="sm">
-              Sign Up
-            </Button>
-          </SignUpButton>
-        </div>
-      </SignedOut>
+      {!loading && (
+        <>
+          {user ? (
+            <>
+              <AIAssistant />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                    <User className="h-4 w-4" />
+                    <span className="sr-only">Toggle user menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>
+                    {user.firstName} {user.lastName}
+                    <div className="text-xs text-muted-foreground">{user.email}</div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleSignIn}>
+                Sign In
+              </Button>
+              <Button size="sm" onClick={handleSignIn}>
+                Sign Up
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </header>
   );
 }

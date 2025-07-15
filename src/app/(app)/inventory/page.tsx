@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,8 +28,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { inventoryItems, inventoryPageStats, clients } from '@/lib/placeholder-data';
-import type { InventoryItem, DashboardStat } from '@/lib/types';
+import type { DashboardStat } from '@/lib/types';
+import type { InventoryExtended, InventoryStats } from '@/lib/services/inventory';
 import {
   MoreHorizontal,
   PlusCircle,
@@ -72,7 +72,7 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
   );
 };
 
-const InventoryItemRow = ({ item }: { item: InventoryItem }) => {
+const InventoryItemRow = ({ item, onDelete }: { item: InventoryExtended, onDelete: (id: string) => void }) => {
   const isLowStock = item.quantity <= item.reorderPoint;
   
   return (
@@ -109,7 +109,10 @@ const InventoryItemRow = ({ item }: { item: InventoryItem }) => {
             </DropdownMenuItem>
             <DropdownMenuItem>Deploy as Asset</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => onDelete(item.id)}
+            >
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -120,11 +123,117 @@ const InventoryItemRow = ({ item }: { item: InventoryItem }) => {
 };
 
 export default function InventoryPage() {
-  const itemCategories: Array<InventoryItem['category']> = ['Hardware', 'Software License', 'Consumable', 'Part'];
-  const itemOwners = ['MSP', ...clients.map(c => c.name)];
+  const itemCategories: Array<InventoryExtended['category']> = ['Hardware', 'Software License', 'Consumable', 'Part'];
+  const itemOwners = ['MSP', 'TechCorp', 'GlobalInnovate', 'SecureNet Solutions', 'DataFlow Dynamics'];
 
+  const [items, setItems] = useState<InventoryExtended[]>([]);
+  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [categoryFilters, setCategoryFilters] = useState<string[]>([]);
   const [ownerFilters, setOwnerFilters] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchItems();
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    fetchItems();
+  }, [categoryFilters, ownerFilters]);
+
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      
+      const params = new URLSearchParams();
+      
+      if (categoryFilters.length > 0) {
+        params.append('category', categoryFilters.join(','));
+      }
+      
+      if (ownerFilters.length > 0) {
+        params.append('owner', ownerFilters.join(','));
+      }
+      
+      const response = await fetch(`/api/inventory?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch inventory items');
+      }
+      
+      const data = await response.json();
+      setItems(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch inventory items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/inventory/stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch inventory statistics');
+      }
+      
+      const data: InventoryStats = await response.json();
+      
+      // Convert InventoryStats to DashboardStat format
+      const dashboardStats: DashboardStat[] = [
+        {
+          title: "Total Items",
+          value: data.totalItems.toString(),
+          change: `$${data.totalValue.toLocaleString()}`,
+          changeType: "increase",
+          description: "total value"
+        },
+        {
+          title: "Low Stock",
+          value: data.lowStockItems.toString(),
+          change: data.outOfStockItems > 0 ? `${data.outOfStockItems} out of stock` : "No outages",
+          changeType: data.lowStockItems > 0 ? "increase" : "decrease",
+          description: "items need reorder"
+        },
+        {
+          title: "Recent Activity",
+          value: data.recentMovements.toString(),
+          change: "Last 30 days",
+          changeType: "increase",
+          description: "stock movements"
+        },
+        {
+          title: "Pending Orders",
+          value: data.pendingOrders.toString(),
+          change: "Track deliveries",
+          changeType: data.pendingOrders > 0 ? "increase" : "decrease",
+          description: "purchase orders"
+        }
+      ];
+      
+      setStats(dashboardStats);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      const response = await fetch(`/api/inventory/${itemId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete inventory item');
+      }
+      
+      // Refresh the items list
+      fetchItems();
+      fetchStats();
+    } catch (err) {
+      console.error('Error deleting inventory item:', err);
+    }
+  };
 
   const handleCategoryFilterChange = (category: string, checked: boolean) => {
     setCategoryFilters(prev =>
@@ -142,17 +251,54 @@ export default function InventoryPage() {
     setCategoryFilters([]);
     setOwnerFilters([]);
   };
-
-  const filteredItems = inventoryItems.filter(item => {
-    const categoryMatch = categoryFilters.length === 0 || categoryFilters.includes(item.category);
-    const ownerMatch = ownerFilters.length === 0 || ownerFilters.includes(item.owner);
-    return categoryMatch && ownerMatch;
-  });
   
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-6 w-16 bg-muted animate-pulse rounded mb-2" />
+                <div className="h-3 w-32 bg-muted animate-pulse rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-muted-foreground">Loading inventory...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <p>Error loading inventory: {error}</p>
+              <Button onClick={fetchItems} className="mt-4" size="sm">
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {inventoryPageStats.map(stat => (
+        {stats.map(stat => (
           <StatCard key={stat.title} stat={stat} />
         ))}
       </div>
@@ -227,9 +373,24 @@ export default function InventoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredItems.map(item => (
-                <InventoryItemRow key={item.id} item={item} />
-              ))}
+              {items.length > 0 ? (
+                items.map(item => (
+                  <InventoryItemRow 
+                    key={item.id} 
+                    item={item}
+                    onDelete={handleDeleteItem}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="text-center h-24">
+                    {categoryFilters.length > 0 || ownerFilters.length > 0
+                      ? "No inventory items match the current filters."
+                      : "No inventory items found. Add your first item to get started."
+                    }
+                  </td>
+                </tr>
+              )}
             </TableBody>
           </Table>
         </CardContent>

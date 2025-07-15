@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,10 +28,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { contracts, billingPageStats } from '@/lib/placeholder-data';
 import type { Contract, DashboardStat } from '@/lib/types';
-import { PlusCircle, Activity, ArrowUpRight, ArrowDownRight, ChevronRight, ListFilter } from 'lucide-react';
+import type { BillingStats } from '@/lib/services/billing';
+import { PlusCircle, Activity, ArrowUpRight, ArrowDownRight, ChevronRight, ListFilter, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { ContractFormDialog } from '@/components/billing/contract-form-dialog';
 
 const StatCard = ({ stat }: { stat: DashboardStat }) => {
   const isIncrease = stat.changeType === 'increase';
@@ -64,7 +65,7 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
 };
 
 
-const ContractRow = ({ contract }: { contract: Contract }) => {
+const ContractRow = ({ contract, onDelete }: { contract: Contract; onDelete: (id: string) => void }) => {
   const getStatusVariant = (status: Contract['status']) => {
     switch (status) {
       case 'Active':
@@ -100,9 +101,27 @@ const ContractRow = ({ contract }: { contract: Contract }) => {
       <TableCell className="hidden sm:table-cell">{formatCurrency(contract.mrr)}</TableCell>
       <TableCell className="hidden md:table-cell">{new Date(contract.endDate).toLocaleDateString()}</TableCell>
       <TableCell>
-        <Button variant="ghost" size="icon" asChild>
-          <Link href={`/billing/${contract.id}`}><ChevronRight className="h-4 w-4" /></Link>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link href={`/billing/${contract.id}`}>View Details</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>Generate Invoice</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => onDelete(contract.id)}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </TableCell>
     </TableRow>
   );
@@ -111,6 +130,11 @@ const ContractRow = ({ contract }: { contract: Contract }) => {
 export default function BillingPage() {
   const contractStatuses: Array<Contract['status']> = ['Active', 'Expired', 'Pending'];
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [stats, setStats] = useState<BillingStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showContractForm, setShowContractForm] = useState(false);
   
   const handleStatusFilterChange = (status: string, checked: boolean) => {
     setStatusFilters(prev =>
@@ -118,19 +142,163 @@ export default function BillingPage() {
     );
   };
 
+  const fetchContracts = async () => {
+    try {
+      const statusParam = statusFilters.length > 0 ? `?status=${statusFilters.join(',')}` : '';
+      const response = await fetch(`/api/billing${statusParam}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch contracts');
+      }
+      const contractsData = await response.json();
+      setContracts(contractsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch contracts');
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/billing/stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch billing stats');
+      }
+      const statsData = await response.json();
+      setStats(statsData);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchContracts(), fetchStats()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      fetchContracts();
+    }
+  }, [statusFilters]);
+
+  const handleDelete = async (contractId: string) => {
+    if (!confirm('Are you sure you want to delete this contract?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/billing/${contractId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete contract');
+      }
+
+      // Refresh the contracts list
+      await Promise.all([fetchContracts(), fetchStats()]);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete contract');
+    }
+  };
+
   const clearFilters = () => {
     setStatusFilters([]);
   };
 
-  const filteredContracts = contracts.filter(contract => {
-    const statusMatch = statusFilters.length === 0 || statusFilters.includes(contract.status);
-    return statusMatch;
-  });
+  const handleCreateContract = async (contractData: Omit<Contract, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const response = await fetch('/api/billing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contractData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create contract');
+      }
+
+      // Refresh contracts and stats
+      await Promise.all([fetchContracts(), fetchStats()]);
+    } catch (error) {
+      console.error('Failed to create contract:', error);
+      throw error;
+    }
+  };
+
+  // Convert stats to dashboard stats format
+  const getDashboardStats = (): DashboardStat[] => {
+    if (!stats) return [];
+    
+    return [
+      {
+        title: "Total MRR",
+        value: `$${stats.totalMRR.toLocaleString()}`,
+        change: "",
+        changeType: "increase" as const,
+        description: "monthly recurring revenue"
+      },
+      {
+        title: "Active Contracts",
+        value: stats.activeContracts.toString(),
+        change: "",
+        changeType: "increase" as const,
+        description: "currently active"
+      },
+      {
+        title: "Pending Renewals",
+        value: stats.pendingRenewals.toString(),
+        change: "",
+        changeType: "increase" as const,
+        description: "in the next 30 days"
+      },
+      {
+        title: "Total ARR",
+        value: `$${stats.totalAnnualValue.toLocaleString()}`,
+        change: "",
+        changeType: "increase" as const,
+        description: "annual recurring revenue"
+      }
+    ];
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <p>Error loading contracts: {error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="mt-4"
+              >
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {billingPageStats.map(stat => (
+        {getDashboardStats().map(stat => (
           <StatCard key={stat.title} stat={stat} />
         ))}
       </div>
@@ -167,10 +335,17 @@ export default function BillingPage() {
                   <DropdownMenuItem onClick={clearFilters}>Clear Filters</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button size="sm" className="gap-1">
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">New Contract</span>
-              </Button>
+              <ContractFormDialog
+                onSave={handleCreateContract}
+                open={showContractForm}
+                onOpenChange={setShowContractForm}
+                trigger={
+                  <Button size="sm" className="gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">New Contract</span>
+                  </Button>
+                }
+              />
             </div>
           </div>
         </CardHeader>
@@ -189,9 +364,17 @@ export default function BillingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredContracts.map(contract => (
-                <ContractRow key={contract.id} contract={contract} />
-              ))}
+              {contracts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No contracts found. Create your first contract to get started.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                contracts.map(contract => (
+                  <ContractRow key={contract.id} contract={contract} onDelete={handleDelete} />
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

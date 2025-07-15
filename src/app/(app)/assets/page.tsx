@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,8 +28,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { assets, assetPageStats } from '@/lib/placeholder-data';
-import type { Asset, DashboardStat } from '@/lib/types';
+import type { DashboardStat } from '@/lib/types';
+import type { AssetExtended, AssetStats } from '@/lib/services/assets';
 import {
   MoreHorizontal,
   PlusCircle,
@@ -80,8 +80,8 @@ const StatCard = ({ stat }: { stat: DashboardStat }) => {
   );
 };
 
-const AssetRow = ({ asset, isInternalITMode }: { asset: Asset, isInternalITMode: boolean }) => {
-  const getStatusVariant = (status: Asset['status']) => {
+const AssetRow = ({ asset, isInternalITMode, onDelete }: { asset: AssetExtended, isInternalITMode: boolean, onDelete: (id: string) => void }) => {
+  const getStatusVariant = (status: AssetExtended['status']) => {
     switch (status) {
       case 'Online':
         return 'default';
@@ -156,7 +156,10 @@ const AssetRow = ({ asset, isInternalITMode }: { asset: Asset, isInternalITMode:
             </DropdownMenuItem>
             <DropdownMenuItem>Remote Session</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => onDelete(asset.id)}
+            >
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -168,13 +171,127 @@ const AssetRow = ({ asset, isInternalITMode }: { asset: Asset, isInternalITMode:
 
 export default function AssetsPage() {
   const { isInternalITMode } = useSidebar();
-  const assetTypes: Array<Asset['type']> = ['Server', 'Workstation', 'Network', 'Printer'];
-  const assetStatuses: Array<Asset['status']> = ['Online', 'Offline', 'Warning'];
+  const assetTypes: Array<AssetExtended['type']> = ['Server', 'Workstation', 'Network', 'Printer'];
+  const assetStatuses: Array<AssetExtended['status']> = ['Online', 'Offline', 'Warning'];
   const assetSecurityStatuses: string[] = ['Secured', 'At Risk'];
 
+  const [assets, setAssets] = useState<AssetExtended[]>([]);
+  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [securityFilters, setSecurityFilters] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchAssets();
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    fetchAssets();
+  }, [typeFilters, statusFilters, securityFilters]);
+
+  const fetchAssets = async () => {
+    try {
+      setLoading(true);
+      
+      const params = new URLSearchParams();
+      
+      if (typeFilters.length > 0) {
+        params.append('type', typeFilters.join(','));
+      }
+      
+      if (statusFilters.length > 0) {
+        params.append('status', statusFilters.join(','));
+      }
+      
+      if (securityFilters.length > 0) {
+        if (securityFilters.includes('Secured')) {
+          params.append('isSecure', 'true');
+        } else if (securityFilters.includes('At Risk')) {
+          params.append('isSecure', 'false');
+        }
+      }
+      
+      const response = await fetch(`/api/assets?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch assets');
+      }
+      
+      const data = await response.json();
+      setAssets(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch assets');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/assets/stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch asset statistics');
+      }
+      
+      const data: AssetStats = await response.json();
+      
+      // Convert AssetStats to DashboardStat format
+      const dashboardStats: DashboardStat[] = [
+        {
+          title: "Total Assets",
+          value: data.totalAssets.toString(),
+          change: `${data.onlineAssets} online`,
+          changeType: "increase",
+          description: "in your network"
+        },
+        {
+          title: "Security Risk",
+          value: data.atRiskAssets.toString(),
+          change: `${Math.round((data.securedAssets / data.totalAssets) * 100)}% secured`,
+          changeType: data.atRiskAssets > 0 ? "decrease" : "increase",
+          description: "assets at risk"
+        },
+        {
+          title: "Maintenance Due",
+          value: data.maintenanceDue.toString(),
+          change: "Schedule now",
+          changeType: "decrease",
+          description: "assets need attention"
+        },
+        {
+          title: "Avg CPU Usage",
+          value: `${data.avgCpuUsage}%`,
+          change: data.avgCpuUsage > 80 ? "High" : "Normal",
+          changeType: data.avgCpuUsage > 80 ? "increase" : "decrease",
+          description: "across all assets"
+        }
+      ];
+      
+      setStats(dashboardStats);
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    }
+  };
+
+  const handleDeleteAsset = async (assetId: string) => {
+    try {
+      const response = await fetch(`/api/assets/${assetId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete asset');
+      }
+      
+      // Refresh the assets list
+      fetchAssets();
+      fetchStats();
+    } catch (err) {
+      console.error('Error deleting asset:', err);
+    }
+  };
 
   const handleTypeFilterChange = (type: string, checked: boolean) => {
     setTypeFilters(prev =>
@@ -200,21 +317,53 @@ export default function AssetsPage() {
     setSecurityFilters([]);
   };
 
-  const filteredAssets = assets.filter(asset => {
-    const typeMatch = typeFilters.length === 0 || typeFilters.includes(asset.type);
-    const statusMatch = statusFilters.length === 0 || statusFilters.includes(asset.status);
-    const securityMatch =
-      securityFilters.length === 0 ||
-      (securityFilters.includes('Secured') && asset.isSecure) ||
-      (securityFilters.includes('At Risk') && !asset.isSecure);
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-6 w-16 bg-muted animate-pulse rounded mb-2" />
+                <div className="h-3 w-32 bg-muted animate-pulse rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-muted-foreground">Loading assets...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-    return typeMatch && statusMatch && securityMatch;
-  });
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <p>Error loading assets: {error}</p>
+              <Button onClick={fetchAssets} className="mt-4" size="sm">
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {assetPageStats.map(stat => (
+        {stats.map(stat => (
           <StatCard key={stat.title} stat={stat} />
         ))}
       </div>
@@ -317,9 +466,25 @@ export default function AssetsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAssets.map(asset => (
-                <AssetRow key={asset.id} asset={asset} isInternalITMode={isInternalITMode} />
-              ))}
+              {assets.length > 0 ? (
+                assets.map(asset => (
+                  <AssetRow 
+                    key={asset.id} 
+                    asset={asset} 
+                    isInternalITMode={isInternalITMode}
+                    onDelete={handleDeleteAsset}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={isInternalITMode ? 6 : 7} className="text-center h-24">
+                    {typeFilters.length > 0 || statusFilters.length > 0 || securityFilters.length > 0
+                      ? "No assets match the current filters."
+                      : "No assets found. Add your first asset to get started."
+                    }
+                  </td>
+                </tr>
+              )}
             </TableBody>
           </Table>
         </CardContent>

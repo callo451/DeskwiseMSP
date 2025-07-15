@@ -1,29 +1,23 @@
 import { Header } from '@/components/layout/header';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/nextjs';
 
-export default function AppLayout({
+function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <SignedIn>
-        <SidebarProvider>
-          <AppSidebar />
-          <div className="flex flex-1 flex-col">
-            <Header />
-            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-              {children}
-            </main>
-          </div>
-        </SidebarProvider>
-      </SignedIn>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-    </>
+    <SidebarProvider>
+      <AppSidebar />
+      <div className="flex flex-1 flex-col">
+        <Header />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          {children}
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
+
+export default AppLayout;

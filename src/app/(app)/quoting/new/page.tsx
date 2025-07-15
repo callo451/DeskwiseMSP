@@ -1,11 +1,12 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -26,8 +27,8 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ChevronLeft, PlusCircle, Trash2, DollarSign } from 'lucide-react';
-import { clients, serviceCatalogueItems } from '@/lib/placeholder-data';
+import { ChevronLeft, PlusCircle, Trash2, DollarSign, Loader2 } from 'lucide-react';
+import type { Client, ServiceCatalogueItem } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -61,6 +62,10 @@ export default function NewQuotePage() {
   const { toast } = useToast();
   
   const [serviceSearchOpen, setServiceSearchOpen] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [serviceCatalogueItems, setServiceCatalogueItems] = useState<ServiceCatalogueItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(quoteSchema),
@@ -76,6 +81,38 @@ export default function NewQuotePage() {
     control: form.control,
     name: "lineItems",
   });
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [clientsResponse, servicesResponse] = await Promise.all([
+          fetch('/api/clients'),
+          fetch('/api/service-catalogue')
+        ]);
+
+        if (clientsResponse.ok) {
+          const clientsData = await clientsResponse.json();
+          setClients(clientsData);
+        }
+
+        if (servicesResponse.ok) {
+          const servicesData = await servicesResponse.json();
+          setServiceCatalogueItems(servicesData);
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load clients and services. Please refresh the page.',
+          variant: 'destructive'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [toast]);
   
   const watchLineItems = form.watch('lineItems');
   const total = watchLineItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
@@ -94,20 +131,68 @@ export default function NewQuotePage() {
     setServiceSearchOpen(false);
   }
 
-  const onSubmit = (data: QuoteFormValues) => {
-    console.log(data); // In a real app, you'd save this
-    toast({
-      title: 'Quote Created',
-      description: `Quote "${data.subject}" has been created successfully.`,
-    });
-    router.push('/quoting');
+  const onSubmit = async (data: QuoteFormValues) => {
+    setSubmitting(true);
+    try {
+      // Get client name
+      const selectedClient = clients.find(c => c.id === data.clientId);
+      if (!selectedClient) {
+        throw new Error('Selected client not found');
+      }
+
+      const quoteData = {
+        ...data,
+        clientName: selectedClient.name
+      };
+
+      const response = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quoteData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create quote');
+      }
+
+      const quote = await response.json();
+      
+      toast({
+        title: 'Quote Created',
+        description: `Quote "${data.subject}" has been created successfully.`,
+      });
+      
+      router.push('/quoting');
+    } catch (error) {
+      console.error('Error creating quote:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create quote',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button asChild variant="outline" size="icon" href="/quoting">
-          <ChevronLeft className="h-4 w-4" />
+        <Button asChild variant="outline" size="icon">
+          <Link href="/quoting">
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
         </Button>
         <h1 className="text-2xl md:text-3xl font-bold font-headline">New Quote</h1>
       </div>
@@ -204,8 +289,28 @@ export default function NewQuotePage() {
             </Card>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => router.push('/quoting')}>Cancel</Button>
-            <Button type="submit">Create Quote</Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => router.push('/quoting')}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={submitting}
+              className="min-w-[120px]"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Quote'
+              )}
+            </Button>
           </div>
         </form>
       </Form>

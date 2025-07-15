@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -22,8 +23,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { assets, tickets as allTickets, clients } from '@/lib/placeholder-data';
 import type { Asset, Ticket, AssetHealthAnalysis } from '@/lib/types';
+import type { AssetExtended } from '@/lib/services/assets';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -77,7 +78,7 @@ import {
 } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams } from 'next/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
 
@@ -190,21 +191,147 @@ const DetailRow = ({ label, value }: { label: string; value?: React.ReactNode })
 export default function AssetDetailsPage() {
   const params = useParams<{ id: string }>();
   const { isInternalITMode } = useSidebar();
-  const asset = assets.find(a => a.id === params.id);
-  const associatedTickets = allTickets.filter(t => asset?.associatedTickets.includes(t.id));
-  const client = asset ? clients.find(c => c.name === asset.client) : undefined;
-
+  
+  const [asset, setAsset] = useState<AssetExtended | null>(null);
+  const [associatedTickets, setAssociatedTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AssetHealthCheckOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
 
-  if (!asset) {
+  useEffect(() => {
+    if (params.id) {
+      fetchAsset();
+    }
+  }, [params.id]);
+
+  useEffect(() => {
+    if (asset) {
+      setNotes(asset.notes || '');
+      fetchAssociatedTickets();
+    }
+  }, [asset]);
+
+  const fetchAsset = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/assets/${params.id}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError('Asset not found');
+        } else {
+          throw new Error('Failed to fetch asset');
+        }
+        return;
+      }
+      const data = await response.json();
+      setAsset(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch asset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAssociatedTickets = async () => {
+    if (!asset?.associatedTickets?.length) {
+      setAssociatedTickets([]);
+      return;
+    }
+    
+    try {
+      // Fetch tickets by IDs - this would need a ticket API endpoint that accepts multiple IDs
+      const ticketPromises = asset.associatedTickets.map(async (ticketId) => {
+        const response = await fetch(`/api/tickets/${ticketId}`);
+        if (response.ok) {
+          return response.json();
+        }
+        return null;
+      });
+      
+      const tickets = await Promise.all(ticketPromises);
+      setAssociatedTickets(tickets.filter(Boolean));
+    } catch (err) {
+      console.error('Failed to fetch associated tickets:', err);
+    }
+  };
+
+  const saveNotes = async () => {
+    if (!asset) return;
+    
+    try {
+      setSavingNotes(true);
+      const response = await fetch(`/api/assets/${asset.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notes }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save notes');
+      }
+      
+      const updatedAsset = await response.json();
+      setAsset(updatedAsset);
+    } catch (err) {
+      console.error('Failed to save notes:', err);
+    } finally {
+      setSavingNotes(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="h-8 w-48 bg-muted animate-pulse rounded mb-2" />
+            <div className="h-4 w-64 bg-muted animate-pulse rounded" />
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-10 w-32 bg-muted animate-pulse rounded" />
+            <div className="h-10 w-24 bg-muted animate-pulse rounded" />
+          </div>
+        </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex justify-between">
+                      <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                      <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2">
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center text-muted-foreground">Loading asset details...</div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !asset) {
     return (
       <div className="flex h-full items-center justify-center p-8">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Asset Not Found</CardTitle>
-            <CardDescription>The requested asset could not be found.</CardDescription>
+            <CardDescription>{error || 'The requested asset could not be found.'}</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/assets">
@@ -249,7 +376,7 @@ export default function AssetDetailsPage() {
     }
   };
   
-  const getStatusColor = (status: Asset['status']) => {
+  const getStatusColor = (status: AssetExtended['status']) => {
     switch (status) {
       case 'Online': return 'text-green-500';
       case 'Offline': return 'text-red-500';
@@ -258,7 +385,7 @@ export default function AssetDetailsPage() {
     }
   };
 
-  const getStatusIcon = (status: Asset['status']) => {
+  const getStatusIcon = (status: AssetExtended['status']) => {
     const className = "h-4 w-4";
     switch (status) {
       case 'Online': return <Power className={className} />;
@@ -380,10 +507,22 @@ export default function AssetDetailsPage() {
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <Textarea placeholder="Add notes about this asset..." defaultValue={asset.notes} rows={4} />
+                <Textarea 
+                  placeholder="Add notes about this asset..." 
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={4} 
+                />
               </CardContent>
               <CardFooter>
-                <Button size="sm" className="ml-auto">Save Notes</Button>
+                <Button 
+                  size="sm" 
+                  className="ml-auto" 
+                  onClick={saveNotes}
+                  disabled={savingNotes || notes === asset.notes}
+                >
+                  {savingNotes ? 'Saving...' : 'Save Notes'}
+                </Button>
               </CardFooter>
             </Card>
           </div>
@@ -492,17 +631,23 @@ export default function AssetDetailsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {asset.activityLogs.map((log, index) => (
-                        <div key={index} className="flex items-start gap-4">
-                          <div className="flex-shrink-0 pt-1">
-                            <FileClock className="h-4 w-4 text-muted-foreground" />
+                      {asset.activityLogs && asset.activityLogs.length > 0 ? (
+                        asset.activityLogs.map((log, index) => (
+                          <div key={index} className="flex items-start gap-4">
+                            <div className="flex-shrink-0 pt-1">
+                              <FileClock className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{log.activity}</p>
+                              <p className="text-xs text-muted-foreground">{log.timestamp}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium">{log.activity}</p>
-                            <p className="text-xs text-muted-foreground">{log.timestamp}</p>
-                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                          No activity logs available
                         </div>
-                      ))}
+                      )}
                     </div>
                   </CardContent>
                 </Card>

@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -18,8 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { assets as allAssets, contracts } from '@/lib/placeholder-data';
-import type { Contract, Asset } from '@/lib/types';
+import type { Contract, Asset, TimeLog } from '@/lib/types';
 import {
   FileText,
   DollarSign,
@@ -27,11 +27,17 @@ import {
   ChevronLeft,
   Link as LinkIcon,
   ChevronRight,
-  HardDrive
+  HardDrive,
+  Clock,
+  Loader2,
+  Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { ContractFormDialog } from '@/components/billing/contract-form-dialog';
+import { TimeLogFormDialog } from '@/components/billing/time-log-form-dialog';
+import { InvoiceManagement } from '@/components/billing/invoice-management';
 
 const DetailRow = ({ label, value, icon: Icon }: { label: string; value?: React.ReactNode, icon?: React.ElementType }) => {
   if (!value) return null;
@@ -53,14 +59,6 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
-const AssetRow = ({ asset }: { asset: Asset }) => (
-    <TableRow>
-      <TableCell><Link href={`/assets/${asset.id}`} className="font-medium text-primary hover:underline">{asset.name}</Link></TableCell>
-      <TableCell>{asset.type}</TableCell>
-      <TableCell>{asset.os}</TableCell>
-      <TableCell className="text-right"><Button variant="ghost" size="icon" asChild><Link href={`/assets/${asset.id}`}><ChevronRight className="h-4 w-4" /></Link></Button></TableCell>
-    </TableRow>
-);
 
 
 export default function ContractDetailsPage() {
@@ -68,16 +66,64 @@ export default function ContractDetailsPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const contract = contracts.find(c => c.id === params.id);
-  const coveredAssets = contract ? allAssets.filter(a => a.contractId === contract.id) : [];
+  const [contract, setContract] = useState<Contract | null>(null);
+  const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showTimeLogForm, setShowTimeLogForm] = useState(false);
 
-  if (!contract) {
+  useEffect(() => {
+    const fetchContract = async () => {
+      try {
+        const response = await fetch(`/api/billing/${params.id}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Contract not found');
+            return;
+          }
+          throw new Error('Failed to fetch contract');
+        }
+        const contractData = await response.json();
+        setContract(contractData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch contract');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchTimeLogs = async () => {
+      try {
+        const response = await fetch(`/api/billing/${params.id}/time-logs`);
+        if (response.ok) {
+          const timeLogsData = await response.json();
+          setTimeLogs(timeLogsData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch time logs:', err);
+      }
+    };
+
+    fetchContract();
+    fetchTimeLogs();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !contract) {
     return (
       <div className="flex h-full items-center justify-center p-8">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Contract Not Found</CardTitle>
-            <CardDescription>The requested contract could not be found.</CardDescription>
+            <CardDescription>{error || 'The requested contract could not be found.'}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild><Link href="/billing">Back to Billing</Link></Button>
@@ -87,11 +133,87 @@ export default function ContractDetailsPage() {
     );
   }
   
-  const handleGenerateInvoice = () => {
-    toast({
-      title: "Invoice Generated (Simulated)",
-      description: `An invoice for ${contract.name} has been created.`,
-    });
+  const handleGenerateInvoice = async () => {
+    try {
+      const response = await fetch(`/api/billing/${contract.id}/invoices`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          billingPeriodStart: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+          billingPeriodEnd: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate invoice');
+      }
+
+      const invoice = await response.json();
+      toast({
+        title: "Invoice Generated",
+        description: `Invoice ${invoice.invoiceNumber} for ${contract.name} has been created.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate invoice. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateContract = async (contractData: Omit<Contract, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const response = await fetch(`/api/billing/${contract.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contractData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update contract');
+      }
+
+      const updatedContract = await response.json();
+      setContract(updatedContract);
+      toast({
+        title: "Contract Updated",
+        description: "Contract has been successfully updated.",
+      });
+    } catch (error) {
+      console.error('Failed to update contract:', error);
+      throw error;
+    }
+  };
+
+  const handleCreateTimeLog = async (timeLogData: Omit<TimeLog, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const response = await fetch(`/api/billing/${contract.id}/time-logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(timeLogData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to log time');
+      }
+
+      const newTimeLog = await response.json();
+      setTimeLogs(prev => [newTimeLog, ...prev]);
+      toast({
+        title: "Time Logged",
+        description: "Time entry has been successfully logged.",
+      });
+    } catch (error) {
+      console.error('Failed to log time:', error);
+      throw error;
+    }
   };
 
   const getStatusVariant = (status: Contract['status']) => {
@@ -118,7 +240,13 @@ export default function ContractDetailsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline">Edit Contract</Button>
+            <ContractFormDialog
+              contract={contract}
+              onSave={handleUpdateContract}
+              open={showEditForm}
+              onOpenChange={setShowEditForm}
+              trigger={<Button variant="outline">Edit Contract</Button>}
+            />
             <Button onClick={handleGenerateInvoice}>Generate Invoice</Button>
           </div>
         </div>
@@ -160,23 +288,70 @@ export default function ContractDetailsPage() {
                     </CardContent>
                 </Card>
                  <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><HardDrive className="h-5 w-5"/>Covered Assets</CardTitle>
-                        <CardDescription>Assets that are covered under this service agreement.</CardDescription>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <div>
+                            <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5"/>Time Logs</CardTitle>
+                            <CardDescription>Billable hours and work performed for this contract.</CardDescription>
+                        </div>
+                        <TimeLogFormDialog
+                            contractId={contract.id}
+                            onSave={handleCreateTimeLog}
+                            open={showTimeLogForm}
+                            onOpenChange={setShowTimeLogForm}
+                            trigger={
+                                <Button size="sm" variant="outline">
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Log Time
+                                </Button>
+                            }
+                        />
                     </CardHeader>
                     <CardContent>
                         <Table>
-                            <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead>OS</TableHead><TableHead><span className="sr-only">View</span></TableHead></TableRow></TableHeader>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Technician</TableHead>
+                                    <TableHead>Hours</TableHead>
+                                    <TableHead>Category</TableHead>
+                                    <TableHead>Billable</TableHead>
+                                    <TableHead>Description</TableHead>
+                                </TableRow>
+                            </TableHeader>
                             <TableBody>
-                                {coveredAssets.length > 0 ? (
-                                    coveredAssets.map(asset => <AssetRow key={asset.id} asset={asset} />)
+                                {timeLogs.length > 0 ? (
+                                    timeLogs.map(timeLog => (
+                                        <TableRow key={timeLog.id}>
+                                            <TableCell>{new Date(timeLog.date).toLocaleDateString()}</TableCell>
+                                            <TableCell>{timeLog.technician}</TableCell>
+                                            <TableCell>{timeLog.hours}h</TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline">{timeLog.category || 'General'}</Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={timeLog.isBillable ? 'default' : 'secondary'}>
+                                                    {timeLog.isBillable ? 'Yes' : 'No'}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="max-w-xs truncate">{timeLog.description}</TableCell>
+                                        </TableRow>
+                                    ))
                                 ) : (
-                                    <TableRow><TableCell colSpan={4} className="h-24 text-center">No assets are currently covered by this contract.</TableCell></TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                            No time logs recorded yet. Click "Log Time" to add an entry.
+                                        </TableCell>
+                                    </TableRow>
                                 )}
                             </TableBody>
                         </Table>
                     </CardContent>
                 </Card>
+                
+                <InvoiceManagement 
+                    contractId={contract.id} 
+                    contractName={contract.name} 
+                />
             </div>
         </div>
       </div>

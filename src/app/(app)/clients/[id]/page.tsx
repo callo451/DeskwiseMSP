@@ -19,8 +19,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { assets as allAssets, clients, tickets as allTickets, contacts as allContacts, contracts as allContracts } from '@/lib/placeholder-data';
-import type { Asset, Ticket, Contact, Contract } from '@/lib/types';
+import type { Asset, Ticket, Contact, Contract, Client } from '@/lib/types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +41,7 @@ import {
     Eye,
     HardDrive,
     Lightbulb,
+    Loader2,
     Phone,
     PlusCircle,
     ShieldAlert,
@@ -53,7 +53,7 @@ import {
     FileText
 } from 'lucide-react';
 import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 const DetailRow = ({ label, value, icon: Icon }: { label: string; value?: React.ReactNode, icon?: React.ElementType }) => {
@@ -132,31 +132,72 @@ export default function ClientDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   
-  const client = clients.find(c => c.id === params.id);
-  const associatedTickets = client ? allTickets.filter(t => t.client === client.name) : [];
-  const associatedAssets = client ? allAssets.filter(a => a.client === client.name) : [];
-  const associatedContacts = client ? allContacts.filter(c => c.client === client.name) : [];
-  const associatedContracts = client ? allContracts.filter(c => c.clientId === client.id) : [];
+  const [client, setClient] = useState<Client | null>(null);
+  const [associatedTickets, setAssociatedTickets] = useState<Ticket[]>([]);
+  const [associatedAssets, setAssociatedAssets] = useState<Asset[]>([]);
+  const [associatedContacts, setAssociatedContacts] = useState<Contact[]>([]);
+  const [associatedContracts, setAssociatedContracts] = useState<Contract[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const [analysisResult, setAnalysisResult] = useState<ClientInsightsOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchClientData = async () => {
+      if (!params.id) return;
+      
+      setLoading(true);
+      try {
+        // Fetch client details
+        const clientResponse = await fetch(`/api/clients/${params.id}`);
+        if (!clientResponse.ok) {
+          throw new Error('Client not found');
+        }
+        const clientData = await clientResponse.json();
+        setClient(clientData);
+
+        // Note: For now, we'll keep placeholder data for related entities
+        // These would need to be implemented similarly when those modules are converted
+        setAssociatedTickets([]);
+        setAssociatedAssets([]);
+        setAssociatedContacts([]);
+        setAssociatedContracts([]);
+        
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch client');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClientData();
+  }, [params.id]);
   
   const clientStats = useMemo(() => {
     if (!client) return null;
     const openTickets = associatedTickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length;
     const assetsOnline = associatedAssets.filter(a => a.status === 'Online').length;
-    const assetsAtRisk = associatedAssets.filter(a => !a.isSecure).length;
+    const assetsAtRisk = associatedAssets.filter(a => 'isSecure' in a && !a.isSecure).length;
     return { openTickets, assetsOnline, assetsAtRisk };
   }, [client, associatedTickets, associatedAssets]);
 
-  if (!client || !clientStats) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !client) {
     return (
       <div className="flex h-full items-center justify-center p-8">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Client Not Found</CardTitle>
-            <CardDescription>The requested client could not be found.</CardDescription>
+            <CardDescription>{error || 'The requested client could not be found.'}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild><Link href="/clients">Back to Clients</Link></Button>
@@ -165,8 +206,10 @@ export default function ClientDetailsPage() {
       </div>
     );
   }
-  
+
   const handleAnalysis = async () => {
+    if (!clientStats) return;
+    
     setIsAnalysisDialogOpen(true);
     setIsAnalyzing(true);
     setAnalysisResult(null);
@@ -176,7 +219,7 @@ export default function ClientDetailsPage() {
         clientName: client.name,
         totalTickets: associatedTickets.length,
         openTickets: clientStats.openTickets,
-        overdueTickets: allTickets.filter(t => t.client === client.name && t.status !== 'Closed' && t.status !== 'Resolved' && t.sla?.resolutionDue && new Date(t.sla.resolutionDue) < new Date()).length,
+        overdueTickets: 0, // TODO: Calculate from tickets when tickets module is integrated
         totalAssets: associatedAssets.length,
         assetsAtRisk: clientStats.assetsAtRisk,
         ticketSubjects: associatedTickets.slice(0, 10).map(t => t.subject),
@@ -252,10 +295,10 @@ export default function ClientDetailsPage() {
                 <Card>
                     <CardHeader><CardTitle>At a Glance</CardTitle></CardHeader>
                     <CardContent className="divide-y divide-border -mt-2">
-                        <DetailRow label="Open Tickets" value={clientStats.openTickets} icon={TicketIcon} />
+                        <DetailRow label="Open Tickets" value={client.tickets || 0} icon={TicketIcon} />
+                        <DetailRow label="Total Contacts" value={client.contacts || 0} icon={Users} />
                         <DetailRow label="Total Assets" value={associatedAssets.length} icon={HardDrive} />
-                        <DetailRow label="Assets Online" value={clientStats.assetsOnline} icon={CheckCircle2} />
-                        <DetailRow label="Security Risks" value={clientStats.assetsAtRisk} icon={ShieldAlert} />
+                        <DetailRow label="Security Risks" value={clientStats?.assetsAtRisk || 0} icon={ShieldAlert} />
                     </CardContent>
                 </Card>
             </div>
@@ -274,7 +317,7 @@ export default function ClientDetailsPage() {
                             <CardContent>
                                 <Table>
                                     <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Subject</TableHead><TableHead>Priority</TableHead><TableHead>Status</TableHead><TableHead><span className="sr-only">View</span></TableHead></TableRow></TableHeader>
-                                    <TableBody>{associatedTickets.length > 0 ? associatedTickets.map(t => <TicketRow key={t.id} ticket={t} />) : <TableRow><TableCell colSpan={5} className="text-center h-24">No tickets found.</TableCell></TableRow>}</TableBody>
+                                    <TableBody>{associatedTickets.length > 0 ? associatedTickets.map(t => <TicketRow key={t.id} ticket={t} />) : <TableRow><TableCell colSpan={5} className="text-center h-24">No tickets found. Associated data will be available once the related modules are converted to MongoDB.</TableCell></TableRow>}</TableBody>
                                 </Table>
                             </CardContent>
                         </Card>
@@ -285,7 +328,7 @@ export default function ClientDetailsPage() {
                             <CardContent>
                                 <Table>
                                     <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead><span className="sr-only">View</span></TableHead></TableRow></TableHeader>
-                                    <TableBody>{associatedAssets.length > 0 ? associatedAssets.map(a => <AssetRow key={a.id} asset={a} />) : <TableRow><TableCell colSpan={4} className="text-center h-24">No assets found.</TableCell></TableRow>}</TableBody>
+                                    <TableBody>{associatedAssets.length > 0 ? associatedAssets.map(a => <AssetRow key={a.id} asset={a} />) : <TableRow><TableCell colSpan={4} className="text-center h-24">No assets found. Associated data will be available once the Assets module is converted to MongoDB.</TableCell></TableRow>}</TableBody>
                                 </Table>
                             </CardContent>
                         </Card>
@@ -296,7 +339,7 @@ export default function ClientDetailsPage() {
                             <CardContent>
                                 <Table>
                                     <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead className="hidden sm:table-cell">Email</TableHead><TableHead className="hidden md:table-cell">Permissions</TableHead><TableHead><span className="sr-only">View</span></TableHead></TableRow></TableHeader>
-                                    <TableBody>{associatedContacts.length > 0 ? associatedContacts.map(c => <ContactRow key={c.id} contact={c} />) : <TableRow><TableCell colSpan={5} className="text-center h-24">No contacts found.</TableCell></TableRow>}</TableBody>
+                                    <TableBody>{associatedContacts.length > 0 ? associatedContacts.map(c => <ContactRow key={c.id} contact={c} />) : <TableRow><TableCell colSpan={5} className="text-center h-24">No contacts found. Associated data will be available once the Contacts module is converted to MongoDB.</TableCell></TableRow>}</TableBody>
                                 </Table>
                             </CardContent>
                         </Card>
@@ -310,7 +353,7 @@ export default function ClientDetailsPage() {
                             <CardContent>
                                 <Table>
                                     <TableHeader><TableRow><TableHead>Contract</TableHead><TableHead>Status</TableHead><TableHead>MRR</TableHead><TableHead><span className="sr-only">View</span></TableHead></TableRow></TableHeader>
-                                    <TableBody>{associatedContracts.length > 0 ? associatedContracts.map(c => <ContractRow key={c.id} contract={c} />) : <TableRow><TableCell colSpan={4} className="text-center h-24">No contracts found for this client.</TableCell></TableRow>}</TableBody>
+                                    <TableBody>{associatedContracts.length > 0 ? associatedContracts.map(c => <ContractRow key={c.id} contract={c} />) : <TableRow><TableCell colSpan={4} className="text-center h-24">No contracts found. Associated data will be available once the Billing module is converted to MongoDB.</TableCell></TableRow>}</TableBody>
                                 </Table>
                             </CardContent>
                         </Card>

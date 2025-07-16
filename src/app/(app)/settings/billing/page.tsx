@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -19,13 +18,6 @@ import Image from 'next/image';
 export default function BillingSettingsPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-headline">Billing & Subscriptions</h1>
-        <p className="text-muted-foreground">
-          Manage your payment methods, plan, and billing integrations.
-        </p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Automated Billing</CardTitle>

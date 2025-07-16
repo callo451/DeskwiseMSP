@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -517,12 +516,6 @@ export default function ProjectSettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Project Management</h1>
-          <p className="text-muted-foreground">
-            Configure project statuses and manage project templates.
-          </p>
-        </div>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-center h-32">
@@ -537,12 +530,6 @@ export default function ProjectSettingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Project Management</h1>
-          <p className="text-muted-foreground">
-            Configure project statuses and manage project templates.
-          </p>
-        </div>
         <Button 
           onClick={handleInitializeDefaults}
           disabled={isInitializing}

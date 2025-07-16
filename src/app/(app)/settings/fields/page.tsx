@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -243,13 +242,6 @@ export default function CustomFieldsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-headline">Custom Fields</h1>
-        <p className="text-muted-foreground">
-          Create and manage custom fields for modules like tickets, assets, and clients.
-        </p>
-      </div>
-
       <Tabs defaultValue="tickets">
         <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="tickets"><Ticket className="mr-2 h-4 w-4" />Tickets</TabsTrigger>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -845,12 +844,6 @@ export default function TicketSettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Ticket Management</h1>
-          <p className="text-muted-foreground">
-            Configure queues, statuses, priorities, and other ticket-related settings.
-          </p>
-        </div>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-center h-32">
@@ -865,12 +858,6 @@ export default function TicketSettingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Ticket Management</h1>
-          <p className="text-muted-foreground">
-            Configure queues, statuses, priorities, and other ticket-related settings.
-          </p>
-        </div>
         <Button 
           onClick={handleInitializeDefaults}
           disabled={isInitializing}

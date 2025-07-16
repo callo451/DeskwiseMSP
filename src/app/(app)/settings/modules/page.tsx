@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -91,12 +90,6 @@ export default function ModulesSettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Module Management</h1>
-          <p className="text-muted-foreground">
-            Enable or disable modules to customize the application for your team.
-          </p>
-        </div>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-center h-32">
@@ -118,12 +111,6 @@ export default function ModulesSettingsPage() {
   
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-headline">Module Management</h1>
-        <p className="text-muted-foreground">
-          Enable or disable modules to customize the application for your team.
-        </p>
-      </div>
       <Card>
         <CardHeader>
           <CardTitle>Enabled Modules</CardTitle>

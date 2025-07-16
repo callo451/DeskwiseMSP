@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -355,12 +354,6 @@ export default function NumberingSettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Numbering Schemes</h1>
-          <p className="text-muted-foreground">
-            Customize the prefixes and suffixes for IDs across different modules.
-          </p>
-        </div>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-center h-32">
@@ -375,12 +368,6 @@ export default function NumberingSettingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Numbering Schemes</h1>
-          <p className="text-muted-foreground">
-            Customize the prefixes and suffixes for IDs across different modules.
-          </p>
-        </div>
         <Button 
           onClick={handleInitializeDefaults}
           disabled={isInitializing}

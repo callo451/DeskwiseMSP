@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -122,13 +121,6 @@ export default function CsatSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-headline">CSAT Management</h1>
-        <p className="text-muted-foreground">
-          Configure and monitor customer satisfaction surveys and metrics.
-        </p>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {csatPageStats.map(stat => (
           <StatCard key={stat.title} stat={stat} />

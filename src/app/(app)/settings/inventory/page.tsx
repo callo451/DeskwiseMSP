@@ -1170,10 +1170,6 @@ export default function InventorySettingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Inventory Management Settings</h1>
-          <p className="text-gray-600">Configure inventory categories, locations, and suppliers</p>
-        </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => fetchData()}>
             <RefreshCw className="h-4 w-4 mr-2" />

@@ -698,13 +698,6 @@ export default function UserManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-headline">Users & Permissions</h1>
-        <p className="text-muted-foreground">
-          Manage team members, roles, and access controls through WorkOS enterprise identity management.
-        </p>
-      </div>
-
       <Tabs defaultValue="users" className="w-full">
         <TabsList className="grid w-full grid-cols-4 max-w-xl">
           <TabsTrigger value="users">Users</TabsTrigger>

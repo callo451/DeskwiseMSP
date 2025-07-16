@@ -1,6 +1,8 @@
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import type { Project, ProjectTask, ProjectMilestone, ProjectStatus } from '@/lib/types';
+import { NumberingSchemesService } from './numbering-schemes';
+import { ProjectSettingsService, ProjectTemplateExtended } from './project-settings';
 
 export interface ProjectDocument extends Omit<Project, 'id'> {
   _id?: ObjectId;
@@ -180,6 +182,9 @@ export class ProjectsService {
   ): Promise<Project> {
     const collection = await this.getCollection();
     
+    // Generate the next project ID using numbering scheme
+    const projectId = await NumberingSchemesService.generateNextId(orgId, 'projects');
+    
     const now = new Date();
     const projectDocument: Omit<ProjectDocument, '_id'> = {
       ...projectData,
@@ -193,7 +198,7 @@ export class ProjectsService {
     };
 
     const result = await collection.insertOne(projectDocument);
-    const projectId = result.insertedId.toString();
+    const insertedProjectId = result.insertedId.toString();
     
     let tasks: ProjectTask[] = [];
     let milestones: ProjectMilestone[] = [];
@@ -202,7 +207,7 @@ export class ProjectsService {
     if (initialTasks && initialTasks.length > 0) {
       tasks = await Promise.all(
         initialTasks.map(task => 
-          this.addTask(orgId, projectId, task, createdBy)
+          this.addTask(orgId, insertedProjectId, task, createdBy)
         )
       );
     }
@@ -211,7 +216,7 @@ export class ProjectsService {
     if (initialMilestones && initialMilestones.length > 0) {
       milestones = await Promise.all(
         initialMilestones.map(milestone => 
-          this.addMilestone(orgId, projectId, milestone, createdBy)
+          this.addMilestone(orgId, insertedProjectId, milestone, createdBy)
         )
       );
     }
@@ -220,6 +225,82 @@ export class ProjectsService {
     if (!createdProject) throw new Error('Failed to create project');
     
     return this.documentToProject(createdProject, tasks, milestones);
+  }
+
+  /**
+   * Create a project from a template
+   */
+  static async createFromTemplate(
+    orgId: string,
+    templateId: string,
+    projectData: {
+      name: string;
+      client?: string;
+      clientId?: string;
+      startDate?: string;
+      endDate?: string;
+      budget?: number;
+      teamMembers?: string[];
+      tags?: string[];
+      customFields?: Record<string, any>;
+    },
+    createdBy: string
+  ): Promise<Project> {
+    // Get the template
+    const template = await ProjectSettingsService.getTemplateById(templateId, orgId);
+    if (!template) {
+      throw new Error('Project template not found');
+    }
+
+    // Get default status from project settings
+    const statuses = await ProjectSettingsService.getAllStatuses(orgId);
+    const defaultStatus = statuses.find(s => s.isDefault) || statuses[0];
+
+    // Create the project with template data
+    const project: Omit<Project, 'id' | 'tasks' | 'milestones'> = {
+      name: projectData.name,
+      description: template.description,
+      client: projectData.client || '',
+      clientId: projectData.clientId || '',
+      status: (defaultStatus?.name as ProjectStatus) || 'Not Started',
+      priority: 'Medium',
+      startDate: projectData.startDate || new Date().toISOString(),
+      endDate: projectData.endDate || 
+        (template.estimatedDuration 
+          ? new Date(Date.now() + template.estimatedDuration * 24 * 60 * 60 * 1000).toISOString() 
+          : ''),
+      budget: projectData.budget || template.estimatedBudget || 0,
+      usedBudget: 0,
+      progress: 0,
+      teamMembers: projectData.teamMembers || [],
+      tags: [...(projectData.tags || []), 'from-template', template.category || ''].filter(Boolean),
+      customFields: projectData.customFields || {}
+    };
+
+    // Create initial tasks from template
+    const initialTasks: Omit<ProjectTask, 'id'>[] = template.tasks.map((templateTask, index) => ({
+      name: templateTask.name,
+      status: 'To-Do' as const,
+      priority: 'Medium' as const,
+      assigneeId: templateTask.assigneeRole || '',
+      dueDate: projectData.startDate 
+        ? new Date(new Date(projectData.startDate).getTime() + (index + 1) * 24 * 60 * 60 * 1000).toISOString()
+        : '',
+      dependsOn: templateTask.dependencies || []
+    }));
+
+    // Create initial milestones if template has categories or major phases
+    const initialMilestones: Omit<ProjectMilestone, 'id'>[] = [];
+    if (template.category) {
+      initialMilestones.push({
+        name: `${template.category} Complete`,
+        dueDate: project.endDate,
+        status: 'Pending' as const,
+        isBillable: false
+      });
+    }
+
+    return this.create(orgId, project, createdBy, initialTasks, initialMilestones);
   }
 
   static async update(

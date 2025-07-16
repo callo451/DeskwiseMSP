@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '../theme-toggle';
 import { useAuth } from '@workos-inc/authkit-nextjs/components';
-import { getSignInUrl } from '@workos-inc/authkit-nextjs';
+import { getSignInUrl, signOut } from '@workos-inc/authkit-nextjs';
 
 const navLinks = [
   { href: '/features', label: 'Features' },
@@ -29,7 +29,8 @@ export function WebsiteHeader() {
   };
 
   const handleSignOut = async () => {
-    window.location.href = '/auth/signout';
+    await signOut();
+    window.location.href = '/auth/signin';
   };
 
   return (

@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/table';
 import type { DashboardStat } from '@/lib/types';
 import type { InventoryExtended, InventoryStats } from '@/lib/services/inventory';
+import type { InventoryCategorySettingExtended } from '@/lib/services/inventory-settings';
 import {
   MoreHorizontal,
   PlusCircle,
@@ -123,7 +124,6 @@ const InventoryItemRow = ({ item, onDelete }: { item: InventoryExtended, onDelet
 };
 
 export default function InventoryPage() {
-  const itemCategories: Array<InventoryExtended['category']> = ['Hardware', 'Software License', 'Consumable', 'Part'];
   const itemOwners = ['MSP', 'TechCorp', 'GlobalInnovate', 'SecureNet Solutions', 'DataFlow Dynamics'];
 
   const [items, setItems] = useState<InventoryExtended[]>([]);
@@ -132,11 +132,25 @@ export default function InventoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [categoryFilters, setCategoryFilters] = useState<string[]>([]);
   const [ownerFilters, setOwnerFilters] = useState<string[]>([]);
+  const [itemCategories, setItemCategories] = useState<string[]>([]);
 
   useEffect(() => {
     fetchItems();
     fetchStats();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/settings/inventory-settings?type=category');
+      if (response.ok) {
+        const categoriesData: InventoryCategorySettingExtended[] = await response.json();
+        setItemCategories(categoriesData.filter(cat => cat.isActive).map(cat => cat.name));
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   useEffect(() => {
     fetchItems();

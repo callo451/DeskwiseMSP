@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import type { Asset } from '@/lib/types';
+import { AssetSettingsService } from './asset-settings';
 
 export interface AssetDocument extends Omit<Asset, 'id'> {
   _id?: ObjectId;
@@ -805,6 +806,15 @@ export class AssetsService {
         rack?: string;
       };
       notes?: string;
+      serialNumber?: string;
+      purchaseDate?: Date;
+      warrantyExpiration?: Date;
+      depreciation?: {
+        method: 'straight_line' | 'declining_balance';
+        usefulLife: number;
+        salvageValue: number;
+        currentValue: number;
+      };
     },
     deployedBy: string
   ): Promise<AssetExtended> {
@@ -835,11 +845,12 @@ export class AssetsService {
         activityLogs: [],
         associatedTickets: [],
         sku: inventoryItem.sku,
-        purchaseDate: inventoryItem.purchaseInfo?.purchaseDate,
-        warrantyExpiration: inventoryItem.warrantyInfo?.endDate,
+        purchaseDate: assetData.purchaseDate || inventoryItem.purchaseInfo?.purchaseDate,
+        warrantyExpiration: assetData.warrantyExpiration || inventoryItem.warrantyInfo?.endDate,
         location: assetData.location,
+        depreciation: assetData.depreciation,
         specifications: {
-          serialNumber: inventoryItem.serialNumbers?.[0] // Use first serial number if available
+          serialNumber: assetData.serialNumber || inventoryItem.serialNumbers?.[0] // Use first serial number if available
         }
       };
 
@@ -1119,5 +1130,35 @@ export class AssetsService {
     days: number = 30
   ): Promise<AssetExtended[]> {
     return this.getAll(orgId, { warrantyExpiring: days });
+  }
+
+  /**
+   * Get default asset settings for the organization
+   */
+  static async getDefaults(orgId: string): Promise<{
+    categories: any[];
+    statuses: any[];
+    maintenanceSchedules: any[];
+  }> {
+    try {
+      const [categories, statuses, maintenanceSchedules] = await Promise.all([
+        AssetSettingsService.getAllCategories(orgId),
+        AssetSettingsService.getAllStatuses(orgId),
+        AssetSettingsService.getAllMaintenanceSchedules(orgId)
+      ]);
+
+      return {
+        categories,
+        statuses,
+        maintenanceSchedules
+      };
+    } catch (error) {
+      console.error('Error getting asset defaults:', error);
+      return {
+        categories: [],
+        statuses: [],
+        maintenanceSchedules: []
+      };
+    }
   }
 }

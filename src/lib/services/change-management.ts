@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import type { ChangeRequest } from '@/lib/types';
+import { ChangeManagementSettingsService } from './change-management-settings';
 
 export interface ChangeRequestDocument extends Omit<ChangeRequest, 'id'> {
   _id?: ObjectId;
@@ -16,6 +17,28 @@ export interface ChangeRequestDocument extends Omit<ChangeRequest, 'id'> {
   rejectedBy?: string;
   rejectedAt?: string;
   rejectionReason?: string;
+  // Enhanced fields from settings
+  requiresApproval?: boolean;
+  requiresTesting?: boolean;
+  requiresRollback?: boolean;
+  requiresDocumentation?: boolean;
+  requiresCommunication?: boolean;
+  defaultMaintenanceWindow?: {
+    duration: number;
+    preferredTimes: string[];
+  };
+  riskScore?: number;
+  riskMatrix?: string;
+  approvalWorkflow?: string;
+  approvalSteps?: Array<{
+    stepNumber: number;
+    name: string;
+    description?: string;
+    requiredApprovers: number;
+    approverRoles: string[];
+    timeoutHours?: number;
+    parallelApproval?: boolean;
+  }>;
 }
 
 export interface ChangeApprovalDocument {
@@ -120,6 +143,28 @@ export class ChangeManagementService {
   ): Promise<ChangeRequest> {
     const collection = await this.getCollection();
     
+    // Get category settings for enhanced change request processing
+    const categories = await ChangeManagementSettingsService.getCategoriesForChangeCreation(orgId);
+    const selectedCategory = categories.find(cat => cat.name === changeData.category);
+    
+    // Get risk matrix for risk assessment
+    const riskMatrix = await ChangeManagementSettingsService.getRiskMatrixForChangeCreation(orgId);
+    
+    // Calculate risk score based on matrix
+    let calculatedRiskScore = 0;
+    if (riskMatrix && selectedCategory) {
+      const riskLevel = riskMatrix.riskLevels.find(level => level.level === changeData.riskLevel);
+      if (riskLevel) {
+        calculatedRiskScore = riskLevel.requiredApprovers * 25; // Simple scoring
+      }
+    }
+    
+    // Get applicable workflows
+    const workflows = await ChangeManagementSettingsService.getWorkflowsForChangeCreation(orgId);
+    const applicableWorkflow = workflows.find(wf => 
+      wf.triggerConditions.riskLevel?.includes(changeData.riskLevel as any)
+    );
+    
     const now = new Date();
     const changeDocument: Omit<ChangeRequestDocument, '_id'> = {
       ...changeData,
@@ -128,6 +173,23 @@ export class ChangeManagementService {
       updatedBy: createdBy,
       createdAt: now,
       updatedAt: now,
+      // Add enhanced fields from settings
+      ...(selectedCategory && {
+        requiresApproval: selectedCategory.requiresApproval,
+        requiresTesting: selectedCategory.requiresTesting,
+        requiresRollback: selectedCategory.requiresRollback,
+        requiresDocumentation: selectedCategory.requiresDocumentation,
+        requiresCommunication: selectedCategory.requiresCommunication,
+        defaultMaintenanceWindow: selectedCategory.defaultMaintenanceWindow
+      }),
+      ...(riskMatrix && {
+        riskScore: calculatedRiskScore,
+        riskMatrix: riskMatrix.name
+      }),
+      ...(applicableWorkflow && {
+        approvalWorkflow: applicableWorkflow.name,
+        approvalSteps: applicableWorkflow.approvalSteps
+      })
     };
 
     const result = await collection.insertOne(changeDocument);

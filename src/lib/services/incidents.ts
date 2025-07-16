@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import type { MajorIncident, MajorIncidentUpdate } from '@/lib/types';
+import { NumberingSchemesService } from './numbering-schemes';
 
 export interface IncidentDocument extends Omit<MajorIncident, 'id'> {
   _id?: ObjectId;
@@ -117,9 +118,13 @@ export class IncidentService {
   ): Promise<MajorIncident> {
     const collection = await this.getCollection();
     
+    // Generate the next incident ID using numbering scheme
+    const incidentId = await NumberingSchemesService.generateNextId(orgId, 'incidents');
+    
     const now = new Date();
     const incidentDocument: Omit<IncidentDocument, '_id'> = {
       ...incidentData,
+      id: incidentId,
       orgId,
       createdBy,
       updatedBy: createdBy,

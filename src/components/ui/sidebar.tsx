@@ -32,7 +32,7 @@ const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 type EnabledModules = Record<ModuleId, boolean>;
 
 const initialModulesState: EnabledModules = ALL_MODULES.reduce((acc, module) => {
-  acc[module.id] = true; // Enable all modules by default
+  acc[module.id] = true;
   return acc;
 }, {} as EnabledModules);
 
@@ -46,7 +46,7 @@ type SidebarContext = {
   isMobile: boolean
   toggleSidebar: () => void
   enabledModules: EnabledModules | null;
-  setEnabledModules: React.Dispatch<React.SetStateAction<EnabledModules>>;
+  setEnabledModules: React.Dispatch<React.SetStateAction<EnabledModules | null>>;
   isInternalITMode: boolean;
   setIsInternalITMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -84,8 +84,29 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
-    const [enabledModules, setEnabledModules] = React.useState<EnabledModules>(initialModulesState);
+    const [enabledModules, setEnabledModules] = React.useState<EnabledModules | null>(null);
     const [isInternalITMode, setIsInternalITMode] = React.useState(false);
+
+    // Load organization settings on mount
+    React.useEffect(() => {
+      const loadSettings = async () => {
+        try {
+          const res = await fetch('/api/settings/modules');
+          if (res.ok) {
+            const data = await res.json();
+            setEnabledModules(data.enabledModules ?? initialModulesState);
+            setIsInternalITMode(data.isInternalITMode ?? false);
+          } else {
+            // fallback to defaults
+            setEnabledModules(initialModulesState);
+          }
+        } catch (err) {
+          console.error('Failed to load module settings', err);
+          setEnabledModules(initialModulesState);
+        }
+      };
+      loadSettings();
+    }, []);
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.

@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthContext } from '@/lib/auth';
 import { InventoryService } from '@/lib/services/inventory';
+import { InventorySettingsService } from '@/lib/services/inventory-settings';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { orgId, userId } = await getAuthContext();
+    const { id } = await context.params;
     const { assetName, client, assetType, ipAddress, macAddress, location, notes } = await request.json();
-    
-    // Extract organization ID and user from authentication context
-    const orgId = 'default-org'; // TODO: Get from authenticated user context
-    const deployedBy = 'current-user'; // TODO: Get from authenticated user context
     
     // Validate required fields
     if (!assetName || typeof assetName !== 'string') {
@@ -35,9 +34,22 @@ export async function POST(
       );
     }
 
+    // Get inventory item details to enrich asset creation
+    const inventoryItem = await InventoryService.getById(id, orgId);
+    if (!inventoryItem) {
+      return NextResponse.json(
+        { error: 'Inventory item not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get category settings to help with asset creation
+    const categories = await InventorySettingsService.getCategoriesForAssetCreation(orgId);
+    const matchingCategory = categories.find(cat => cat.name === inventoryItem.category);
+
     // Deploy inventory item as asset and create the actual asset record
     const [updatedInventoryItem] = await Promise.all([
-      InventoryService.deployAsset(id, orgId, `Asset: ${assetName}`, deployedBy, notes),
+      InventoryService.deployAsset(id, orgId, `Asset: ${assetName}`, userId, notes),
       // Create asset record using dynamic import to avoid circular dependency
       (async () => {
         try {
@@ -52,9 +64,22 @@ export async function POST(
               ipAddress,
               macAddress,
               location,
-              notes
+              notes: notes || `Deployed from inventory: ${inventoryItem.name} (SKU: ${inventoryItem.sku})`,
+              // Enhanced fields from inventory
+              serialNumber: inventoryItem.serialNumbers?.[0],
+              purchaseDate: inventoryItem.purchaseInfo?.purchaseDate,
+              warrantyExpiration: inventoryItem.warrantyInfo?.endDate,
+              // Use category defaults if available
+              ...(matchingCategory && {
+                depreciation: {
+                  method: 'straight_line' as const,
+                  usefulLife: 5,
+                  salvageValue: matchingCategory.depreciationRate || 0,
+                  currentValue: inventoryItem.unitCost || 0
+                }
+              })
             },
-            deployedBy
+            userId
           );
         } catch (error) {
           console.error('Failed to create asset from inventory deployment:', error);

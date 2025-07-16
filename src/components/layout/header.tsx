@@ -27,7 +27,7 @@ import { AIAssistant } from '../ai/ai-assistant';
 import React from 'react';
 import { ThemeToggle } from '../theme-toggle';
 import { useAuth } from '@workos-inc/authkit-nextjs/components';
-import { getSignInUrl } from '@workos-inc/authkit-nextjs';
+import { getSignInUrl, signOut } from '@workos-inc/authkit-nextjs';
 
 function BreadcrumbResponsive() {
   const pathname = usePathname();
@@ -75,7 +75,8 @@ export function Header() {
   };
 
   const handleSignOut = async () => {
-    window.location.href = '/auth/signout';
+    await signOut();
+    window.location.href = '/auth/signin';
   };
 
   return (

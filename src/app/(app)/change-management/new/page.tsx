@@ -27,7 +27,11 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ChevronLeft } from 'lucide-react';
-import { clients, changeRequestStatusSettings, changeRequestRiskSettings, changeRequestImpactSettings } from '@/lib/placeholder-data';
+import { clients } from '@/lib/placeholder-data';
+import type { 
+  ChangeCategorySettingExtended,
+  RiskMatrixSettingExtended 
+} from '@/lib/services/change-management-settings';
 import { MarkdownEditor } from '@/components/ui/markdown-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
@@ -40,6 +44,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 const changeRequestSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
   clientId: z.string().optional(),
+  category: z.string().min(1, 'Please select a category.'),
   status: z.string().min(1, 'Please select a status.'),
   riskLevel: z.string().min(1, 'Please select a risk level.'),
   impact: z.string().min(1, 'Please select an impact level.'),
@@ -58,11 +63,16 @@ export default function NewChangeRequestPage() {
   const { toast } = useToast();
   const { isInternalITMode } = useSidebar();
 
+  const [categories, setCategories] = useState<ChangeCategorySettingExtended[]>([]);
+  const [riskMatrix, setRiskMatrix] = useState<RiskMatrixSettingExtended | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const form = useForm<ChangeRequestFormValues>({
     resolver: zodResolver(changeRequestSchema),
     defaultValues: {
       title: searchParams.get('title') || '',
       clientId: searchParams.get('clientId') || '',
+      category: '',
       status: 'Pending Approval',
       riskLevel: 'Low',
       impact: 'Low',
@@ -72,11 +82,52 @@ export default function NewChangeRequestPage() {
     },
   });
 
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch categories
+      const categoriesResponse = await fetch('/api/settings/change-management-settings?type=change_category');
+      if (categoriesResponse.ok) {
+        const categoriesData = await categoriesResponse.json();
+        setCategories(categoriesData.filter((cat: ChangeCategorySettingExtended) => cat.isActive));
+      }
+
+      // Fetch risk matrix
+      const riskMatrixResponse = await fetch('/api/settings/change-management-settings?type=risk_matrix');
+      if (riskMatrixResponse.ok) {
+        const riskMatricesData = await riskMatrixResponse.json();
+        const defaultMatrix = riskMatricesData.find((matrix: RiskMatrixSettingExtended) => matrix.isDefault && matrix.isActive);
+        setRiskMatrix(defaultMatrix || riskMatricesData[0] || null);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle category change to update default risk and impact levels
+  const handleCategoryChange = (categoryId: string) => {
+    const selectedCategory = categories.find(cat => cat.id === categoryId);
+    if (selectedCategory) {
+      form.setValue('riskLevel', selectedCategory.defaultRiskLevel);
+      form.setValue('impact', selectedCategory.defaultImpactLevel);
+    }
+  };
+
   const onSubmit = async (data: ChangeRequestFormValues) => {
     try {
+      const selectedCategory = categories.find(cat => cat.id === data.category);
+      
       const changeRequestData = {
         title: data.title,
         description: data.description,
+        category: selectedCategory?.name || 'General',
         status: data.status,
         riskLevel: data.riskLevel,
         impact: data.impact,
@@ -88,6 +139,15 @@ export default function NewChangeRequestPage() {
         rollbackPlan: data.rollbackPlan,
         associatedAssets: [],
         associatedTickets: [],
+        // Add category-based defaults
+        ...(selectedCategory && {
+          requiresApproval: selectedCategory.requiresApproval,
+          requiresTesting: selectedCategory.requiresTesting,
+          requiresRollback: selectedCategory.requiresRollback,
+          requiresDocumentation: selectedCategory.requiresDocumentation,
+          requiresCommunication: selectedCategory.requiresCommunication,
+          defaultMaintenanceWindow: selectedCategory.defaultMaintenanceWindow
+        })
       };
 
       const response = await fetch('/api/change-requests', {
@@ -122,6 +182,25 @@ export default function NewChangeRequestPage() {
       });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button asChild variant="outline" size="icon">
+            <a href="/change-management"><ChevronLeft className="h-4 w-4" /></a>
+          </Button>
+          <h1 className="text-2xl md:text-3xl font-bold font-headline">New Change Request</h1>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading change management settings...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -228,24 +307,99 @@ export default function NewChangeRequestPage() {
                         </FormItem>
                     )} />
                   )}
+                  <FormField control={form.control} name="category" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={(value) => {
+                        field.onChange(value);
+                        handleCategoryChange(value);
+                      }} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map(cat => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full" 
+                                  style={{ backgroundColor: cat.color }}
+                                />
+                                {cat.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                    <FormField control={form.control} name="status" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger></FormControl><SelectContent>{changeRequestStatusSettings.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Pending Approval">Pending Approval</SelectItem>
+                            <SelectItem value="Approved">Approved</SelectItem>
+                            <SelectItem value="In Progress">In Progress</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                            <SelectItem value="Rejected">Rejected</SelectItem>
+                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                   )} />
                    <FormField control={form.control} name="riskLevel" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Risk Level</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a risk level" /></SelectTrigger></FormControl><SelectContent>{changeRequestRiskSettings.map(r => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a risk level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {riskMatrix?.riskLevels.map(level => (
+                              <SelectItem key={level.level} value={level.level}>
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: level.color }}
+                                  />
+                                  {level.label}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                   )} />
                    <FormField control={form.control} name="impact" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Impact Level</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select an impact level" /></SelectTrigger></FormControl><SelectContent>{changeRequestImpactSettings.map(i => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select an impact level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {riskMatrix?.impactCategories.map(impact => (
+                              <SelectItem key={impact.category} value={impact.category}>
+                                {impact.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                   )} />

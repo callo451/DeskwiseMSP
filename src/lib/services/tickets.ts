@@ -1,6 +1,8 @@
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import type { Ticket, TimeLog, DashboardStat } from '@/lib/types';
+import { NumberingSchemesService } from './numbering-schemes';
+import { TicketSettingsService } from './ticket-settings';
 
 export interface TicketDocument extends Omit<Ticket, 'id'> {
   _id?: ObjectId;
@@ -64,12 +66,52 @@ export class TicketService {
     return this.documentToTicket(ticket);
   }
 
+  /**
+   * Get default settings for creating new tickets
+   */
+  static async getDefaults(orgId: string): Promise<{
+    defaultQueue: string;
+    defaultStatus: string;
+    defaultPriority: string;
+    availableQueues: Array<{ id: string; name: string }>;
+    availableStatuses: Array<{ id: string; name: string; color: string; type: string }>;
+    availablePriorities: Array<{ id: string; name: string; color: string; level: number }>;
+  }> {
+    const [queues, statuses, priorities] = await Promise.all([
+      TicketSettingsService.getAllQueues(orgId),
+      TicketSettingsService.getAllStatuses(orgId),
+      TicketSettingsService.getAllPriorities(orgId)
+    ]);
+
+    const defaultQueue = queues.find(q => q.isDefault)?.name || queues[0]?.name || 'Unassigned';
+    const defaultStatus = statuses.find(s => s.isDefault)?.name || statuses[0]?.name || 'Open';
+    const defaultPriority = priorities.find(p => p.isDefault)?.name || priorities[0]?.name || 'Medium';
+
+    return {
+      defaultQueue,
+      defaultStatus,
+      defaultPriority,
+      availableQueues: queues.map(q => ({ id: q.id, name: q.name })),
+      availableStatuses: statuses.map(s => ({ id: s.id, name: s.name, color: s.color, type: s.type })),
+      availablePriorities: priorities.map(p => ({ id: p.id, name: p.name, color: p.color, level: p.level }))
+    };
+  }
+
   static async create(orgId: string, ticketData: Omit<Ticket, 'id' | 'createdDate' | 'lastUpdate' | 'activity'>): Promise<Ticket> {
     const collection = await this.getCollection();
+    
+    // Generate the next ticket ID using numbering scheme
+    const ticketId = await NumberingSchemesService.generateNextId(orgId, 'tickets');
+    
+    // Get defaults if not provided
+    const defaults = await this.getDefaults(orgId);
     
     const now = new Date();
     const ticketDocument: Omit<TicketDocument, '_id'> = {
       ...ticketData,
+      queue: ticketData.queue || defaults.defaultQueue,
+      status: ticketData.status || defaults.defaultStatus,
+      priority: ticketData.priority || defaults.defaultPriority,
       orgId,
       createdDate: now.toISOString().split('T')[0],
       lastUpdate: 'Just now',

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -15,30 +15,101 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ALL_MODULES, type ModuleId, type ModuleInfo } from '@/lib/types';
 import { useSidebar } from '@/components/ui/sidebar';
+import { Loader2 } from 'lucide-react';
 
 
 export default function ModulesSettingsPage() {
   const { toast } = useToast();
   const { enabledModules, setEnabledModules, isInternalITMode } = useSidebar();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleToggle = (moduleId: ModuleId) => {
-    setEnabledModules(prev => ({
-      ...prev,
-      [moduleId]: !prev[moduleId],
-    }));
+  useEffect(() => {
+    fetchModuleSettings();
+  }, []);
+
+  const fetchModuleSettings = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/settings/modules');
+      if (response.ok) {
+        const data = await response.json();
+        setEnabledModules(data.enabledModules);
+      } else {
+        throw new Error('Failed to fetch module settings');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load module settings.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSave = () => {
-    // In a real app, you would save this to a backend.
-    // Here, we just show a toast notification.
-    toast({
-        title: "Settings Saved",
-        description: "Your module visibility settings have been updated."
+  const handleToggle = (moduleId: ModuleId) => {
+    setEnabledModules(prev => {
+      const current = prev ?? {} as Record<ModuleId, boolean>;
+      return {
+        ...current,
+        [moduleId]: !current[moduleId],
+      };
     });
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      const res = await fetch('/api/settings/modules', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabledModules }),
+      });
+      if (res.ok) {
+        toast({
+          title: 'Settings Saved',
+          description: 'Your module visibility settings have been updated.',
+        });
+      } else {
+        const data = await res.json();
+        throw new Error(data.message ?? 'Failed to save');
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: 'Save failed',
+        description: err.message ?? 'Unable to save settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold font-headline">Module Management</h1>
+          <p className="text-muted-foreground">
+            Enable or disable modules to customize the application for your team.
+          </p>
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (!enabledModules) {
-    return null; // Or a loading state
+    return null;
   }
 
   const visibleModules = ALL_MODULES.filter(module => 
@@ -82,6 +153,12 @@ export default function ModulesSettingsPage() {
           </div>
         </CardContent>
       </Card>
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={!enabledModules || isSaving}>
+          {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          Save Changes
+        </Button>
+      </div>
     </div>
   );
 }

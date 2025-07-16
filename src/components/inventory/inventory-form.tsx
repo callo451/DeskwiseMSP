@@ -41,11 +41,16 @@ import {
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { InventoryExtended } from '@/lib/services/inventory';
+import type { 
+  InventoryCategorySettingExtended, 
+  InventoryLocationSettingExtended,
+  InventorySupplierSettingExtended
+} from '@/lib/services/inventory-settings';
 
 const inventoryFormSchema = z.object({
   sku: z.string().min(1, 'SKU is required'),
   name: z.string().min(1, 'Item name is required'),
-  category: z.enum(['Hardware', 'Software License', 'Consumable', 'Part']),
+  category: z.string().min(1, 'Category is required'),
   owner: z.string().min(1, 'Owner is required'),
   location: z.string().min(1, 'Location is required'),
   quantity: z.number().min(0, 'Quantity must be non-negative'),
@@ -80,13 +85,16 @@ export function InventoryForm({ item, onSuccess }: InventoryFormProps) {
   const [loading, setLoading] = useState(false);
   const [owners, setOwners] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
+  const [categories, setCategories] = useState<InventoryCategorySettingExtended[]>([]);
+  const [locationSettings, setLocationSettings] = useState<InventoryLocationSettingExtended[]>([]);
+  const [suppliers, setSuppliers] = useState<InventorySupplierSettingExtended[]>([]);
 
   const form = useForm<InventoryFormData>({
     resolver: zodResolver(inventoryFormSchema),
     defaultValues: {
       sku: item?.sku || '',
       name: item?.name || '',
-      category: item?.category || 'Hardware',
+      category: item?.category || '',
       owner: item?.owner || 'MSP',
       location: item?.location || '',
       quantity: item?.quantity || 0,
@@ -108,9 +116,39 @@ export function InventoryForm({ item, onSuccess }: InventoryFormProps) {
   });
 
   useEffect(() => {
-    // Fetch available owners and locations - this would be from APIs in real implementation
+    // Fetch inventory settings
+    const fetchSettings = async () => {
+      try {
+        // Fetch categories
+        const categoriesResponse = await fetch('/api/settings/inventory-settings?type=category');
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json();
+          setCategories(categoriesData);
+        }
+
+        // Fetch locations
+        const locationsResponse = await fetch('/api/settings/inventory-settings?type=location');
+        if (locationsResponse.ok) {
+          const locationsData = await locationsResponse.json();
+          setLocationSettings(locationsData);
+          setLocations(locationsData.map((loc: InventoryLocationSettingExtended) => loc.name));
+        }
+
+        // Fetch suppliers
+        const suppliersResponse = await fetch('/api/settings/inventory-settings?type=supplier');
+        if (suppliersResponse.ok) {
+          const suppliersData = await suppliersResponse.json();
+          setSuppliers(suppliersData);
+        }
+      } catch (error) {
+        console.error('Error fetching inventory settings:', error);
+      }
+    };
+
+    fetchSettings();
+    
+    // Fetch available owners - this would be from APIs in real implementation
     setOwners(['MSP', 'TechCorp', 'GlobalInnovate', 'SecureNet Solutions', 'DataFlow Dynamics']);
-    setLocations(['Main Warehouse', 'Repair Bench', 'Digital', 'Client Site', 'Storage Room A', 'Storage Room B']);
   }, []);
 
   const onSubmit = async (data: InventoryFormData) => {
@@ -232,10 +270,17 @@ export function InventoryForm({ item, onSuccess }: InventoryFormProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Hardware">Hardware</SelectItem>
-                        <SelectItem value="Software License">Software License</SelectItem>
-                        <SelectItem value="Consumable">Consumable</SelectItem>
-                        <SelectItem value="Part">Part</SelectItem>
+                        {categories.filter(cat => cat.isActive).map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: category.color }}
+                              />
+                              {category.name}
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -394,9 +439,28 @@ export function InventoryForm({ item, onSuccess }: InventoryFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Supplier</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Dell Technologies" {...field} />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a supplier" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {suppliers.filter(sup => sup.isActive).map((supplier) => (
+                          <SelectItem key={supplier.id} value={supplier.name}>
+                            <div className="flex items-center gap-2">
+                              {supplier.name}
+                              <div className="flex">
+                                {Array.from({ length: 5 }, (_, i) => (
+                                  i < supplier.performanceRating ? 
+                                    '⭐' : '☆'
+                                )).join('')}
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
